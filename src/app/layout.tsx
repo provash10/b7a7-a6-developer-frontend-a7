@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Outfit, Oxanium } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import Providers from "@/providers";
 
@@ -42,8 +43,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <Providers>
         <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {children}
-      </body>
+          {children}
+          <Toaster />
+        </body>
       </Providers>
     </html>
   );
