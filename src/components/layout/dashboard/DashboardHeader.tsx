@@ -1,17 +1,10 @@
 "use client";
 
+import { Bell, LogOut, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  Menu,
-  Bell,
-  LogOut,
-  User as UserIcon,
-  ShieldCheck,
-  Search,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
-import { useLogout, useGetMyProfile } from "@/hooks";
+import { useGetMyProfile, useLogout } from "@/hooks";
 
 interface DashboardHeaderProps {
   onOpenMobile: () => void;
@@ -25,13 +18,13 @@ export default function DashboardHeader({
   const { data: profileData } = useGetMyProfile();
 
   const user = profileData?.data || {
-    name: "Alex Johnson",
-    email: "user@devassess.com",
+    name: "Provash Kumar",
+    email: "provash10@gmail.com",
     role: "Candidate",
   };
 
   const handleLogout = () => {
-    logout(undefined as any, {
+    logout(undefined, {
       onSettled: () => {
         toast.add({
           title: "Logged Out",
@@ -45,7 +38,7 @@ export default function DashboardHeader({
 
   return (
     <header className="h-16 bg-card/80 backdrop-blur-md border-b border-border px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
-      {/* Left: Mobile trigger & breadcrumb */}
+      {/* left: mobile trigger & breadcrumb */}
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
@@ -66,9 +59,9 @@ export default function DashboardHeader({
         </div>
       </div>
 
-      {/* Right: Actions & User Info */}
+      {/* right: actions & user info */}
       <div className="flex items-center gap-3 sm:gap-4">
-        {/* Notifications Icon */}
+        {/* notifications icon */}
         <button
           type="button"
           className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -88,22 +81,31 @@ export default function DashboardHeader({
 
         <div className="h-4 w-px bg-border/80" />
 
-        {/* User Card */}
+        {/* user card */}
         <div className="flex items-center gap-2.5">
-          <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs uppercase">
-            {user?.name ? user.name.slice(0, 2) : "AJ"}
+          <div
+            className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs uppercase"
+            suppressHydrationWarning
+          >
+            {user?.name ? user.name.slice(0, 2) : "PK"}
           </div>
           <div className="hidden md:block text-left">
-            <p className="text-xs font-semibold leading-tight text-foreground truncate max-w-[130px]">
-              {user?.name || "Alex Johnson"}
+            <p
+              className="text-xs font-semibold leading-tight text-foreground truncate max-w-[130px]"
+              suppressHydrationWarning
+            >
+              {user?.name || "Provash Kumar"}
             </p>
-            <p className="text-[11px] text-muted-foreground truncate max-w-[130px]">
-              {user?.email || "user@devassess.com"}
+            <p
+              className="text-[11px] text-muted-foreground truncate max-w-[130px]"
+              suppressHydrationWarning
+            >
+              {user?.email || "provash10@gmail.com"}
             </p>
           </div>
         </div>
 
-        {/* Logout Button */}
+        {/* logout button */}
         <Button
           variant="outline"
           size="sm"

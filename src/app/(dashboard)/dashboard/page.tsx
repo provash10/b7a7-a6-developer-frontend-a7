@@ -1,19 +1,15 @@
-import Link from "next/link";
 import {
-  Code2,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Award,
   ArrowRight,
-  Play,
+  Award,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
   FileCode,
   Flame,
-  Calendar,
-  ExternalLink,
-  ChevronRight,
-  TrendingUp,
+  Play,
 } from "lucide-react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -113,9 +109,11 @@ const RECENT_ASSESSMENTS = [
 ];
 
 export default function CandidateDashboardPage() {
+  // console.log("candidate dashboard page rendered");
+
   return (
     <div className="space-y-8 pb-10">
-      {/* Welcome Banner */}
+      {/* welcome banner */}
       <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-background p-6 sm:p-8">
         <div className="relative z-10 max-w-2xl space-y-2">
           <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/15 border border-primary/25 text-primary text-xs font-semibold">
@@ -123,7 +121,7 @@ export default function CandidateDashboardPage() {
             Developer Assessment Hub
           </div>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Welcome back, Alex! 👋
+            Welcome back, Provash! 👋
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
             You have{" "}
@@ -140,7 +138,7 @@ export default function CandidateDashboardPage() {
         </div>
       </div>
 
-      {/* Quick Stat Cards */}
+      {/* quick stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map((stat) => {
           const Icon = stat.icon;
@@ -172,7 +170,7 @@ export default function CandidateDashboardPage() {
         })}
       </div>
 
-      {/* Active Assessment Feature Card */}
+      {/* active assessment feature card */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -251,7 +249,7 @@ export default function CandidateDashboardPage() {
         </Card>
       </div>
 
-      {/* Completed Assessments History */}
+      {/* completed assessments history */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -321,7 +319,7 @@ export default function CandidateDashboardPage() {
         </div>
       </div>
 
-      {/* Quick Navigation Cards */}
+      {/* quick navigation cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
         <Link
           href="/dashboard/profile"
