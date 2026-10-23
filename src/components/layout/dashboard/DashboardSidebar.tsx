@@ -13,6 +13,7 @@ import {
   Shield,
   Sparkles,
   User,
+  UserCheck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -64,6 +65,12 @@ export default function DashboardSidebar({
           href: "/recruiter/earnings",
           icon: DollarSign,
           badge: "Income",
+        },
+        {
+          name: "Profile & Availability",
+          href: "/recruiter/profile",
+          icon: UserCheck,
+          badge: "Settings",
         },
       ],
     },
