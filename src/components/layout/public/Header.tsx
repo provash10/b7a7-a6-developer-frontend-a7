@@ -17,6 +17,10 @@ export default function Header() {
       name: "About Us",
       url: "/about-us",
     },
+    {
+      name: "Contact",
+      url: "/contact",
+    },
   ];
 
   return (
