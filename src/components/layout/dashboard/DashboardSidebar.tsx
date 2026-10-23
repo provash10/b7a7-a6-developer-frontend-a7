@@ -10,6 +10,7 @@ import {
   Shield,
   Sparkles,
   User,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -75,6 +76,12 @@ export default function DashboardSidebar({
           href: "/admin",
           icon: Shield,
           badge: "Console",
+        },
+        {
+          name: "User & Assessments",
+          href: "/admin/manage",
+          icon: Users,
+          badge: "CRUD",
         },
       ],
     },
