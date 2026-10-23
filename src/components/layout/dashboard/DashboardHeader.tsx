@@ -1,7 +1,8 @@
 "use client";
 
 import { Bell, LogOut, Menu } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { useGetMyProfile, useLogout } from "@/hooks";
@@ -13,14 +14,32 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({
   onOpenMobile,
 }: DashboardHeaderProps) {
+  // console.log("dashboard header component rendered");
+
   const router = useRouter();
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const { data: profileData } = useGetMyProfile();
+
+  const isAdmin = mounted && Boolean(pathname?.startsWith("/admin"));
+  const isRecruiter = mounted && Boolean(pathname?.startsWith("/recruiter"));
+
+  const dashboardLabel = isAdmin
+    ? "Admin Console"
+    : isRecruiter
+      ? "Recruiter Portal"
+      : "Candidate Dashboard";
 
   const user = profileData?.data || {
     name: "Provash Kumar",
     email: "provash10@gmail.com",
-    role: "Candidate",
+    role: isAdmin ? "Admin" : isRecruiter ? "Recruiter" : "Candidate",
   };
 
   const handleLogout = () => {
@@ -53,8 +72,11 @@ export default function DashboardHeader({
         <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
           <span>DevAssess</span>
           <span>/</span>
-          <span className="font-semibold text-foreground">
-            Candidate Dashboard
+          <span
+            className="font-semibold text-foreground"
+            suppressHydrationWarning
+          >
+            {dashboardLabel}
           </span>
         </div>
       </div>
@@ -69,8 +91,9 @@ export default function DashboardHeader({
           onClick={() => {
             toast.add({
               title: "Notifications",
-              description:
-                "You have 1 new assessment invitation from TechCorp.",
+              description: isAdmin
+                ? "Platform alert: 28 submissions flagged for review."
+                : "You have 1 new assessment invitation from TechCorp.",
               type: "info",
             });
           }}
