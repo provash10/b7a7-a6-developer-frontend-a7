@@ -1,5 +1,6 @@
 export * from "./api.type";
 export * from "./appointment.type";
+export * from "./assessment.type";
 export * from "./auth.type";
 export * from "./doctor.type";
 export * from "./schedule.type";
