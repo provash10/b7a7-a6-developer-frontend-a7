@@ -16,37 +16,40 @@ export const loginSchema = z.object({
 
 export const LoginSchema = loginSchema;
 
-export const patientRegistrationSchema = z
+export const registerSchema = z
   .object({
     name: z
-      .string("Not A String!!!!!")
-      .min(3, "Name must atleast 3 characters long!!!")
-      .max(10),
-    email: z.email("Not email!!"),
-    password: z
       .string()
-      .min(8, "Password Must Minimum 8 Characters Long.")
-      .regex(/[a-z]/, "Password must contain atleast 1 Lowercase Letter")
-      .regex(/[A-Z]/, "Password must contain atleast 1 Uppercase Letter")
-      .regex(/[0-9]/, "Password must contain atleast 1 Number")
-      .regex(
-        /[^A-Za-z0-9]/,
-        "Password must contain atleast 1 Special Character",
-      ),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+      .min(3, "Name must be at least 3 characters long")
+      .max(50, "Name must not exceed 50 characters"),
+    email: z.string().email("Please enter a valid email address"),
     contactNumber: z
       .string()
-      .refine((val) => val === "" || /^(?:\+?880|0)1[3-9]\d{8}$/.test(val), {
-        message: "Please provide valid Bangladeshi number",
+      .refine((val) => !val || val === "" || /^(?:\+?880|0)1[3-9]\d{8}$/.test(val), {
+        message: "Please provide valid Bangladeshi number (e.g. 017xxxxxxxx)",
       })
-      .optional(),
+      .optional()
+      .or(z.literal("")),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(/[a-z]/, "Password must contain at least 1 lowercase letter")
+      .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
+      .regex(/[0-9]/, "Password must contain at least 1 number")
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Password must contain at least 1 special character",
+      ),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Password do not match",
+    message: "Passwords do not match",
     path: ["confirmPassword"],
   });
 
-export const PatientRegistrationZodSchema = patientRegistrationSchema;
+export const RegisterSchema = registerSchema;
+export const patientRegistrationSchema = registerSchema;
+export const PatientRegistrationZodSchema = registerSchema;
 
 //* GP - 017, 013
 //* BL - 019, 014
