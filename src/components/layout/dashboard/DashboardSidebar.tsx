@@ -2,6 +2,7 @@
 
 import {
   ChevronRight,
+  ClipboardCheck,
   Code2,
   CreditCard,
   ExternalLink,
@@ -29,6 +30,7 @@ export default function DashboardSidebar({
 
   const pathname = usePathname();
   const isAdmin = Boolean(pathname?.startsWith("/admin"));
+  const isRecruiter = Boolean(pathname?.startsWith("/recruiter"));
 
   const navigation = [
     {
@@ -44,6 +46,17 @@ export default function DashboardSidebar({
           name: "My Assessments",
           href: "/dashboard",
           icon: FileCheck2,
+        },
+      ],
+    },
+    {
+      title: "Recruiter Portal",
+      items: [
+        {
+          name: "Candidate Evaluations",
+          href: "/recruiter",
+          icon: ClipboardCheck,
+          badge: "Review",
         },
       ],
     },
@@ -88,7 +101,10 @@ export default function DashboardSidebar({
   ];
 
   return (
-    <aside className="flex flex-col h-full w-64 bg-card border-r border-border select-none">
+    <aside
+      className="flex flex-col h-full w-64 bg-card border-r border-border select-none"
+      suppressHydrationWarning
+    >
       {/* brand header */}
       <div className="h-16 flex items-center justify-between px-5 border-b border-border/80">
         <Link
@@ -104,11 +120,11 @@ export default function DashboardSidebar({
           </span>
         </Link>
         <Badge
-          variant={isAdmin ? "default" : "outline"}
+          variant={isAdmin || isRecruiter ? "default" : "outline"}
           className="text-[10px] font-mono uppercase tracking-wider py-0 px-1.5"
           suppressHydrationWarning
         >
-          {isAdmin ? "Admin" : "Candidate"}
+          {isAdmin ? "Admin" : isRecruiter ? "Recruiter" : "Candidate"}
         </Badge>
       </div>
 
@@ -118,23 +134,37 @@ export default function DashboardSidebar({
           <Sparkles className="size-4 text-primary shrink-0" />
           <div className="text-xs">
             <p className="font-medium text-foreground" suppressHydrationWarning>
-              {isAdmin ? "Admin Console" : "Candidate Portal"}
+              {isAdmin
+                ? "Admin Console"
+                : isRecruiter
+                  ? "Recruiter Portal"
+                  : "Candidate Portal"}
             </p>
             <p
               className="text-[11px] text-muted-foreground"
               suppressHydrationWarning
             >
-              {isAdmin ? "Platform Intelligence" : "User Dashboard"}
+              {isAdmin
+                ? "Platform Intelligence"
+                : isRecruiter
+                  ? "Review & Evaluation Queue"
+                  : "User Dashboard"}
             </p>
           </div>
         </div>
       </div>
 
       {/* nav list */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-6">
+      <div
+        className="flex-1 overflow-y-auto px-3 py-2 space-y-6"
+        suppressHydrationWarning
+      >
         {navigation.map((group) => (
           <div key={group.title} className="space-y-1">
-            <p className="px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <p
+              className="px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
+              suppressHydrationWarning
+            >
               {group.title}
             </p>
             <div className="space-y-1 pt-1">
@@ -146,6 +176,7 @@ export default function DashboardSidebar({
                     key={item.name}
                     href={item.href}
                     onClick={onCloseMobile}
+                    suppressHydrationWarning
                     className={cn(
                       "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       isActive
