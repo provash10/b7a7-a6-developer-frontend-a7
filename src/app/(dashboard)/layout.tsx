@@ -1,40 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import DashboardSidebar from "@/components/layout/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/layout/dashboard/DashboardHeader";
+import DashboardSidebar from "@/components/layout/dashboard/DashboardSidebar";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // console.log("dashboard layout rendered");
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
-      {/* Desktop Sidebar */}
+      {/* desktop sidebar */}
       <div className="hidden lg:flex shrink-0">
         <DashboardSidebar />
       </div>
 
-      {/* Mobile Sidebar Backdrop & Drawer */}
+      {/* mobile sidebar backdrop & drawer */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Overlay */}
+          {/* overlay */}
           <div
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
-          {/* Drawer */}
+          {/* drawer */}
           <div className="fixed inset-y-0 left-0 z-50 flex shadow-2xl">
             <DashboardSidebar onCloseMobile={() => setMobileMenuOpen(false)} />
           </div>
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* main content area */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         <DashboardHeader onOpenMobile={() => setMobileMenuOpen(true)} />
         <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">

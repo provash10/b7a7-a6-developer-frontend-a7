@@ -85,7 +85,7 @@ export function VerdictDistributionChart() {
                   item: { payload?: { count?: number } },
                 ) => [
                   `${val}% (${item.payload?.count?.toLocaleString() ?? 0} submissions)`,
-                  name,
+                  String(name),
                 ]}
               />
 

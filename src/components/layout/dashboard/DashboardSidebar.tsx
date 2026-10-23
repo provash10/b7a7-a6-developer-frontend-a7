@@ -6,6 +6,7 @@ import {
   CreditCard,
   ExternalLink,
   FileCheck2,
+  FileSpreadsheet,
   LayoutDashboard,
   Shield,
   Sparkles,
@@ -14,7 +15,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -28,13 +28,7 @@ export default function DashboardSidebar({
   // console.log("dashboard sidebar component rendered");
 
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const isAdmin = mounted && Boolean(pathname?.startsWith("/admin"));
+  const isAdmin = Boolean(pathname?.startsWith("/admin"));
 
   const navigation = [
     {
@@ -82,6 +76,12 @@ export default function DashboardSidebar({
           href: "/admin/manage",
           icon: Users,
           badge: "CRUD",
+        },
+        {
+          name: "Reports & Logs",
+          href: "/admin/reports",
+          icon: FileSpreadsheet,
+          badge: "Audit",
         },
       ],
     },

@@ -2,7 +2,6 @@
 
 import { Bell, LogOut, Menu } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { useGetMyProfile, useLogout } from "@/hooks";
@@ -18,17 +17,12 @@ export default function DashboardHeader({
 
   const router = useRouter();
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const { data: profileData } = useGetMyProfile();
 
-  const isAdmin = mounted && Boolean(pathname?.startsWith("/admin"));
-  const isRecruiter = mounted && Boolean(pathname?.startsWith("/recruiter"));
+  const isAdmin = Boolean(pathname?.startsWith("/admin"));
+  const isRecruiter = Boolean(pathname?.startsWith("/recruiter"));
 
   const dashboardLabel = isAdmin
     ? "Admin Console"
