@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function ServicesCTA() {
+  // console.log("services cta rendered");
   return (
     <section className="relative overflow-hidden py-16 md:py-20 border-t border-border/80 bg-gradient-to-b from-muted/30 to-background">
       <div className="container mx-auto px-4">

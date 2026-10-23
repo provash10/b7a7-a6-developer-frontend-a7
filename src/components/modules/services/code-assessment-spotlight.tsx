@@ -84,10 +84,11 @@ const backendCapabilities = [
 ];
 
 export default function CodeAssessmentSpotlight() {
+  // console.log("code assessment spotlight rendered");
   return (
     <section id="code-assessment" className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        {/* Section Title */}
+        {/* section title */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
           <Badge
             variant="outline"
@@ -106,7 +107,7 @@ export default function CodeAssessmentSpotlight() {
           </p>
         </div>
 
-        {/* Feature Grid */}
+        {/* feature grid */}
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {assessmentFeatures.map((feature) => {
             const Icon = feature.icon;
@@ -138,7 +139,7 @@ export default function CodeAssessmentSpotlight() {
           })}
         </div>
 
-        {/* Backend Architectural Spec Bar */}
+        {/* backend architectural spec bar */}
         <div className="mt-16 rounded-2xl border border-border/80 bg-muted/30 p-8 backdrop-blur-sm">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div>

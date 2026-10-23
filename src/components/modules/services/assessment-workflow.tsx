@@ -52,10 +52,11 @@ const workflowSteps = [
 ];
 
 export default function AssessmentWorkflow() {
+  // console.log("assessment workflow rendered");
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        {/* Title */}
+        {/* title */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
           <Badge
             variant="outline"
@@ -73,7 +74,7 @@ export default function AssessmentWorkflow() {
           </p>
         </div>
 
-        {/* Steps Grid */}
+        {/* steps grid */}
         <div className="mt-14 grid gap-8 md:grid-cols-3 lg:grid-cols-5 relative">
           {workflowSteps.map((item, _idx) => {
             const Icon = item.icon;
@@ -82,7 +83,7 @@ export default function AssessmentWorkflow() {
                 key={item.step}
                 className="relative flex flex-col rounded-xl border border-border/70 bg-card p-6 shadow-xs hover:border-primary/50 transition-all duration-300"
               >
-                {/* Step Number */}
+                {/* step number */}
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-mono text-2xl font-black text-primary/40">
                     {item.step}

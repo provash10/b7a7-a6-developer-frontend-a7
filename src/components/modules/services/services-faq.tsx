@@ -29,6 +29,7 @@ const faqs = [
 ];
 
 export default function ServicesFAQ() {
+  // console.log("services faq rendered");
   return (
     <section className="py-20 bg-background border-t border-border/60">
       <div className="container mx-auto px-4 max-w-4xl">

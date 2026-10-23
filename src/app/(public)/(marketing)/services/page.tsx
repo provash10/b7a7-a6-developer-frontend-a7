@@ -21,27 +21,28 @@ export const metadata: Metadata = {
 };
 
 export default function ServicesPage() {
+  // console.log("services page rendered");
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero & Services Showcase */}
+      {/* hero & services showcase */}
       <ServicesHeader />
 
-      {/* Code Assessment Deep Spotlight (Requested Core Feature) */}
+      {/* code assessment deep spotlight (requested core feature) */}
       <CodeAssessmentSpotlight />
 
-      {/* Live Interactive Sandbox / Candidate Test Environment Simulator */}
+      {/* live interactive sandbox / candidate test environment simulator */}
       <CodeAssessmentSandbox />
 
-      {/* 5-Step Recruiter to Candidate Assessment Lifecycle */}
+      {/* 5-step recruiter to candidate assessment lifecycle */}
       <AssessmentWorkflow />
 
-      {/* Overview of 3 Platform Pillars: Code Assessment, Live Interview, AI Scoring */}
+      {/* overview of 3 platform pillars: code assessment, live interview, ai scoring */}
       <ServicesOverview />
 
-      {/* Service FAQs */}
+      {/* service faqs */}
       <ServicesFAQ />
 
-      {/* Conversion & Action Banner */}
+      {/* conversion & action banner */}
       <ServicesCTA />
     </div>
   );

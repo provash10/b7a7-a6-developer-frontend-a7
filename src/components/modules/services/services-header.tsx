@@ -10,20 +10,21 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function ServicesHeader() {
+  // console.log("services header rendered");
   return (
     <section className="relative overflow-hidden border-b border-border/40 bg-gradient-to-b from-primary/5 via-background to-background py-16 md:py-24">
-      {/* Background glow effects */}
+      {/* background glow effects */}
       <div className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-96 w-[700px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute right-10 top-1/3 -z-10 h-72 w-72 rounded-full bg-blue-500/10 blur-2xl" />
 
       <div className="container mx-auto px-4 text-center">
-        {/* Top Badges */}
+        {/* top badges */}
         <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-medium text-primary shadow-xs">
           <Sparkles className="size-3.5 animate-pulse text-primary" />
           <span>DevAssess Enterprise Solutions & Features</span>
         </div>
 
-        {/* Main Heading */}
+        {/* main heading */}
         <h1 className="mt-6 font-heading text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl text-foreground max-w-4xl mx-auto leading-tight">
           Comprehensive Technical Screening &{" "}
           <span className="bg-gradient-to-r from-primary via-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -31,14 +32,14 @@ export default function ServicesHeader() {
           </span>
         </h1>
 
-        {/* Subtitle */}
+        {/* subtitle */}
         <p className="mt-6 max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed">
           Empower recruiters and engineering leaders to evaluate software
           engineers through timed coding sandboxes, automated testcase grading,
           anti-cheat telemetry, and real-time candidate leaderboards.
         </p>
 
-        {/* Action Buttons */}
+        {/* action buttons */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Button
             size="lg"
@@ -62,7 +63,7 @@ export default function ServicesHeader() {
           </Button>
         </div>
 
-        {/* Service Pill Shortcuts */}
+        {/* service pill shortcuts */}
         <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
           <a
             href="#code-assessment"

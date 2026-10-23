@@ -71,10 +71,11 @@ const allServices = [
 ];
 
 export default function ServicesOverview() {
+  // console.log("services overview rendered");
   return (
     <section className="py-20 border-t border-border/60 bg-muted/10">
       <div className="container mx-auto px-4">
-        {/* Title */}
+        {/* title */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
           <Badge
             variant="outline"
@@ -92,7 +93,7 @@ export default function ServicesOverview() {
           </p>
         </div>
 
-        {/* Services 3-Column Grid */}
+        {/* services 3-column grid */}
         <div className="mt-14 grid gap-8 lg:grid-cols-3">
           {allServices.map((service) => {
             const Icon = service.icon;
@@ -121,7 +122,7 @@ export default function ServicesOverview() {
                   </p>
                 </div>
 
-                {/* Features List */}
+                {/* features list */}
                 <div className="mt-6 flex-1 space-y-2.5 pt-4 border-t border-border/60">
                   <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
                     Key Highlights:
@@ -136,7 +137,7 @@ export default function ServicesOverview() {
                   </ul>
                 </div>
 
-                {/* Card CTA */}
+                {/* card cta */}
                 <div className="mt-8 pt-4 border-t border-border/60">
                   <Button
                     variant="outline"

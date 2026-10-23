@@ -130,10 +130,12 @@ export default function CodeAssessmentSandbox() {
     { index: number; passed: boolean; time: string; hidden: boolean }[] | null
   >(null);
 
+  // console.log("code assessment sandbox loaded");
   const problem = PROBLEMS[selectedProblemIndex];
   const code = problem.starterCode[language];
 
   const handleRunCode = () => {
+    // console.log("running code execution in sandbox");
     setIsRunning(true);
     setActiveTab("testcases");
     setTimeout(() => {
@@ -149,6 +151,7 @@ export default function CodeAssessmentSandbox() {
   };
 
   const handleSimulateTabSwitch = () => {
+    // console.log("anti-cheat tab switch flag recorded");
     setAntiCheatFlags((prev) => prev + 1);
     setShowCheatWarning(true);
     setTimeout(() => {
@@ -157,12 +160,14 @@ export default function CodeAssessmentSandbox() {
   };
 
   const handleSubmit = () => {
+    // console.log("submitting assessment solution");
     handleRunCode();
     setIsSubmitted(true);
     setActiveTab("verdict");
   };
 
   const handleReset = () => {
+    // console.log("resetting sandbox test environment");
     setTestResults(null);
     setIsSubmitted(false);
     setAntiCheatFlags(0);
@@ -175,7 +180,7 @@ export default function CodeAssessmentSandbox() {
       className="py-20 border-y border-border/60 bg-muted/20"
     >
       <div className="container mx-auto px-4">
-        {/* Header */}
+        {/* header */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
           <Badge
             variant="outline"
@@ -194,7 +199,7 @@ export default function CodeAssessmentSandbox() {
           </p>
         </div>
 
-        {/* Anti-cheat Alert Banner */}
+        {/* anti-cheat alert banner */}
         {showCheatWarning && (
           <div className="mt-6 max-w-5xl mx-auto rounded-lg border border-amber-500/50 bg-amber-500/10 p-3.5 text-amber-600 dark:text-amber-400 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
             <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium">
@@ -210,11 +215,11 @@ export default function CodeAssessmentSandbox() {
           </div>
         )}
 
-        {/* Sandbox Container */}
+        {/* sandbox container */}
         <div className="mt-8 max-w-5xl mx-auto rounded-xl border border-border/80 bg-card shadow-xl overflow-hidden">
-          {/* Top Bar / Status Header */}
+          {/* top bar / status header */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/40 px-4 py-3">
-            {/* Problem Selector */}
+            {/* problem selector */}
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:inline">
                 Problem:
@@ -240,15 +245,15 @@ export default function CodeAssessmentSandbox() {
               </div>
             </div>
 
-            {/* Assessment State Indicators */}
+            {/* assessment state indicators */}
             <div className="flex items-center gap-2.5">
-              {/* Timer indicator */}
+              {/* timer indicator */}
               <div className="flex items-center gap-1.5 rounded-md border border-border/80 bg-background/80 px-2.5 py-1 text-xs font-mono text-foreground">
                 <Clock className="size-3.5 text-primary animate-pulse" />
                 <span>44:12 remaining</span>
               </div>
 
-              {/* Anti-cheat badge */}
+              {/* anti-cheat badge */}
               <div
                 className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium border ${
                   antiCheatFlags > 0
@@ -262,7 +267,7 @@ export default function CodeAssessmentSandbox() {
                 </span>
               </div>
 
-              {/* Status pill */}
+              {/* status pill */}
               <Badge
                 variant={isSubmitted ? "success" : "secondary"}
                 className="text-[11px]"
@@ -272,11 +277,11 @@ export default function CodeAssessmentSandbox() {
             </div>
           </div>
 
-          {/* Main Grid: Left Spec/Details, Right Code Sandbox */}
+          {/* main grid: left spec/details, right code sandbox */}
           <div className="grid lg:grid-cols-12 min-h-[460px]">
-            {/* Left Panel: Problem Details & Tabs (5 cols) */}
+            {/* left panel: problem details & tabs (5 cols) */}
             <div className="lg:col-span-5 border-r border-border/80 flex flex-col bg-background/50">
-              {/* Tab Selector */}
+              {/* tab selector */}
               <div className="flex border-b border-border/80 text-xs">
                 <button
                   type="button"
@@ -315,7 +320,7 @@ export default function CodeAssessmentSandbox() {
                 )}
               </div>
 
-              {/* Tab Content */}
+              {/* tab content */}
               <div className="p-4 flex-1 overflow-y-auto text-xs space-y-4">
                 {activeTab === "description" && (
                   <div className="space-y-3.5">
@@ -494,9 +499,9 @@ export default function CodeAssessmentSandbox() {
               </div>
             </div>
 
-            {/* Right Panel: Simulated Code Editor (7 cols) */}
+            {/* right panel: simulated code editor (7 cols) */}
             <div className="lg:col-span-7 flex flex-col bg-zinc-950 text-zinc-100 font-mono text-xs">
-              {/* Editor Top Bar */}
+              {/* editor top bar */}
               <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/90 px-4 py-2 text-[11px]">
                 <div className="flex items-center gap-2 text-zinc-400">
                   <FileCode className="size-3.5 text-blue-400" />
@@ -531,14 +536,14 @@ export default function CodeAssessmentSandbox() {
                 </div>
               </div>
 
-              {/* Code Display simulation */}
+              {/* code display simulation */}
               <div className="flex-1 p-4 overflow-x-auto leading-relaxed text-zinc-300 font-mono text-xs bg-zinc-950/90 selection:bg-primary/30">
                 <pre>
                   <code>{code}</code>
                 </pre>
               </div>
 
-              {/* Editor Actions Footer */}
+              {/* editor actions footer */}
               <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800 bg-zinc-900 px-4 py-3">
                 <div className="flex items-center gap-2">
                   <Button
