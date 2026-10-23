@@ -107,7 +107,8 @@ export default function RegisterForm() {
         onSuccess: (_res) => {
           toast.add({
             title: "Registration Successful",
-            description: "Your account has been created. Redirecting to login...",
+            description:
+              "Your account has been created. Redirecting to login...",
             type: "success",
           });
           queryClient.invalidateQueries({ queryKey: ["user"] });
@@ -235,7 +236,10 @@ export default function RegisterForm() {
               return (
                 <Field data-invalid={isInvalid}>
                   <FieldLabel htmlFor={field.name}>
-                    Phone Number <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+                    Phone Number{" "}
+                    <span className="text-muted-foreground text-xs font-normal">
+                      (Optional)
+                    </span>
                   </FieldLabel>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
@@ -330,9 +334,7 @@ export default function RegisterForm() {
                       type="button"
                       onClick={() => setShowConfirmPassword((prev) => !prev)}
                       aria-label={
-                        showConfirmPassword
-                          ? "Hide password"
-                          : "Show password"
+                        showConfirmPassword ? "Hide password" : "Show password"
                       }
                     >
                       {showConfirmPassword ? (
