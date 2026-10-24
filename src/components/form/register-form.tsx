@@ -90,7 +90,7 @@ export default function RegisterForm() {
       confirmPassword: "",
     },
     validators: {
-      onSubmit: registerSchema,
+      onSubmit: registerSchema as any,
     },
     onSubmit: ({ value }) => {
       const payload = {

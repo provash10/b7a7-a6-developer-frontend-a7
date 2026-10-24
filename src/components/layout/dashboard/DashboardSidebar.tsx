@@ -35,83 +35,101 @@ export default function DashboardSidebar({
   const isRecruiter = Boolean(pathname?.startsWith("/recruiter"));
 
   const navigation = [
-    {
-      title: "Main Menu",
-      items: [
-        {
-          name: "Dashboard Overview",
-          href: "/dashboard",
-          icon: LayoutDashboard,
-          badge: "Active",
-        },
-        {
-          name: "My Assessments",
-          href: "/dashboard",
-          icon: FileCheck2,
-        },
-      ],
-    },
-    {
-      title: "Recruiter Portal",
-      items: [
-        {
-          name: "Candidate Evaluations",
-          href: "/recruiter",
-          icon: ClipboardCheck,
-          badge: "Review",
-        },
-        {
-          name: "Earnings & Payouts",
-          href: "/recruiter/earnings",
-          icon: DollarSign,
-          badge: "Income",
-        },
-        {
-          name: "Profile & Availability",
-          href: "/recruiter/profile",
-          icon: UserCheck,
-          badge: "Settings",
-        },
-      ],
-    },
-    {
-      title: "Account & Billing",
-      items: [
-        {
-          name: "Profile & Settings",
-          href: "/dashboard/profile",
-          icon: User,
-        },
-        {
-          name: "Payment History",
-          href: "/dashboard/payments",
-          icon: CreditCard,
-        },
-      ],
-    },
-    {
-      title: "Administration",
-      items: [
-        {
-          name: "Admin Analytics",
-          href: "/admin",
-          icon: Shield,
-          badge: "Console",
-        },
-        {
-          name: "User & Assessments",
-          href: "/admin/manage",
-          icon: Users,
-          badge: "CRUD",
-        },
-        {
-          name: "Reports & Logs",
-          href: "/admin/reports",
-          icon: FileSpreadsheet,
-          badge: "Audit",
-        },
-      ],
-    },
+    ...(isAdmin
+      ? [
+          {
+            title: "Administration",
+            items: [
+              {
+                name: "Admin Analytics",
+                href: "/admin",
+                icon: Shield,
+                badge: "Console",
+              },
+              {
+                name: "User & Assessments",
+                href: "/admin/manage",
+                icon: Users,
+                badge: "CRUD",
+              },
+              {
+                name: "Reports & Logs",
+                href: "/admin/reports",
+                icon: FileSpreadsheet,
+                badge: "Audit",
+              },
+            ],
+          },
+        ]
+      : isRecruiter
+        ? [
+            {
+              title: "Recruiter Portal",
+              items: [
+                {
+                  name: "Candidate Evaluations",
+                  href: "/recruiter",
+                  icon: ClipboardCheck,
+                  badge: "Review",
+                },
+                {
+                  name: "Earnings & Payouts",
+                  href: "/recruiter/earnings",
+                  icon: DollarSign,
+                  badge: "Income",
+                },
+                {
+                  name: "Profile & Availability",
+                  href: "/recruiter/profile",
+                  icon: UserCheck,
+                  badge: "Settings",
+                },
+              ],
+            },
+            {
+              title: "Billing & Credits",
+              items: [
+                {
+                  name: "Payment History",
+                  href: "/dashboard/payments",
+                  icon: CreditCard,
+                },
+              ],
+            },
+          ]
+        : [
+            {
+              title: "Candidate Menu",
+              items: [
+                {
+                  name: "Dashboard Overview",
+                  href: "/dashboard",
+                  icon: LayoutDashboard,
+                  badge: "Active",
+                },
+                {
+                  name: "My Assessments",
+                  href: "/dashboard",
+                  icon: FileCheck2,
+                },
+              ],
+            },
+            {
+              title: "Account & Credentials",
+              items: [
+                {
+                  name: "Profile & Settings",
+                  href: "/dashboard/profile",
+                  icon: User,
+                },
+                {
+                  name: "Payment & Badges",
+                  href: "/dashboard/payments",
+                  icon: CreditCard,
+                },
+              ],
+            },
+          ]),
   ];
 
   return (
@@ -225,12 +243,53 @@ export default function DashboardSidebar({
         ))}
       </div>
 
-      {/* bottom footer actions */}
+      {/* bottom footer role switcher & public link */}
       <div className="p-3 border-t border-border/80 space-y-2">
+        <div className="rounded-lg bg-muted/40 p-2 border border-border/50">
+          <span className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
+            Switch Portal View:
+          </span>
+          <div className="grid grid-cols-3 gap-1 text-[11px]">
+            <Link
+              href="/admin"
+              className={cn(
+                "text-center py-1 rounded font-medium transition-colors",
+                isAdmin
+                  ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              Admin
+            </Link>
+            <Link
+              href="/recruiter"
+              className={cn(
+                "text-center py-1 rounded font-medium transition-colors",
+                isRecruiter
+                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              Recruiter
+            </Link>
+            <Link
+              href="/dashboard"
+              className={cn(
+                "text-center py-1 rounded font-medium transition-colors",
+                !isAdmin && !isRecruiter
+                  ? "bg-primary/20 text-primary font-bold"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              )}
+            >
+              Candidate
+            </Link>
+          </div>
+        </div>
+
         <Link
           href="/"
           target="_blank"
-          className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
           <span className="flex items-center gap-2">
             <ExternalLink className="size-3.5" />

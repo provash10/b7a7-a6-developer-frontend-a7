@@ -154,7 +154,7 @@ export function CandidateProfileForm({
       isAvailableForHire: initialData.isAvailableForHire ?? true,
     } as CandidateProfileFormData,
     validators: {
-      onSubmit: candidateProfileSchema,
+      onSubmit: candidateProfileSchema as any,
     },
     onSubmit: async ({ value }) => {
       // console.log("submitting candidate profile update", value);
@@ -256,9 +256,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -315,9 +313,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -344,9 +340,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -372,9 +366,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -404,9 +396,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -430,9 +420,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -464,9 +452,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -517,9 +503,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -550,9 +534,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -583,9 +565,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -616,9 +596,7 @@ export function CandidateProfileForm({
                       aria-invalid={isInvalid}
                     />
                     {isInvalid && (
-                      <FieldError>
-                        {field.state.meta.errors[0]?.message}
-                      </FieldError>
+                      <FieldError>{field.state.meta.errors[0]}</FieldError>
                     )}
                   </Field>
                 );
@@ -696,7 +674,7 @@ export function CandidateProfileForm({
                   )}
                   {isInvalid && (
                     <p className="text-xs text-destructive">
-                      {field.state.meta.errors[0]?.message}
+                      {field.state.meta.errors[0]}
                     </p>
                   )}
 

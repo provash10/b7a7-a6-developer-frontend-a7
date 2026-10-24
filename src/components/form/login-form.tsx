@@ -47,8 +47,8 @@ const DEMO_ROLES: DemoRole[] = [
     role: "Admin",
     title: "👨‍💼 Admin",
     badge: "Platform Admin",
-    email: "admin@devassess.com",
-    pass: "Admin@123",
+    email: "admin@100.com",
+    pass: "Password@100",
     redirectUrl: "/admin",
     icon: ShieldCheck,
     colorClass: "border-amber-500/30 bg-amber-500/5 hover:border-amber-500/60",
@@ -58,8 +58,8 @@ const DEMO_ROLES: DemoRole[] = [
     role: "User",
     title: "👤 User",
     badge: "Candidate",
-    email: "user@devassess.com",
-    pass: "User@123",
+    email: "candidate@100.com",
+    pass: "Password@100",
     redirectUrl: "/dashboard",
     icon: Code2,
     colorClass: "border-primary/30 bg-primary/5 hover:border-primary/60",
@@ -68,10 +68,10 @@ const DEMO_ROLES: DemoRole[] = [
   {
     role: "Provider",
     title: "🛠️ Provider",
-    badge: "Evaluator",
-    email: "provider@devassess.com",
-    pass: "Provider@123",
-    redirectUrl: "/provider",
+    badge: "Recruiter",
+    email: "recruiter@100.com",
+    pass: "Password@100",
+    redirectUrl: "/recruiter",
     icon: Briefcase,
     colorClass:
       "border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/60",
@@ -89,8 +89,8 @@ export default function LoginForm() {
 
   const form = useForm({
     defaultValues: {
-      email: "user@devassess.com",
-      password: "User@123",
+      email: "candidate@100.com",
+      password: "Password@100",
     },
     validators: {
       onSubmit: loginSchema,

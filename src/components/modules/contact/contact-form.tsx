@@ -29,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
-import { contactFormSchema } from "@/validation";
+import { type ContactFormData, contactFormSchema } from "@/validation";
 
 export default function ContactForm() {
   // console.log("contact form component loaded");
@@ -41,11 +41,11 @@ export default function ContactForm() {
       name: "",
       email: "",
       subject: "",
-      category: "TECHNICAL_SUPPORT" as const,
+      category: "TECHNICAL_SUPPORT",
       message: "",
-    },
+    } as ContactFormData,
     validators: {
-      onSubmit: contactFormSchema,
+      onSubmit: contactFormSchema as any,
     },
     onSubmit: async ({ value: _value }) => {
       // console.log("submitting contact message", _value);

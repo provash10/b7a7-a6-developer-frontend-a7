@@ -31,7 +31,8 @@ export function RecruiterEvaluationsView() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Available balance: 180 Credits (৳5 / Credit). Top up anytime with instant activation.
+              Available balance: 180 Credits (৳5 / Credit). Top up anytime with
+              instant activation.
             </p>
           </div>
         </div>
