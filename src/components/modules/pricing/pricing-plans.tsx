@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BuyCreditsModal } from "@/components/modules/payment";
 import {
   Card,
   CardContent,
@@ -20,6 +21,7 @@ export default function PricingPlans() {
     "monthly",
   );
   const [currency, setCurrency] = useState<"BDT" | "USD">("BDT");
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
 
   const plans = [
     {
@@ -292,10 +294,15 @@ export default function PricingPlans() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 font-semibold text-foreground">
-            <span className="rounded-md border border-border/80 bg-background px-2.5 py-1 text-[11px]">
-              bKash Tokenized
-            </span>
+          <div className="flex flex-wrap items-center gap-3 font-semibold text-foreground">
+            <button
+              type="button"
+              onClick={() => setIsBuyModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-pink-500/40 bg-pink-500/10 px-3 py-1.5 text-xs text-pink-600 dark:text-pink-400 hover:bg-pink-500/20 transition-colors shadow-xs font-bold"
+            >
+              <Zap className="size-3.5" />
+              <span>Checkout with bKash</span>
+            </button>
             <span className="rounded-md border border-border/80 bg-background px-2.5 py-1 text-[11px]">
               Visa / MasterCard
             </span>
@@ -304,6 +311,12 @@ export default function PricingPlans() {
             </span>
           </div>
         </div>
+
+        {/* bKash credit purchase modal */}
+        <BuyCreditsModal
+          isOpen={isBuyModalOpen}
+          onClose={() => setIsBuyModalOpen(false)}
+        />
       </div>
     </section>
   );

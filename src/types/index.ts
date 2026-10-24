@@ -4,6 +4,7 @@ export * from "./assessment.type";
 export * from "./auth.type";
 export * from "./candidate.type";
 export * from "./doctor.type";
+export * from "./payment.type";
 export * from "./schedule.type";
 export * from "./sidebar.type";
 export * from "./user.type";

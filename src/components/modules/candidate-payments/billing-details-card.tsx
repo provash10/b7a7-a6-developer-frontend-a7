@@ -18,18 +18,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
+import { BuyCreditsModal } from "@/components/modules/payment";
+import { useState } from "react";
 
 export function BillingDetailsCard() {
   // console.log("rendering billing details card component");
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
 
   const handleAddPaymentMethod = () => {
-    // console.log("clicked add payment method");
-    toast.add({
-      title: "Add Payment Method",
-      description:
-        "Gateway redirection: Link a new bKash wallet or debit/credit card.",
-      type: "info",
-    });
+    setIsBuyModalOpen(true);
   };
 
   return (
@@ -156,6 +153,11 @@ export function BillingDetailsCard() {
           </div>
         </CardContent>
       </Card>
+
+      <BuyCreditsModal
+        isOpen={isBuyModalOpen}
+        onClose={() => setIsBuyModalOpen(false)}
+      />
     </div>
   );
 }
