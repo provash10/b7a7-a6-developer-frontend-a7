@@ -67,7 +67,7 @@ const DEMO_ROLES: DemoRole[] = [
   },
   {
     role: "Provider",
-    title: "🛠️ Provider",
+    title: "🛠️ Provider (Recruiter)",
     badge: "Recruiter",
     email: "recruiter@100.com",
     pass: "Password@100",

@@ -121,7 +121,7 @@ export default function CandidateDashboardPage() {
             Developer Assessment Hub
           </div>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Welcome back, Provash! 👋
+            Welcome back! 👋
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
             You have{" "}

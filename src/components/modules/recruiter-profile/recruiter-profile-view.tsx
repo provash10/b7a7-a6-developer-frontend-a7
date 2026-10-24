@@ -1,10 +1,11 @@
 "use client";
 
 import { RotateCcw, Save, Settings2, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
+import { useGetMyProfile } from "@/hooks";
 import { EvaluatorAvailabilitySettings } from "./evaluator-availability-settings";
 import { EvaluatorProfileForm } from "./evaluator-profile-form";
 import { EvaluatorProfileHeader } from "./evaluator-profile-header";
@@ -17,6 +18,17 @@ export function RecruiterProfileView() {
   const [profile, setProfile] = useState<EvaluatorProfile>(
     initialEvaluatorProfile,
   );
+  const { data: profileData } = useGetMyProfile();
+
+  useEffect(() => {
+    if (profileData?.data) {
+      setProfile((prev) => ({
+        ...prev,
+        fullName: profileData.data.name || prev.fullName,
+        email: profileData.data.email || prev.email,
+      }));
+    }
+  }, [profileData]);
   const [activeTab, setActiveTab] = useState<"profile" | "availability">(
     "profile",
   );

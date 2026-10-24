@@ -4,8 +4,8 @@
 import type { EvaluatorProfile } from "./types";
 
 export const initialEvaluatorProfile: EvaluatorProfile = {
-  fullName: "Provash Kumar",
-  email: "provash10@gmail.com",
+  fullName: "Jane Recruiter",
+  email: "recruiter@100.com",
   headline: "Principal Systems Architect & Technical Assessment Lead",
   company: "DevAssess Certified Evaluator Network",
   bio: "10+ years architecting scalable cloud-native distributed microservices in Go, Rust, and TypeScript. Passionate about code readability, deterministic consensus algorithms, and rigorous technical interview grading.",

@@ -19,11 +19,16 @@ import {
 } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
 import { BuyCreditsModal } from "@/components/modules/payment";
+import { useGetMyProfile } from "@/hooks";
 import { useState } from "react";
 
 export function BillingDetailsCard() {
   // console.log("rendering billing details card component");
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+  const { data: profileData } = useGetMyProfile();
+
+  const userName = profileData?.data?.name || "Candidate User";
+  const userEmail = profileData?.data?.email || "candidate@100.com";
 
   const handleAddPaymentMethod = () => {
     setIsBuyModalOpen(true);
@@ -124,7 +129,7 @@ export function BillingDetailsCard() {
               <User className="size-3.5 text-foreground" />
               <span>invoiced candidate</span>
             </span>
-            <span className="font-semibold text-foreground">Provash Kumar</span>
+            <span className="font-semibold text-foreground">{userName}</span>
           </div>
 
           <div className="flex items-center justify-between py-1 border-b border-border/40">
@@ -133,7 +138,7 @@ export function BillingDetailsCard() {
               <span>billing email</span>
             </span>
             <span className="font-mono text-foreground">
-              provash10@gmail.com
+              {userEmail}
             </span>
           </div>
 

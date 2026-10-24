@@ -33,7 +33,7 @@ export function userLogout() {
 }
 
 export function getMyProfile() {
-  return apiClient("/auth/me");
+  return apiClient("/users/me");
 }
 
 export function googleOAuth(payload: { idToken: string }) {

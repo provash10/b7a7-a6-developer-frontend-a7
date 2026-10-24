@@ -30,11 +30,21 @@ export default function DashboardHeader({
       ? "Recruiter Portal"
       : "Candidate Dashboard";
 
-  const user = profileData?.data || {
-    name: "Provash Kumar",
-    email: "provash10@gmail.com",
+  const defaultUser = {
+    name: isAdmin ? "System Admin" : isRecruiter ? "Hiring Manager" : "Candidate User",
+    email: isAdmin ? "admin@100.com" : isRecruiter ? "recruiter@100.com" : "candidate@100.com",
     role: isAdmin ? "Admin" : isRecruiter ? "Recruiter" : "Candidate",
   };
+
+  const user = profileData?.data || defaultUser;
+
+  const initials = (user?.name || defaultUser.name)
+    .trim()
+    .split(/\s+/)
+    .map((word: string) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const handleLogout = () => {
     logout(undefined, {
@@ -104,20 +114,20 @@ export default function DashboardHeader({
             className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs uppercase"
             suppressHydrationWarning
           >
-            {user?.name ? user.name.slice(0, 2) : "PK"}
+            {initials}
           </div>
           <div className="hidden md:block text-left">
             <p
               className="text-xs font-semibold leading-tight text-foreground truncate max-w-[130px]"
               suppressHydrationWarning
             >
-              {user?.name || "Provash Kumar"}
+              {user?.name || defaultUser.name}
             </p>
             <p
               className="text-[11px] text-muted-foreground truncate max-w-[130px]"
               suppressHydrationWarning
             >
-              {user?.email || "provash10@gmail.com"}
+              {user?.email || defaultUser.email}
             </p>
           </div>
         </div>
