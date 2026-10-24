@@ -3,6 +3,7 @@
 import { useState } from "react";
 import DashboardHeader from "@/components/layout/dashboard/DashboardHeader";
 import DashboardSidebar from "@/components/layout/dashboard/DashboardSidebar";
+import AuthGuard from "@/components/auth/auth-guard";
 
 export default function DashboardLayout({
   children,
@@ -14,7 +15,8 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+    <AuthGuard>
+      <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
       {/* desktop sidebar */}
       <div className="hidden lg:flex shrink-0">
         <DashboardSidebar />
@@ -44,5 +46,6 @@ export default function DashboardLayout({
         </main>
       </div>
     </div>
-  );
+  </AuthGuard>
+);
 }

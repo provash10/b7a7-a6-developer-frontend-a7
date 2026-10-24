@@ -33,6 +33,11 @@ const nextConfig: NextConfig = {
         destination: "/recruiter/profile",
         permanent: false,
       },
+      {
+        source: "/about",
+        destination: "/about-us",
+        permanent: false,
+      },
     ];
   },
 };
