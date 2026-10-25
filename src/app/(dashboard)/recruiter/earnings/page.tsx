@@ -26,7 +26,7 @@ export default function RecruiterEarningsPage() {
           className="flex items-center gap-1 hover:text-foreground transition-colors"
         >
           <Home className="size-3.5" />
-          <span>dashboard</span>
+          <span>Dashboard</span>
         </Link>
         <ChevronRight className="size-3 text-muted-foreground/60" />
         <Link
@@ -34,11 +34,11 @@ export default function RecruiterEarningsPage() {
           className="flex items-center gap-1 hover:text-foreground transition-colors"
         >
           <ClipboardCheck className="size-3.5 text-primary" />
-          <span>recruiter portal</span>
+          <span>Recruiter Portal</span>
         </Link>
         <ChevronRight className="size-3 text-muted-foreground/60" />
         <span className="text-foreground font-medium">
-          earnings & analytics
+          Earnings & Analytics
         </span>
       </nav>
 
@@ -47,27 +47,27 @@ export default function RecruiterEarningsPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              evaluator compensation & revenue analytics
+              Evaluator Compensation & Revenue Analytics
             </h1>
             <Badge
               variant="outline"
-              className="text-[10px] font-mono border-emerald-500/30 text-emerald-500"
+              className="text-[10px] font-mono border-emerald-500/30 text-emerald-500 uppercase"
             >
-              payouts v2.1
+              Payouts v2.1
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground max-w-2xl">
-            track your code evaluation compensation, review monthly earnings
+            Track your code evaluation compensation, review monthly earnings
             velocity, and withdraw cleared funds directly to your stripe express
             or bank account.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link href="/recruiter">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-              <ListOrdered className="size-3.5 text-primary" />
-              <span>evaluation queue</span>
+            <Button size="sm" className="gap-1.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer">
+              <ClipboardCheck className="size-3.5" />
+              <span>Invite Candidate / Evaluation Queue</span>
             </Button>
           </Link>
         </div>

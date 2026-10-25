@@ -267,8 +267,7 @@ export function BuyCreditsModal({ isOpen, onClose }: BuyCreditsModalProps) {
               <span>Real bKash Sandbox Test Mode Info</span>
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Evaluators can checkout without real funds using sandbox
-              credentials:
+              Evaluators can checkout without real funds using sandbox credentials (do not use real personal numbers):
             </p>
             <div className="grid grid-cols-3 gap-2 font-mono text-[11px] pt-1">
               <div className="bg-background/80 rounded-lg p-1.5 border border-pink-500/20">
@@ -290,6 +289,9 @@ export function BuyCreditsModal({ isOpen, onClose }: BuyCreditsModalProps) {
                 <span className="font-bold">12345</span>
               </div>
             </div>
+            <p className="text-[10px] text-muted-foreground/80 italic">
+              Note: If bKash says &ldquo;wallet is locked&rdquo;, try alternative test numbers: <span className="font-mono font-semibold">01770618576</span> or <span className="font-mono font-semibold">01877722345</span>.
+            </p>
           </div>
         </div>
 

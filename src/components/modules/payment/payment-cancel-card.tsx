@@ -82,9 +82,10 @@ export function PaymentCancelCard() {
               1. Using Sandbox Test Credentials
             </span>
             <p className="text-muted-foreground leading-relaxed">
-              When prompted in the bKash checkout popup, use test wallet{" "}
-              <strong className="font-mono text-foreground">01770618575</strong>
-              , OTP{" "}
+              In bKash sandbox, do NOT use personal numbers. Use test wallet{" "}
+              <strong className="font-mono text-foreground">01770618575</strong> (or{" "}
+              <strong className="font-mono text-foreground">01770618576</strong> /{" "}
+              <strong className="font-mono text-foreground">01877722345</strong> if locked), OTP{" "}
               <strong className="font-mono text-foreground">123456</strong>, and
               PIN <strong className="font-mono text-foreground">12345</strong>.
             </p>

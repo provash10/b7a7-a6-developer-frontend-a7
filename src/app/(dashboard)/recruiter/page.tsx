@@ -2,6 +2,7 @@ import {
   CheckCircle2,
   ChevronRight,
   ClipboardCheck,
+  CreditCard,
   FileCode,
   Home,
 } from "lucide-react";
@@ -34,15 +35,15 @@ export default function RecruiterEvaluationsPage() {
           className="flex items-center gap-1 hover:text-foreground transition-colors"
         >
           <Home className="size-3.5" />
-          <span>dashboard</span>
+          <span>Dashboard</span>
         </Link>
         <ChevronRight className="size-3 text-muted-foreground/60" />
         <span className="flex items-center gap-1 text-primary font-medium">
           <ClipboardCheck className="size-3.5" />
-          <span>recruiter portal</span>
+          <span>Recruiter Portal</span>
         </span>
         <ChevronRight className="size-3 text-muted-foreground/60" />
-        <span className="text-foreground font-medium">evaluation tasks</span>
+        <span className="text-foreground font-medium">Evaluation Tasks</span>
       </nav>
 
       {/* header with quick controls */}
@@ -50,33 +51,51 @@ export default function RecruiterEvaluationsPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              candidate evaluation & scoring queue
+              Candidate Evaluation & Scoring Queue
             </h1>
             <Badge
               variant="outline"
-              className="text-[10px] font-mono border-primary/30 text-primary"
+              className="text-[10px] font-mono border-primary/30 text-primary uppercase"
             >
-              recruiter console
+              Recruiter Console
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground max-w-2xl">
-            inspect developer code solutions, review automated test case
+            Inspect developer code solutions, review automated test case
             benchmarks, audit anti-cheat heuristics, and submit final candidate
             verdicts.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/dashboard/payments">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs font-semibold hover:border-primary/40 hover:bg-primary/5 hover:text-primary transition-all duration-200 cursor-pointer shadow-2xs"
+            >
+              <CreditCard className="size-3.5 text-primary" />
+              <span>Payments & Invoices</span>
+            </Button>
+          </Link>
           <Link href="/services">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs font-medium hover:border-border hover:bg-muted/70 transition-all duration-200 cursor-pointer shadow-2xs"
+            >
               <FileCode className="size-3.5 text-primary" />
-              <span>browse challenges</span>
+              <span>Browse Challenges</span>
             </Button>
           </Link>
           <Link href="/dashboard">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs font-medium hover:border-border hover:bg-muted/70 transition-all duration-200 cursor-pointer shadow-2xs"
+            >
               <CheckCircle2 className="size-3.5 text-emerald-500" />
-              <span>my overview</span>
+              <span>My Overview</span>
             </Button>
           </Link>
         </div>

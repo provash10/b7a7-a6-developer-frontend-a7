@@ -224,27 +224,26 @@ export function ManageAssessmentsTable() {
           <div>
             <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider mb-0.5">
               <FileCode className="size-3.5" />
-              <span>curriculum & evaluation catalog</span>
+              <span>Curriculum & Evaluation Catalog</span>
             </div>
-            <CardTitle className="text-base font-semibold text-foreground">
-              assessment challenges & benchmarks
+            <CardTitle className="text-base font-bold text-foreground">
+              Assessment Challenges & Benchmarks
             </CardTitle>
             <CardDescription className="text-xs">
-              create, review pass criteria, update test cases, and manage active
-              tests.
+              Create, review pass criteria, update test cases, and manage active tests.
             </CardDescription>
           </div>
 
           <Button
-            size="xs"
+            size="sm"
             onClick={() => {
               setEditingAssessment(null);
               setIsModalOpen(true);
             }}
-            className="gap-1.5 self-start sm:self-auto"
+            className="group gap-2 self-start sm:self-auto h-9 px-4 rounded-lg font-semibold text-xs sm:text-sm shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:ring-2 hover:ring-primary/25 active:scale-[0.98] transition-all duration-200 cursor-pointer"
           >
-            <FilePlus className="size-3.5" />
-            <span>create challenge</span>
+            <FilePlus className="size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6" />
+            <span>Create Challenge</span>
           </Button>
         </div>
 
@@ -254,7 +253,7 @@ export function ManageAssessmentsTable() {
           <div className="relative">
             <Search className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="search title, company, or skills..."
+              placeholder="Search title, company, or skills..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -303,13 +302,13 @@ export function ManageAssessmentsTable() {
           <table className="w-full text-left text-xs">
             <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground">
               <tr>
-                <th className="py-3 px-4 font-medium">challenge</th>
-                <th className="py-3 px-4 font-medium">organizer</th>
-                <th className="py-3 px-4 font-medium">difficulty</th>
-                <th className="py-3 px-4 font-medium">pass criteria</th>
-                <th className="py-3 px-4 font-medium">status</th>
-                <th className="py-3 px-4 font-medium">throughput</th>
-                <th className="py-3 px-4 font-medium text-right">actions</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Challenge</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Organizer</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Difficulty</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Pass Criteria</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Status</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Throughput</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -327,7 +326,7 @@ export function ManageAssessmentsTable() {
                 paginatedAssessments.map((a) => (
                   <tr
                     key={a.id}
-                    className="hover:bg-muted/30 transition-colors"
+                    className="hover:bg-primary/[0.03] transition-colors duration-150"
                   >
                     {/* title and skills */}
                     <td className="py-3 px-4 max-w-xs">
@@ -424,15 +423,21 @@ export function ManageAssessmentsTable() {
                             setEditingAssessment(a);
                             setIsModalOpen(true);
                           }}
+                          className="hover:bg-blue-500/15 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                           title="edit challenge"
                         >
-                          <Edit2 className="size-3.5 text-muted-foreground hover:text-foreground" />
+                          <Edit2 className="size-3.5 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors" />
                         </Button>
 
                         <Button
                           variant="ghost"
                           size="icon-xs"
                           onClick={() => handleToggleStatus(a)}
+                          className={
+                            a.status === "PUBLISHED"
+                              ? "hover:bg-amber-500/15 hover:text-amber-600 transition-colors cursor-pointer"
+                              : "hover:bg-emerald-500/15 hover:text-emerald-600 transition-colors cursor-pointer"
+                          }
                           title={
                             a.status === "PUBLISHED"
                               ? "archive challenge"
@@ -440,9 +445,9 @@ export function ManageAssessmentsTable() {
                           }
                         >
                           {a.status === "PUBLISHED" ? (
-                            <Archive className="size-3.5 text-amber-500" />
+                            <Archive className="size-3.5 text-amber-500 hover:text-amber-600 transition-colors" />
                           ) : (
-                            <Play className="size-3.5 text-emerald-500" />
+                            <Play className="size-3.5 text-emerald-500 hover:text-emerald-600 transition-colors" />
                           )}
                         </Button>
 
@@ -450,9 +455,10 @@ export function ManageAssessmentsTable() {
                           variant="ghost"
                           size="icon-xs"
                           onClick={() => handleDelete(a)}
+                          className="hover:bg-rose-500/15 hover:text-rose-600 transition-colors cursor-pointer"
                           title="delete challenge"
                         >
-                          <Trash2 className="size-3.5 text-rose-500 hover:text-rose-600" />
+                          <Trash2 className="size-3.5 text-rose-500 hover:text-rose-600 transition-colors" />
                         </Button>
                       </div>
                     </td>

@@ -28,7 +28,7 @@ export default function AdminManagePage() {
           className="flex items-center gap-1 hover:text-foreground transition-colors"
         >
           <Home className="size-3.5" />
-          <span>dashboard</span>
+          <span>Dashboard</span>
         </Link>
         <ChevronRight className="size-3 text-muted-foreground/60" />
         <Link
@@ -36,11 +36,11 @@ export default function AdminManagePage() {
           className="flex items-center gap-1 hover:text-foreground transition-colors"
         >
           <Shield className="size-3.5 text-primary" />
-          <span>admin console</span>
+          <span>Admin Console</span>
         </Link>
         <ChevronRight className="size-3 text-muted-foreground/60" />
         <span className="text-foreground font-medium">
-          user & assessment management
+          User & Assessment Management
         </span>
       </nav>
 
@@ -49,17 +49,17 @@ export default function AdminManagePage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              user & assessment operations
+              User & Assessment Operations
             </h1>
             <Badge
               variant="outline"
-              className="text-[10px] font-mono border-primary/30 text-primary"
+              className="text-[10px] font-mono border-primary/30 text-primary uppercase"
             >
-              crud console
+              CRUD Console
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground max-w-2xl">
-            manage platform users, role assignments, security status, and author
+            Manage platform users, role assignments, security status, and author
             coding assessment challenges with real-time search, filters, and
             pagination.
           </p>
@@ -67,9 +67,9 @@ export default function AdminManagePage() {
 
         <div className="flex items-center gap-2">
           <Link href="/admin">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs font-medium">
               <LayoutDashboard className="size-3.5 text-primary" />
-              <span>analytics dashboard</span>
+              <span>Analytics Dashboard</span>
             </Button>
           </Link>
         </div>

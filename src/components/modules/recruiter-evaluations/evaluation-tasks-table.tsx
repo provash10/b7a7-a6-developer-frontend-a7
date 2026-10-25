@@ -8,6 +8,7 @@ import {
   Clock,
   Edit3,
   Filter,
+  Mail,
   RotateCcw,
   Search,
   ShieldAlert,
@@ -31,11 +32,13 @@ import type { EvaluationStatus, EvaluationTask } from "./types";
 interface EvaluationTasksTableProps {
   tasks: EvaluationTask[];
   onTasksChange: (tasks: EvaluationTask[]) => void;
+  onOpenInvite?: () => void;
 }
 
 export function EvaluationTasksTable({
   tasks,
   onTasksChange,
+  onOpenInvite,
 }: EvaluationTasksTableProps) {
   // console.log("evaluation tasks table component rendered");
 
@@ -206,20 +209,33 @@ export function EvaluationTasksTable({
               </CardDescription>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSearchTerm("");
-                setStatusFilter("ALL");
-                setAntiCheatFilter("ALL");
-                setCurrentPage(1);
-              }}
-              className="gap-1.5 text-xs h-8"
-            >
-              <RotateCcw className="size-3.5" />
-              <span>reset filters</span>
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {onOpenInvite && (
+                <Button
+                  size="sm"
+                  onClick={onOpenInvite}
+                  className="gap-2 text-xs font-semibold h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+                >
+                  <Mail className="size-3.5" />
+                  <span>Invite Candidate</span>
+                </Button>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("ALL");
+                  setAntiCheatFilter("ALL");
+                  setCurrentPage(1);
+                }}
+                className="gap-1.5 text-xs h-8"
+              >
+                <RotateCcw className="size-3.5" />
+                <span>Reset Filters</span>
+              </Button>
+            </div>
           </div>
         </CardHeader>
 

@@ -328,13 +328,15 @@ export function RoleAdaptiveDashboard() {
               Once started, the assessment timer will run continuously.
             </p>
             <div className="flex items-center gap-2.5 w-full sm:w-auto">
-              <Button
-                variant="default"
-                className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-medium gap-2 text-xs h-9 px-4"
-              >
-                <Play className="size-3.5 fill-current" />
-                Launch Assessment Playground
-              </Button>
+              <Link href="/services#code-assessment" className="w-full sm:w-auto">
+                <Button
+                  variant="default"
+                  className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-medium gap-2 text-xs h-9 px-4 cursor-pointer shadow-xs"
+                >
+                  <Play className="size-3.5 fill-current" />
+                  Launch Assessment Playground
+                </Button>
+              </Link>
             </div>
           </CardFooter>
         </Card>

@@ -347,27 +347,26 @@ export function ManageUsersTable() {
           <div>
             <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider mb-0.5">
               <Users className="size-3.5" />
-              <span>identity directory</span>
+              <span>Identity Directory</span>
             </div>
-            <CardTitle className="text-base font-semibold text-foreground">
-              user accounts & roles
+            <CardTitle className="text-base font-bold text-foreground">
+              User Accounts & Roles
             </CardTitle>
             <CardDescription className="text-xs">
-              search, filter, assign system permissions, and audit candidates &
-              recruiters.
+              Search, filter, assign system permissions, and audit candidates & recruiters.
             </CardDescription>
           </div>
 
           <Button
-            size="xs"
+            size="sm"
             onClick={() => {
               setEditingUser(null);
               setIsModalOpen(true);
             }}
-            className="gap-1.5 self-start sm:self-auto"
+            className="group gap-2 self-start sm:self-auto h-9 px-4 rounded-lg font-semibold text-xs sm:text-sm shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:ring-2 hover:ring-primary/25 active:scale-[0.98] transition-all duration-200 cursor-pointer"
           >
-            <UserPlus className="size-3.5" />
-            <span>add user</span>
+            <UserPlus className="size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6" />
+            <span>Add User</span>
           </Button>
         </div>
 
@@ -377,7 +376,7 @@ export function ManageUsersTable() {
           <div className="relative">
             <Search className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="search user name or email..."
+              placeholder="Search user name or email..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -426,12 +425,12 @@ export function ManageUsersTable() {
           <table className="w-full text-left text-xs">
             <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground">
               <tr>
-                <th className="py-3 px-4 font-medium">user</th>
-                <th className="py-3 px-4 font-medium">role</th>
-                <th className="py-3 px-4 font-medium">status</th>
-                <th className="py-3 px-4 font-medium">tests / activity</th>
-                <th className="py-3 px-4 font-medium">joined</th>
-                <th className="py-3 px-4 font-medium text-right">actions</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">User</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Role</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Status</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Tests / Activity</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80">Joined</th>
+                <th className="py-3 px-4 font-semibold text-foreground/80 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -448,7 +447,7 @@ export function ManageUsersTable() {
                 paginatedUsers.map((u) => (
                   <tr
                     key={u.id}
-                    className="hover:bg-muted/30 transition-colors"
+                    className="hover:bg-primary/[0.03] transition-colors duration-150"
                   >
                     {/* user identity */}
                     <td className="py-3 px-4">
@@ -528,15 +527,21 @@ export function ManageUsersTable() {
                             setEditingUser(u);
                             setIsModalOpen(true);
                           }}
+                          className="hover:bg-blue-500/15 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
                           title="edit user"
                         >
-                          <Edit2 className="size-3.5 text-muted-foreground hover:text-foreground" />
+                          <Edit2 className="size-3.5 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors" />
                         </Button>
 
                         <Button
                           variant="ghost"
                           size="icon-xs"
                           onClick={() => handleToggleBlock(u)}
+                          className={
+                            u.status === "BLOCKED"
+                              ? "hover:bg-emerald-500/15 hover:text-emerald-600 transition-colors cursor-pointer"
+                              : "hover:bg-amber-500/15 hover:text-amber-600 transition-colors cursor-pointer"
+                          }
                           title={
                             u.status === "BLOCKED"
                               ? "unblock user"
@@ -544,9 +549,9 @@ export function ManageUsersTable() {
                           }
                         >
                           {u.status === "BLOCKED" ? (
-                            <UserCheck className="size-3.5 text-emerald-500" />
+                            <UserCheck className="size-3.5 text-emerald-500 hover:text-emerald-600 transition-colors" />
                           ) : (
-                            <Ban className="size-3.5 text-amber-500" />
+                            <Ban className="size-3.5 text-amber-500 hover:text-amber-600 transition-colors" />
                           )}
                         </Button>
 
@@ -554,9 +559,10 @@ export function ManageUsersTable() {
                           variant="ghost"
                           size="icon-xs"
                           onClick={() => handleDeleteUser(u)}
+                          className="hover:bg-rose-500/15 hover:text-rose-600 transition-colors cursor-pointer"
                           title="delete user"
                         >
-                          <Trash2 className="size-3.5 text-rose-500 hover:text-rose-600" />
+                          <Trash2 className="size-3.5 text-rose-500 hover:text-rose-600 transition-colors" />
                         </Button>
                       </div>
                     </td>
