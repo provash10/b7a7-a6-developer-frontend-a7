@@ -18,6 +18,8 @@ export const metadata: Metadata = {
     "Global admin overview, user registrations, and assessment evaluation analytics with Recharts.",
 };
 
+export const instant = false;
+
 export default function AdminOverviewPage() {
   // console.log("admin overview and analytics page rendered");
 

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Evaluator Earnings & Compensation Analytics | DevAssess",
+  title: "Recruiter Earnings & Payouts | DevAssess",
   description:
     "Track your developer assessment review earnings, itemized payout ledger, and monthly revenue analytics.",
 };

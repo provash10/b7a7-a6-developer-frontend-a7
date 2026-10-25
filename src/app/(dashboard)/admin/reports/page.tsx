@@ -17,6 +17,8 @@ export const metadata: Metadata = {
     "Immutable security audit logs, compliance report downloads, and system configuration safeguards for DevAssess platform administrators.",
 };
 
+export const instant = false;
+
 export default function AdminReportsPage() {
   // console.log("admin reports page rendered");
 

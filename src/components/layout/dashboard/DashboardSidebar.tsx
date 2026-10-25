@@ -18,8 +18,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useGetMyProfile } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getEffectiveRole, setActiveSession } from "@/lib/session";
 
 interface DashboardSidebarProps {
   onCloseMobile?: () => void;
@@ -31,8 +34,65 @@ export default function DashboardSidebar({
   // console.log("dashboard sidebar component rendered");
 
   const pathname = usePathname();
-  const isAdmin = Boolean(pathname?.startsWith("/admin"));
-  const isRecruiter = Boolean(pathname?.startsWith("/recruiter"));
+  const { data: profileData } = useGetMyProfile();
+  const user = profileData?.data;
+  const [mounted, setMounted] = useState(false);
+
+  const fallbackRole = pathname?.startsWith("/admin")
+    ? "ADMIN"
+    : pathname?.startsWith("/recruiter")
+      ? "RECRUITER"
+      : "CANDIDATE";
+
+  const [effectiveRole, setEffectiveRole] = useState<
+    "ADMIN" | "RECRUITER" | "CANDIDATE"
+  >(fallbackRole);
+
+  useEffect(() => {
+    setMounted(true);
+    const updateRole = () => {
+      setEffectiveRole(getEffectiveRole(user?.email, user?.role));
+    };
+    updateRole();
+
+    // Keep cookies synchronized with live database role
+    if (user?.role) {
+      const normalizedRole = user.role.toUpperCase();
+      document.cookie = `userRole=${normalizedRole}; path=/; max-age=31536000;`;
+      if (user.email) {
+        const clean = user.email.toLowerCase().trim().replace(/[@.]/g, "_");
+        document.cookie = `role_${clean}=${normalizedRole}; path=/; max-age=31536000;`;
+      }
+    }
+
+    window.addEventListener("devassess_role_change", updateRole);
+    window.addEventListener("storage", updateRole);
+    return () => {
+      window.removeEventListener("devassess_role_change", updateRole);
+      window.removeEventListener("storage", updateRole);
+    };
+  }, [user]);
+
+  const activeRole = mounted ? effectiveRole : fallbackRole;
+
+  // Auto-redirect to appropriate portal if role changed from candidate
+  useEffect(() => {
+    if (mounted && pathname === "/dashboard") {
+      if (activeRole === "RECRUITER") {
+        window.location.replace("/recruiter");
+      } else if (activeRole === "ADMIN") {
+        window.location.replace("/admin");
+      }
+    }
+  }, [mounted, pathname, activeRole]);
+
+  const isAdmin =
+    Boolean(pathname?.startsWith("/admin")) ||
+    (Boolean(pathname?.startsWith("/dashboard")) && activeRole === "ADMIN");
+
+  const isRecruiter =
+    Boolean(pathname?.startsWith("/recruiter")) ||
+    (Boolean(pathname?.startsWith("/dashboard")) && activeRole === "RECRUITER");
 
   const navigation = [
     ...(isAdmin
@@ -252,6 +312,12 @@ export default function DashboardSidebar({
           <div className="grid grid-cols-3 gap-1 text-[11px]">
             <Link
               href="/admin"
+              onClick={(e) => {
+                e.preventDefault();
+                const targetEmail = user?.email || "admin@100.com";
+                setActiveSession(targetEmail, "ADMIN", user?.name || "System Admin");
+                window.location.href = "/admin";
+              }}
               className={cn(
                 "text-center py-1 rounded font-medium transition-colors",
                 isAdmin
@@ -263,6 +329,12 @@ export default function DashboardSidebar({
             </Link>
             <Link
               href="/recruiter"
+              onClick={(e) => {
+                e.preventDefault();
+                const targetEmail = user?.email || "recruiter@100.com";
+                setActiveSession(targetEmail, "RECRUITER", "Recruiter");
+                window.location.href = "/recruiter";
+              }}
               className={cn(
                 "text-center py-1 rounded font-medium transition-colors",
                 isRecruiter
@@ -274,6 +346,12 @@ export default function DashboardSidebar({
             </Link>
             <Link
               href="/dashboard"
+              onClick={(e) => {
+                e.preventDefault();
+                const targetEmail = user?.email || "candidate@100.com";
+                setActiveSession(targetEmail, "CANDIDATE", "Candidate");
+                window.location.href = "/dashboard";
+              }}
               className={cn(
                 "text-center py-1 rounded font-medium transition-colors",
                 !isAdmin && !isRecruiter

@@ -10,6 +10,7 @@ import Link from "next/link";
 import {
   BillingDetailsCard,
   BillingSummaryCards,
+  BuyCreditsButton,
   CertifiedBadgesGrid,
   PaymentHistoryTable,
 } from "@/components/modules/candidate-payments";
@@ -21,6 +22,8 @@ export const metadata: Metadata = {
   description:
     "Candidate payment history, tax invoices, and verified skill badges download.",
 };
+
+export const instant = false;
 
 export default function CandidatePaymentsPage() {
   // console.log("candidate payments and invoices page rendered");
@@ -58,17 +61,20 @@ export default function CandidatePaymentsPage() {
           </p>
         </div>
 
-        <Link
-          href="/pricing"
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "gap-1.5 text-xs self-start sm:self-auto",
-          )}
-        >
-          <Sparkles className="size-3.5 text-primary" />
-          <span>view pricing plans</span>
-          <ExternalLink className="size-3 opacity-60" />
-        </Link>
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          <BuyCreditsButton />
+          <Link
+            href="/pricing"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "gap-1.5 text-xs",
+            )}
+          >
+            <Sparkles className="size-3.5 text-primary" />
+            <span>view pricing plans</span>
+            <ExternalLink className="size-3 opacity-60" />
+          </Link>
+        </div>
       </div>
 
       {/* 1. summary stat cards */}

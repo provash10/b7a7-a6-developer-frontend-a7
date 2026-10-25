@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Evaluator Profile & Availability Settings | DevAssess Recruiter",
+  title: "Recruiter Profile & Availability | DevAssess",
   description:
     "Manage evaluator technical credentials, primary skill domains, daily evaluation limits, and turnaround SLA availability.",
 };

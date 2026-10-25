@@ -97,14 +97,35 @@ export default function RegisterForm() {
         name: value.name.trim(),
         email: value.email.trim(),
         password: value.password,
-        contactNumber: value.contactNumber?.trim() || undefined,
-        patient: {
-          contactNumber: value.contactNumber?.trim() || undefined,
-        },
+        phone: value.contactNumber?.trim() || undefined,
+        role: "CANDIDATE",
       };
 
       register(payload, {
         onSuccess: (_res) => {
+          // Persist user so admin dashboard immediately reflects this new account
+          try {
+            const stored = JSON.parse(
+              localStorage.getItem("devassess_custom_users") || "[]",
+            );
+            const newUser = {
+              id: `usr-${Date.now().toString().slice(-4)}`,
+              name: value.name.trim(),
+              email: value.email.trim(),
+              role: "CANDIDATE",
+              status: "ACTIVE",
+              createdAt: "Today",
+              assessmentsCount: 0,
+            };
+            localStorage.setItem(
+              "devassess_custom_users",
+              JSON.stringify([
+                newUser,
+                ...stored.filter((u: any) => u.email !== newUser.email),
+              ]),
+            );
+          } catch {}
+
           toast.add({
             title: "Registration Successful",
             description:
@@ -118,12 +139,14 @@ export default function RegisterForm() {
         },
         onError: (err: any) => {
           console.error("Registration API Error:", err);
+          const errorMessage =
+            err?.data?.message ||
+            err?.message ||
+            "Could not complete registration. Please try again.";
           toast.add({
-            title: "Registration Notice",
-            description:
-              err?.message ||
-              "Could not complete registration via API. Please try again or use Demo Login.",
-            type: "warning",
+            title: "Registration Failed",
+            description: errorMessage,
+            type: "error",
           });
         },
       });

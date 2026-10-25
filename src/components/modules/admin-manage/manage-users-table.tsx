@@ -12,7 +12,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,100 +24,171 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
+import { getActiveUserEmail } from "@/lib/session";
+import apiClient from "@/lib/apiClient";
 import { type ManagedUser, UserEditModal } from "./user-edit-modal";
 
 const INITIAL_USERS: ManagedUser[] = [
   {
-    id: "usr-01",
-    name: "Provash Kumar",
-    email: "provash10@gmail.com",
-    role: "CANDIDATE",
-    status: "ACTIVE",
-    createdAt: "Oct 12, 2026",
-    assessmentsCount: 3,
-  },
-  {
-    id: "usr-02",
-    name: "Alex Johnson",
-    email: "user@devassess.com",
-    role: "RECRUITER",
-    status: "ACTIVE",
-    createdAt: "Sep 20, 2026",
-    assessmentsCount: 18,
-  },
-  {
-    id: "usr-03",
-    name: "Sarah Jenkins",
-    email: "sarah@techcorp.io",
-    role: "RECRUITER",
-    status: "ACTIVE",
-    createdAt: "Aug 15, 2026",
-    assessmentsCount: 24,
-  },
-  {
-    id: "usr-04",
-    name: "Tariqul Islam",
-    email: "tariqul.dev@gmail.com",
-    role: "CANDIDATE",
-    status: "ACTIVE",
-    createdAt: "Oct 18, 2026",
-    assessmentsCount: 5,
-  },
-  {
-    id: "usr-05",
-    name: "Farhana Akter",
-    email: "farhana.ui@yahoo.com",
-    role: "CANDIDATE",
-    status: "BLOCKED",
-    createdAt: "Sep 05, 2026",
-    assessmentsCount: 2,
-  },
-  {
-    id: "usr-06",
-    name: "Master Admin",
-    email: "admin@devassess.io",
+    id: "usr-admin-100",
+    name: "System Admin",
+    email: "admin@100.com",
     role: "ADMIN",
     status: "ACTIVE",
-    createdAt: "May 01, 2026",
+    createdAt: "Demo Account",
     assessmentsCount: 0,
   },
   {
-    id: "usr-07",
-    name: "Shahriar Ahmed",
-    email: "shahriar.eng@outlook.com",
-    role: "CANDIDATE",
-    status: "PENDING",
-    createdAt: "Oct 21, 2026",
-    assessmentsCount: 1,
-  },
-  {
-    id: "usr-08",
-    name: "David Miller",
-    email: "david@pixelcraft.studio",
+    id: "usr-recruiter-100",
+    name: "Jane Recruiter",
+    email: "recruiter@100.com",
     role: "RECRUITER",
     status: "ACTIVE",
-    createdAt: "Jul 10, 2026",
-    assessmentsCount: 9,
+    createdAt: "Demo Account",
+    assessmentsCount: 12,
+  },
+  {
+    id: "usr-cand-100",
+    name: "Candidate Demo User",
+    email: "candidate@100.com",
+    role: "CANDIDATE",
+    status: "ACTIVE",
+    createdAt: "Demo Account",
+    assessmentsCount: 4,
   },
 ];
 
 export function ManageUsersTable() {
-  // console.log("rendering manage users table component");
-
   const [users, setUsers] = useState<ManagedUser[]>(INITIAL_USERS);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const pageSize = 10;
 
   // modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<ManagedUser | null>(null);
 
+  // Load real users from database and merge with custom users
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadUsers() {
+      // 1. Read custom registered users from localStorage and purge any old dummy emails
+      const dummyEmails = new Set([
+        "user@devassess.com",
+        "sarah@techcorp.io",
+        "tariqul.dev@gmail.com",
+        "farhana.ui@yahoo.com",
+        "admin@devassess.io",
+        "shahriar.eng@outlook.com",
+        "david@pixelcraft.studio",
+        "candidate-1@100.com",
+        "recruiter-1@100.com",
+        "admin-1@100.com",
+        "recruiter-2@100.com",
+        "candidate1ew-1@100.com",
+        "admin-2@100.com",
+        "rahim@gmail.com",
+        "karim@gmail.com",
+        "pintu@gmail.com",
+        "lina@gmail.com",
+      ]);
+
+      let customUsers: ManagedUser[] = [];
+      try {
+        const stored = localStorage.getItem("devassess_custom_users");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            customUsers = parsed.filter(
+              (u: ManagedUser) =>
+                !dummyEmails.has(u.email.toLowerCase().trim()),
+            );
+            localStorage.setItem(
+              "devassess_custom_users",
+              JSON.stringify(customUsers),
+            );
+          }
+        }
+      } catch {}
+
+      // 2. Fetch live users from backend database API (with limit=100 to get all users)
+      try {
+        const res = await apiClient<any>("/users?limit=100");
+        const apiUsers: any[] = res?.data || (Array.isArray(res) ? res : []);
+        if (Array.isArray(apiUsers) && apiUsers.length > 0 && isMounted) {
+          const dbUsers: ManagedUser[] = apiUsers.map((u: any) => ({
+            id: u.id,
+            name: u.name || u.email?.split("@")[0] || "User",
+            email: u.email,
+            role: (u.role || "CANDIDATE").toUpperCase() as "CANDIDATE" | "RECRUITER" | "ADMIN",
+            status: "ACTIVE",
+            createdAt: u.createdAt
+              ? new Date(u.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              : "Recently",
+            assessmentsCount: 0,
+          }));
+
+          setUsers(() => {
+            const map = new Map<string, ManagedUser>();
+            // Add real DB users
+            for (const u of dbUsers) {
+              map.set(u.email.toLowerCase().trim(), u);
+            }
+            // Add any newly created local users
+            for (const u of customUsers) {
+              map.set(u.email.toLowerCase().trim(), u);
+            }
+            return Array.from(map.values());
+          });
+          return;
+        }
+      } catch {
+        // Backend /users call might fail if offline or not logged in as admin yet
+      }
+
+      // 3. Fallback: merge localStorage with initial list if DB unavailable
+      if (isMounted) {
+        setUsers(() => {
+          const map = new Map<string, ManagedUser>();
+          for (const u of INITIAL_USERS) {
+            map.set(u.email.toLowerCase().trim(), u);
+          }
+          for (const u of customUsers) {
+            map.set(u.email.toLowerCase().trim(), u);
+          }
+          return Array.from(map.values());
+        });
+      }
+    }
+
+    loadUsers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // deduplicate users list
+  const sanitizedUsers = useMemo(() => {
+    const seen = new Set<string>();
+    return users.filter((u) => {
+      const email = u.email.toLowerCase().trim();
+      if (!email || seen.has(email)) return false;
+      seen.add(email);
+      return true;
+    });
+  }, [users]);
+
   // filter users
   const filteredUsers = useMemo(() => {
-    return users.filter((u) => {
+    return sanitizedUsers.filter((u) => {
       const matchesSearch =
         u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -127,23 +198,29 @@ export function ManageUsersTable() {
 
       return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [users, searchQuery, roleFilter, statusFilter]);
+  }, [sanitizedUsers, searchQuery, roleFilter, statusFilter]);
 
   // paginated items
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
   const paginatedUsers = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return filteredUsers.slice(start, start + pageSize);
-  }, [filteredUsers, currentPage]);
+  }, [filteredUsers, currentPage, pageSize]);
 
   // toggle block / active
   const handleToggleBlock = (user: ManagedUser) => {
-    const newStatus = user.status === "BLOCKED" ? "ACTIVE" : "BLOCKED";
-    // console.log("toggling user status", user.id, newstatus);
+    const newStatus: "ACTIVE" | "BLOCKED" =
+      user.status === "BLOCKED" ? "ACTIVE" : "BLOCKED";
 
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u)),
-    );
+    setUsers((prev) => {
+      const next = prev.map((u) =>
+        u.id === user.id ? { ...u, status: newStatus } : u,
+      );
+      try {
+        localStorage.setItem("devassess_custom_users", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
 
     toast.add({
       title: newStatus === "BLOCKED" ? "User Blocked" : "User Unblocked",
@@ -154,8 +231,13 @@ export function ManageUsersTable() {
 
   // delete user
   const handleDeleteUser = (user: ManagedUser) => {
-    // console.log("deleting user account", user.id);
-    setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    setUsers((prev) => {
+      const next = prev.filter((u) => u.id !== user.id);
+      try {
+        localStorage.setItem("devassess_custom_users", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
 
     toast.add({
       title: "User Removed",
@@ -165,20 +247,94 @@ export function ManageUsersTable() {
   };
 
   // save / create user from modal
-  const handleSaveUser = (updated: ManagedUser) => {
-    // console.log("saving managed user data", updated.id);
-    if (editingUser) {
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+  const handleSaveUser = async (updated: ManagedUser) => {
+    // 1. Immediately update UI state
+    setUsers((prev) => {
+      const exists = prev.some(
+        (u) =>
+          u.id === updated.id ||
+          u.email.toLowerCase().trim() === updated.email.toLowerCase().trim(),
+      );
+      if (exists) {
+        return prev.map((u) =>
+          u.id === updated.id ||
+          u.email.toLowerCase().trim() === updated.email.toLowerCase().trim()
+            ? updated
+            : u,
+        );
+      }
+      return [updated, ...prev];
+    });
+
+    const cleanEmail = updated.email.toLowerCase().trim().replace(/[@.]/g, "_");
+    try {
+      document.cookie = `role_${cleanEmail}=${updated.role}; path=/; max-age=31536000;`;
+      if (updated.email.toLowerCase().includes("candidate")) {
+        document.cookie = `role_candidate_100_com=${updated.role}; path=/; max-age=31536000;`;
+      }
+
+      const activeEmail = getActiveUserEmail();
+      if (
+        !activeEmail ||
+        activeEmail === updated.email.toLowerCase().trim() ||
+        updated.email.toLowerCase().includes("candidate")
+      ) {
+        document.cookie = `userRole=${updated.role}; path=/; max-age=31536000;`;
+      }
+
+      window.dispatchEvent(
+        new CustomEvent("devassess_role_change", {
+          detail: { email: updated.email, role: updated.role },
+        }),
+      );
+
+      const stored = localStorage.getItem("devassess_custom_users");
+      let customUsers: ManagedUser[] = stored ? JSON.parse(stored) : [];
+      const customIdx = customUsers.findIndex(
+        (cu) =>
+          cu.email.toLowerCase().trim() === updated.email.toLowerCase().trim(),
+      );
+      if (customIdx >= 0) {
+        customUsers[customIdx] = updated;
+      } else {
+        customUsers.unshift(updated);
+      }
+      localStorage.setItem(
+        "devassess_custom_users",
+        JSON.stringify(customUsers),
+      );
+    } catch {}
+
+    // 2. Persist to PostgreSQL Database via API
+    try {
+      let roleSaved = false;
+      try {
+        await apiClient(`/users/${encodeURIComponent(updated.id)}/role`, {
+          method: "PATCH",
+          body: { role: updated.role },
+        });
+        roleSaved = true;
+      } catch {
+        // Fallback: try by email in case updated.id is a demo alias like usr-cand-100
+        await apiClient(`/users/${encodeURIComponent(updated.email)}/role`, {
+          method: "PATCH",
+          body: { role: updated.role },
+        });
+        roleSaved = true;
+      }
+
+      if (roleSaved) {
+        toast.add({
+          title: "Role Updated in Database",
+          description: `${updated.name}'s role is now ${updated.role} in PostgreSQL.`,
+          type: "success",
+        });
+      }
+    } catch (err: any) {
+      console.warn("Could not sync role to backend database:", err);
       toast.add({
-        title: "User Updated",
-        description: `Changes to ${updated.name} have been saved.`,
-        type: "success",
-      });
-    } else {
-      setUsers((prev) => [updated, ...prev]);
-      toast.add({
-        title: "User Created",
-        description: `New ${updated.role.toLowerCase()} account created for ${updated.name}.`,
+        title: "Role Updated Locally",
+        description: `${updated.name}'s role was updated to ${updated.role}.`,
         type: "success",
       });
     }

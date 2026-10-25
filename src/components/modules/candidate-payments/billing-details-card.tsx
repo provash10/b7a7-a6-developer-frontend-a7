@@ -46,12 +46,12 @@ export function BillingDetailsCard() {
             </div>
             <Button
               variant="outline"
-              size="xs"
+              size="sm"
               onClick={handleAddPaymentMethod}
-              className="gap-1 text-xs"
+              className="gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10"
             >
-              <Plus className="size-3" />
-              <span>add method</span>
+              <Plus className="size-3.5" />
+              <span>Buy / Add Credits</span>
             </Button>
           </div>
           <CardTitle className="text-base font-semibold">

@@ -12,10 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Candidate Evaluations & Review Queue | DevAssess Recruiter",
+  title: "Recruiter Portal | DevAssess",
   description:
     "Review candidate code submissions, inspect test execution metrics, and update hiring decision verdicts.",
 };
+
+export const instant = false;
 
 export default function RecruiterEvaluationsPage() {
   // console.log("recruiter page rendered");

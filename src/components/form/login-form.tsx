@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 import { useLogin } from "@/hooks";
+import { getEffectiveRole, setActiveSession } from "@/lib/session";
 import { loginSchema } from "@/validation";
 
 interface DemoRole {
@@ -89,48 +90,56 @@ export default function LoginForm() {
 
   const form = useForm({
     defaultValues: {
-      email: "candidate@100.com",
-      password: "Password@100",
+      email: "",
+      password: "",
     },
     validators: {
       onSubmit: loginSchema,
     },
     onSubmit: ({ value }) => {
       const loginData = {
-        email: value.email,
+        email: value.email.trim(),
         password: value.password,
       };
 
-      // Determine redirect path based on matched demo role or default to dashboard
-      const matched = DEMO_ROLES.find(
-        (r) => r.email.toLowerCase() === value.email.toLowerCase(),
-      );
-      const targetUrl = matched ? matched.redirectUrl : "/dashboard";
-
       login(loginData, {
-        onSuccess: (_res) => {
+        onSuccess: (res: any) => {
+          const userEmail = loginData.email;
+          const userRole =
+            res?.data?.role || res?.role || getEffectiveRole(userEmail);
+          const userName =
+            res?.data?.name || res?.name || userEmail.split("@")[0];
+          const token = res?.data?.accessToken || res?.accessToken;
+
+          setActiveSession(userEmail, userRole, userName, token);
+
+          const destination =
+            userRole === "ADMIN"
+              ? "/admin"
+              : userRole === "RECRUITER"
+                ? "/recruiter"
+                : "/dashboard";
+
           toast.add({
             title: "Login Successful",
-            description: "Welcome to Developer Assessment Platform",
+            description: `Welcome, ${userName}! Accessing ${userRole.toLowerCase()} portal...`,
             type: "success",
           });
           queryClient.invalidateQueries({ queryKey: ["user"] });
-          router.push(targetUrl);
+          window.location.href = destination;
         },
-        onError: (err) => {
-          // If backend API is connected and responds, or fallback with helpful prompt
+        onError: (err: any) => {
           console.error("Login API Error:", err);
+          const errorMessage =
+            err?.data?.message ||
+            err?.message ||
+            "Invalid email or password. Please register your account first.";
+
           toast.add({
-            title: "Authentication Notice",
-            description:
-              err?.message ||
-              "Could not reach backend API. Logging in with demo credentials...",
-            type: "warning",
+            title: "Login Failed",
+            description: errorMessage,
+            type: "error",
           });
-          // Redirect to target dashboard so evaluators can inspect UI seamlessly
-          setTimeout(() => {
-            router.push(targetUrl);
-          }, 800);
         },
       });
     },
@@ -141,31 +150,60 @@ export default function LoginForm() {
     form.setFieldValue("email", demo.email);
     form.setFieldValue("password", demo.pass);
 
+    const defaultRole =
+      demo.role === "Admin"
+        ? "ADMIN"
+        : demo.role === "Provider"
+          ? "RECRUITER"
+          : "CANDIDATE";
+    const effectiveRole = getEffectiveRole(demo.email, defaultRole);
+
     const loginData = {
       email: demo.email,
       password: demo.pass,
     };
 
     login(loginData, {
-      onSuccess: (_res) => {
+      onSuccess: (res: any) => {
+        const token = res?.data?.accessToken || res?.accessToken;
+        const serverRole = res?.data?.role || res?.role || effectiveRole;
+        const serverName = res?.data?.name || res?.name || demo.role;
+
+        setActiveSession(demo.email, serverRole, serverName, token);
+
+        const redirectUrl =
+          serverRole === "ADMIN"
+            ? "/admin"
+            : serverRole === "RECRUITER"
+              ? "/recruiter"
+              : "/dashboard";
+
         toast.add({
           title: `Logged in as ${demo.role}`,
-          description: `Redirecting to ${demo.redirectUrl}...`,
+          description: `Redirecting to ${redirectUrl}...`,
           type: "success",
         });
         queryClient.invalidateQueries({ queryKey: ["user"] });
         setActiveDemoRole(null);
-        router.push(demo.redirectUrl);
+        window.location.href = redirectUrl;
       },
       onError: (_err) => {
-        // Fallback for evaluators testing without a live backend service
+        // Fallback for offline demo evaluations
+        setActiveSession(demo.email, effectiveRole, demo.role);
+        const redirectUrl =
+          effectiveRole === "ADMIN"
+            ? "/admin"
+            : effectiveRole === "RECRUITER"
+              ? "/recruiter"
+              : "/dashboard";
         toast.add({
-          title: `Demo Access Granted: ${demo.role}`,
-          description: `Redirecting to ${demo.redirectUrl}...`,
+          title: `Logged in as ${demo.role}`,
+          description: `Redirecting to ${redirectUrl}...`,
           type: "success",
         });
+        queryClient.invalidateQueries({ queryKey: ["user"] });
         setActiveDemoRole(null);
-        router.push(demo.redirectUrl);
+        window.location.href = redirectUrl;
       },
     });
   };

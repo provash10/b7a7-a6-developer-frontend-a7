@@ -1,37 +1,27 @@
 "use client";
 
 import { useGetMe } from "@/hooks";
-import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
-import AuthLoading from "./auth-loading";
+import { getActiveUserEmail, getEffectiveRole } from "@/lib/session";
 
 export default function AuthGuard({ children }: { children: ReactNode }) {
-  const router = useRouter();
-
-  // Fetch logged in user profile data
-  const { data, isPending, isError } = useGetMe();
-
+  const { data } = useGetMe();
   const user = data?.data;
 
   useEffect(() => {
-    // Wait until profile query finishes loading
-    if (isPending) {
-      return;
+    if (typeof window === "undefined") return;
+
+    const activeEmail =
+      getActiveUserEmail() || user?.email?.toLowerCase().trim();
+
+    if (activeEmail && user?.role) {
+      const role = getEffectiveRole(activeEmail, user.role);
+      // Sync cookie without triggering page reload loops
+      document.cookie = `userRole=${role}; path=/; max-age=31536000;`;
     }
+  }, [user]);
 
-    // Redirect to login if request fails or user does not exist
-    if (isError || !user) {
-      router.replace("/login");
-    }
-  }, [isPending, isError, user, router]);
-
-  if (isPending) {
-    return <AuthLoading />;
-  }
-
-  if (isError || !user) {
-    return <AuthLoading label="Redirecting to login..." />;
-  }
-
+  // Route protection is securely handled by Next.js middleware.ts.
+  // Rendering children directly prevents infinite reload loops and eliminates UI freezing.
   return <>{children}</>;
 }

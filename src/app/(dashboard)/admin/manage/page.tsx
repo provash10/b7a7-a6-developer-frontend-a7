@@ -11,6 +11,8 @@ export const metadata: Metadata = {
     "Manage platform users, roles, statuses, and author coding assessment challenges with live search, filters, pagination, and CRUD controls.",
 };
 
+export const instant = false;
+
 export default function AdminManagePage() {
   // console.log("admin manage page rendered");
 

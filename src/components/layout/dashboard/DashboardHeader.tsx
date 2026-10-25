@@ -2,9 +2,12 @@
 
 import { Bell, LogOut, Menu } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { useGetMyProfile, useLogout } from "@/hooks";
+import { clearActiveSession, getEffectiveRole } from "@/lib/session";
 
 interface DashboardHeaderProps {
   onOpenMobile: () => void;
@@ -17,12 +20,55 @@ export default function DashboardHeader({
 
   const router = useRouter();
   const pathname = usePathname();
-
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const { data: profileData } = useGetMyProfile();
+  const user = profileData?.data;
+  const [mounted, setMounted] = useState(false);
 
-  const isAdmin = Boolean(pathname?.startsWith("/admin"));
-  const isRecruiter = Boolean(pathname?.startsWith("/recruiter"));
+  const fallbackRole = pathname?.startsWith("/admin")
+    ? "ADMIN"
+    : pathname?.startsWith("/recruiter")
+      ? "RECRUITER"
+      : "CANDIDATE";
+
+  const [effectiveRole, setEffectiveRole] = useState<
+    "ADMIN" | "RECRUITER" | "CANDIDATE"
+  >(fallbackRole);
+
+  useEffect(() => {
+    setMounted(true);
+    const updateRole = () => {
+      setEffectiveRole(getEffectiveRole(user?.email, user?.role));
+    };
+    updateRole();
+
+    // Keep cookies synchronized with live database role
+    if (user?.role) {
+      const normalizedRole = user.role.toUpperCase();
+      document.cookie = `userRole=${normalizedRole}; path=/; max-age=31536000;`;
+      if (user.email) {
+        const clean = user.email.toLowerCase().trim().replace(/[@.]/g, "_");
+        document.cookie = `role_${clean}=${normalizedRole}; path=/; max-age=31536000;`;
+      }
+    }
+
+    window.addEventListener("devassess_role_change", updateRole);
+    window.addEventListener("storage", updateRole);
+    return () => {
+      window.removeEventListener("devassess_role_change", updateRole);
+      window.removeEventListener("storage", updateRole);
+    };
+  }, [user]);
+
+  const activeRole = mounted ? effectiveRole : fallbackRole;
+
+  const isAdmin =
+    Boolean(pathname?.startsWith("/admin")) ||
+    (Boolean(pathname?.startsWith("/dashboard")) && activeRole === "ADMIN");
+
+  const isRecruiter =
+    Boolean(pathname?.startsWith("/recruiter")) ||
+    (Boolean(pathname?.startsWith("/dashboard")) && activeRole === "RECRUITER");
 
   const dashboardLabel = isAdmin
     ? "Admin Console"
@@ -31,14 +77,23 @@ export default function DashboardHeader({
       : "Candidate Dashboard";
 
   const defaultUser = {
-    name: isAdmin ? "System Admin" : isRecruiter ? "Hiring Manager" : "Candidate User",
-    email: isAdmin ? "admin@100.com" : isRecruiter ? "recruiter@100.com" : "candidate@100.com",
+    name: isAdmin
+      ? "System Admin"
+      : isRecruiter
+        ? "Hiring Manager"
+        : "Candidate User",
+    email: isAdmin
+      ? "admin@100.com"
+      : isRecruiter
+        ? "recruiter@100.com"
+        : "candidate@100.com",
     role: isAdmin ? "Admin" : isRecruiter ? "Recruiter" : "Candidate",
   };
 
-  const user = profileData?.data || defaultUser;
+  const displayName = user?.name || defaultUser.name;
+  const displayEmail = user?.email || defaultUser.email;
 
-  const initials = (user?.name || defaultUser.name)
+  const initials = displayName
     .trim()
     .split(/\s+/)
     .map((word: string) => word[0])
@@ -46,17 +101,28 @@ export default function DashboardHeader({
     .slice(0, 2)
     .toUpperCase();
 
+  const queryClient = useQueryClient();
+
   const handleLogout = () => {
-    logout(undefined, {
-      onSettled: () => {
-        toast.add({
-          title: "Logged Out",
-          description: "You have been logged out successfully.",
-          type: "success",
-        });
-        router.push("/login");
-      },
+    // 1. Clear all client session storage and cookies
+    clearActiveSession();
+    try {
+      queryClient.clear();
+    } catch {}
+
+    toast.add({
+      title: "Logging Out...",
+      description: "Clearing session credentials.",
+      type: "info",
     });
+
+    // 2. Fire backend logout in background
+    try {
+      logout();
+    } catch {}
+
+    // 3. Navigate directly to /login?logout=true which commands middleware to purge all server-side cookies
+    window.location.href = "/login?logout=true";
   };
 
   return (
@@ -121,13 +187,13 @@ export default function DashboardHeader({
               className="text-xs font-semibold leading-tight text-foreground truncate max-w-[130px]"
               suppressHydrationWarning
             >
-              {user?.name || defaultUser.name}
+              {displayName}
             </p>
             <p
               className="text-[11px] text-muted-foreground truncate max-w-[130px]"
               suppressHydrationWarning
             >
-              {user?.email || defaultUser.email}
+              {displayEmail}
             </p>
           </div>
         </div>
