@@ -1,13 +1,27 @@
+import {
+  CTASection,
+  FeaturedChallenges,
+  FeaturesGrid,
+  HeroSection,
+  StatsBar,
+  WorkflowPreview,
+} from "@/components/modules/homepage";
+
+export const metadata = {
+  title: "DevAssess - Modern Technical Hiring & Code Evaluation Platform",
+  description:
+    "Evaluate and certify top technical talent with real-world assessments, interactive Docker sandboxes, and anti-cheat telemetry.",
+};
+
 export default function HomePage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold tracking-tight">
-        {/* Developer Assessment Platform */}
-        public layout
-      </h1>
-      <p className="mt-2 text-muted-foreground">
-        Evaluate and certify top technical talent with real-world assessments.
-      </p>
+    <div className="flex flex-col min-h-screen">
+      <HeroSection />
+      <StatsBar />
+      <FeaturesGrid />
+      <WorkflowPreview />
+      <FeaturedChallenges />
+      <CTASection />
     </div>
   );
 }

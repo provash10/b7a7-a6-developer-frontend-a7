@@ -12,8 +12,9 @@ import {
   Play,
   Search,
   Trash2,
+  Code2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ import {
   AssessmentEditModal,
   type ManagedAssessment,
 } from "./assessment-edit-modal";
+import { QuestionCreateModal } from "./question-create-modal";
 
 const INITIAL_ASSESSMENTS: ManagedAssessment[] = [
   {
@@ -136,8 +138,23 @@ export function ManageAssessmentsTable() {
 
   // modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [editingAssessment, setEditingAssessment] =
     useState<ManagedAssessment | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("devassess_custom_challenges");
+      if (stored) {
+        const custom: ManagedAssessment[] = JSON.parse(stored);
+        if (Array.isArray(custom) && custom.length > 0) {
+          setAssessments([...custom, ...INITIAL_ASSESSMENTS]);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   // filter assessments
   const filteredAssessments = useMemo(() => {
@@ -209,6 +226,14 @@ export function ManageAssessmentsTable() {
       });
     } else {
       setAssessments((prev) => [updated, ...prev]);
+      try {
+        const stored = localStorage.getItem("devassess_custom_challenges");
+        const list = stored ? JSON.parse(stored) : [];
+        list.unshift(updated);
+        localStorage.setItem("devassess_custom_challenges", JSON.stringify(list));
+      } catch (e) {
+        // ignore
+      }
       toast.add({
         title: "Challenge Created",
         description: `"${updated.title}" has been added to the catalog.`,
@@ -234,17 +259,29 @@ export function ManageAssessmentsTable() {
             </CardDescription>
           </div>
 
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingAssessment(null);
-              setIsModalOpen(true);
-            }}
-            className="group gap-2 self-start sm:self-auto h-9 px-4 rounded-lg font-semibold text-xs sm:text-sm shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:ring-2 hover:ring-primary/25 active:scale-[0.98] transition-all duration-200 cursor-pointer"
-          >
-            <FilePlus className="size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6" />
-            <span>Create Challenge</span>
-          </Button>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsQuestionModalOpen(true)}
+              className="group gap-2 h-9 px-3.5 rounded-lg font-semibold text-xs border-primary/40 text-primary hover:bg-primary/10 cursor-pointer"
+            >
+              <Code2 className="size-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
+              <span>Add Question</span>
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                setEditingAssessment(null);
+                setIsModalOpen(true);
+              }}
+              className="group gap-2 h-9 px-4 rounded-lg font-semibold text-xs sm:text-sm shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:ring-2 hover:ring-primary/25 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+            >
+              <FilePlus className="size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6" />
+              <span>Create Challenge</span>
+            </Button>
+          </div>
         </div>
 
         {/* filter controls */}
@@ -504,12 +541,17 @@ export function ManageAssessmentsTable() {
         </div>
       </CardContent>
 
-      {/* modal */}
+      {/* modals */}
       <AssessmentEditModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         assessment={editingAssessment}
         onSave={handleSaveAssessment}
+      />
+
+      <QuestionCreateModal
+        isOpen={isQuestionModalOpen}
+        onClose={() => setIsQuestionModalOpen(false)}
       />
     </Card>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, History, ShieldAlert, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,10 +75,34 @@ const RECENT_SUBMISSIONS: RecentSubmission[] = [
 ];
 
 export function RecentSubmissionsTable() {
-  // console.log("rendering recent submissions table module");
+  const [submissions, setSubmissions] = useState<RecentSubmission[]>(RECENT_SUBMISSIONS);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("devassess_candidate_submissions");
+      if (stored) {
+        const live = JSON.parse(stored);
+        if (Array.isArray(live) && live.length > 0) {
+          const mapped: RecentSubmission[] = live.map((item: any) => ({
+            id: item.id || `sub-${Date.now()}`,
+            candidateName: item.candidateName || "Candidate",
+            candidateEmail: item.candidateEmail || "candidate@100.com",
+            assessmentTitle: item.challengeTitle || "Developer Assessment",
+            recruiterCompany: "TechCorp Labs",
+            submittedAt: "Just now",
+            score: item.score || 85,
+            verdict: item.score >= 60 ? "passed" : "failed",
+            antiCheatFlags: item.antiCheatStatus === "FLAGGED" ? 1 : 0,
+          }));
+          setSubmissions([...mapped, ...RECENT_SUBMISSIONS]);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const handleInspect = (sub: RecentSubmission) => {
-    // console.log("inspecting candidate submission", sub.id);
     toast.add({
       title: "Opening Submission Playground",
       description: `Viewing code solution & AST analysis for ${sub.candidateName}.`,
@@ -123,7 +148,7 @@ export function RecentSubmissionsTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {RECENT_SUBMISSIONS.map((sub) => (
+              {submissions.map((sub) => (
                 <tr
                   key={sub.id}
                   className="hover:bg-muted/30 transition-colors"

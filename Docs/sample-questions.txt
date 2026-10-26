@@ -1,0 +1,115 @@
+======================================================================
+5 SAMPLE CODING QUESTIONS (READY TO COPY & PASTE)
+Developer Assessment Platform
+======================================================================
+
+----------------------------------------------------------------------
+QUESTION 1: Two Sum Problem
+----------------------------------------------------------------------
+Question Title:
+Two Sum Problem
+
+Difficulty:
+Easy
+
+Marks:
+20
+
+Problem Description:
+Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.
+
+Test Case Input:
+[2, 7, 11, 15], 9
+
+Expected Output:
+[0, 1]
+
+
+----------------------------------------------------------------------
+QUESTION 2: Valid Palindrome String
+----------------------------------------------------------------------
+Question Title:
+Valid Palindrome String
+
+Difficulty:
+Easy
+
+Marks:
+20
+
+Problem Description:
+A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Return true if it is a palindrome, or false otherwise.
+
+Test Case Input:
+"racecar"
+
+Expected Output:
+true
+
+
+----------------------------------------------------------------------
+QUESTION 3: Reverse a String
+----------------------------------------------------------------------
+Question Title:
+Reverse a String
+
+Difficulty:
+Easy
+
+Marks:
+15
+
+Problem Description:
+Write a function that reverses a given string. The input string is given as a sequence of characters. Return the reversed string with exact casing preserved.
+
+Test Case Input:
+"hello"
+
+Expected Output:
+"olleh"
+
+
+----------------------------------------------------------------------
+QUESTION 4: FizzBuzz Generator
+----------------------------------------------------------------------
+Question Title:
+FizzBuzz Number Evaluator
+
+Difficulty:
+Easy
+
+Marks:
+20
+
+Problem Description:
+Given an integer n, return "FizzBuzz" if n is divisible by 3 and 5, "Fizz" if n is divisible by 3, "Buzz" if n is divisible by 5, or return the number as a string if none apply.
+
+Test Case Input:
+15
+
+Expected Output:
+"FizzBuzz"
+
+
+----------------------------------------------------------------------
+QUESTION 5: Maximum Subarray Sum
+----------------------------------------------------------------------
+Question Title:
+Maximum Subarray Sum (Kadane's Algorithm)
+
+Difficulty:
+Medium
+
+Marks:
+25
+
+Problem Description:
+Given an integer array nums, find the contiguous subarray (containing at least one number) which has the largest sum and return its total sum.
+
+Test Case Input:
+[-2, 1, -3, 4, -1, 2, 1, -5, 4]
+
+Expected Output:
+6
+
+======================================================================

@@ -83,9 +83,16 @@ export function EvaluationTasksTable({
   };
 
   const handleSaveReview = (updated: EvaluationTask) => {
-    // console.log("saving review verdict", updated.id, updated.status);
     const updatedTasks = tasks.map((t) => (t.id === updated.id ? updated : t));
     onTasksChange(updatedTasks);
+
+    try {
+      localStorage.setItem("devassess_candidate_submissions", JSON.stringify(updatedTasks));
+      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new CustomEvent("devassess_submission_update", { detail: updated }));
+    } catch {
+      // ignore
+    }
 
     toast.add({
       title: "Verdict Updated",
@@ -98,10 +105,17 @@ export function EvaluationTasksTable({
     task: EvaluationTask,
     newStatus: EvaluationStatus,
   ) => {
-    // console.log("quick status change", task.id, newstatus);
     const updated = { ...task, status: newStatus };
     const updatedTasks = tasks.map((t) => (t.id === task.id ? updated : t));
     onTasksChange(updatedTasks);
+
+    try {
+      localStorage.setItem("devassess_candidate_submissions", JSON.stringify(updatedTasks));
+      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new CustomEvent("devassess_submission_update", { detail: updated }));
+    } catch {
+      // ignore
+    }
 
     toast.add({
       title: "Status Changed",

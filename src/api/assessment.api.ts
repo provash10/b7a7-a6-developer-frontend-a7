@@ -8,53 +8,88 @@ import type {
   Submission,
 } from "@/types";
 
-export function getAllAssessments(params?: AssessmentParams) {
-  // console.log("fetching all assessments");
-  return apiClient<ApiResponse<Assessment[]>>("/assessment", {
-    params,
-  });
+export async function getAllAssessments(params?: AssessmentParams) {
+  try {
+    return await apiClient<ApiResponse<Assessment[]>>("/assessments", {
+      params,
+    });
+  } catch (err: any) {
+    if (err?.status === 404 || err?.statusCode === 404) {
+      return await apiClient<ApiResponse<Assessment[]>>("/assessment", {
+        params,
+      });
+    }
+    throw err;
+  }
 }
 
-export function getSingleAssessment(id: string) {
-  // console.log("fetching single assessment details");
-  return apiClient<ApiResponse<Assessment>>(`/assessment/${id}`);
+export async function getSingleAssessment(id: string) {
+  try {
+    return await apiClient<ApiResponse<Assessment>>(`/assessments/${id}`);
+  } catch (err: any) {
+    if (err?.status === 404 || err?.statusCode === 404) {
+      return await apiClient<ApiResponse<Assessment>>(`/assessment/${id}`);
+    }
+    throw err;
+  }
 }
 
 export function getAssessmentLeaderboard(id: string) {
-  // console.log("fetching assessment leaderboard rankings");
   return apiClient<ApiResponse<CandidateAttempt[]>>(
-    `/assessment/${id}/leaderboard`,
+    `/assessments/${id}/leaderboard`,
   );
 }
 
 export function getAssessmentAnalytics(id: string) {
-  // console.log("fetching assessment analytics");
   return apiClient<ApiResponse<Record<string, unknown>>>(
-    `/assessment/${id}/analytics`,
+    `/assessments/${id}/analytics`,
   );
 }
 
-export function getMyAttempts() {
-  // console.log("fetching my candidate attempts");
-  return apiClient<ApiResponse<CandidateAttempt[]>>("/attempt/my-attempts");
+export async function getMyAttempts() {
+  try {
+    return await apiClient<ApiResponse<CandidateAttempt[]>>("/attempts/my");
+  } catch (err: any) {
+    return await apiClient<ApiResponse<CandidateAttempt[]>>(
+      "/attempts/my-attempts",
+    );
+  }
 }
 
-export function startAttempt(assessmentId: string) {
-  // console.log("starting new assessment attempt");
-  return apiClient<ApiResponse<CandidateAttempt>>(
-    `/attempt/${assessmentId}/start`,
-    {
-      method: "POST",
-    },
-  );
+export async function startAttempt(assessmentId: string) {
+  try {
+    return await apiClient<ApiResponse<CandidateAttempt>>(
+      `/attempts/${assessmentId}/start`,
+      {
+        method: "POST",
+      },
+    );
+  } catch (err: any) {
+    if (err?.status === 404 || err?.statusCode === 404) {
+      return await apiClient<ApiResponse<CandidateAttempt>>(
+        `/attempt/${assessmentId}/start`,
+        {
+          method: "POST",
+        },
+      );
+    }
+    throw err;
+  }
 }
 
-export function getAttemptQuestions(attemptId: string) {
-  // console.log("fetching attempt questions");
-  return apiClient<ApiResponse<Question[]>>(`/attempt/${attemptId}/questions`);
+export async function getAttemptQuestions(attemptId: string) {
+  try {
+    return await apiClient<ApiResponse<Question[]>>(
+      `/attempts/${attemptId}/questions`,
+    );
+  } catch (err: any) {
+    return await apiClient<ApiResponse<Question[]>>(
+      `/attempt/${attemptId}/questions`,
+    );
+  }
 }
 
-export function submitAnswer(
+export async function submitAnswer(
   attemptId: string,
   payload: {
     questionId: string;
@@ -62,46 +97,180 @@ export function submitAnswer(
     selectedOption?: string;
   },
 ) {
-  // console.log("submitting answer for attempt question");
-  return apiClient<ApiResponse<Submission>>(
-    `/attempt/${attemptId}/submit-answer`,
-    {
-      method: "POST",
-      body: payload,
-    },
-  );
+  try {
+    return await apiClient<ApiResponse<Submission>>(
+      `/attempts/${attemptId}/submit-answer`,
+      {
+        method: "POST",
+        body: payload,
+      },
+    );
+  } catch (err: any) {
+    return await apiClient<ApiResponse<Submission>>(
+      `/attempt/${attemptId}/submit-answer`,
+      {
+        method: "POST",
+        body: payload,
+      },
+    );
+  }
 }
 
-export function recordAntiCheatFlag(
+export async function recordAntiCheatFlag(
   attemptId: string,
   payload: {
     eventType: "TAB_SWITCH" | "WINDOW_BLUR" | "FULLSCREEN_EXIT";
     timestamp?: string;
   },
 ) {
-  // console.log("recording anti-cheat telemetry flag");
-  return apiClient<ApiResponse<{ flagsCount: number }>>(
-    `/attempt/${attemptId}/anti-cheat`,
-    {
+  try {
+    return await apiClient<ApiResponse<{ flagsCount: number }>>(
+      `/attempts/${attemptId}/anti-cheat`,
+      {
+        method: "POST",
+        body: payload,
+      },
+    );
+  } catch (err: any) {
+    return await apiClient<ApiResponse<{ flagsCount: number }>>(
+      `/attempt/${attemptId}/anti-cheat`,
+      {
+        method: "POST",
+        body: payload,
+      },
+    );
+  }
+}
+
+export async function finishAttempt(attemptId: string) {
+  try {
+    return await apiClient<ApiResponse<CandidateAttempt>>(
+      `/attempts/${attemptId}/finish`,
+      {
+        method: "POST",
+      },
+    );
+  } catch (err: any) {
+    return await apiClient<ApiResponse<CandidateAttempt>>(
+      `/attempt/${attemptId}/finish`,
+      {
+        method: "POST",
+      },
+    );
+  }
+}
+
+export async function getAttemptResult(attemptId: string) {
+  try {
+    return await apiClient<ApiResponse<CandidateAttempt>>(
+      `/attempts/${attemptId}/result`,
+    );
+  } catch (err: any) {
+    return await apiClient<ApiResponse<CandidateAttempt>>(
+      `/attempt/${attemptId}/result`,
+    );
+  }
+}
+
+export async function createQuestion(payload: {
+  title: string;
+  description: string;
+  type?: "CODING" | "MCQ" | "DESCRIPTIVE";
+  difficulty?: "EASY" | "MEDIUM" | "HARD";
+  marks: number;
+  testCases?: any;
+  options?: any;
+}) {
+  try {
+    return await apiClient<ApiResponse<Question>>("/questions", {
       method: "POST",
       body: payload,
-    },
-  );
-}
-
-export function finishAttempt(attemptId: string) {
-  // console.log("finishing candidate assessment attempt");
-  return apiClient<ApiResponse<CandidateAttempt>>(
-    `/attempt/${attemptId}/finish`,
-    {
+    });
+  } catch (err: any) {
+    return await apiClient<ApiResponse<Question>>("/question", {
       method: "POST",
+      body: payload,
+    });
+  }
+}
+
+export async function getAllQuestions() {
+  try {
+    return await apiClient<ApiResponse<Question[]>>("/questions", {
+      method: "GET",
+    });
+  } catch (err: any) {
+    return await apiClient<ApiResponse<Question[]>>("/question", {
+      method: "GET",
+    });
+  }
+}
+
+export async function createAssessment(payload: {
+  title: string;
+  description: string;
+  durationMinutes: number;
+  passMarks: number;
+  totalMarks: number;
+  status?: string;
+  difficulty?: string;
+  skills?: string[];
+  questionIds?: string[];
+}) {
+  try {
+    return await apiClient<ApiResponse<Assessment>>("/assessments", {
+      method: "POST",
+      body: payload,
+    });
+  } catch (err: any) {
+    return await apiClient<ApiResponse<Assessment>>("/assessment", {
+      method: "POST",
+      body: payload,
+    });
+  }
+}
+
+export async function sendAssessmentInvitation(payload: {
+  candidateEmail: string;
+  candidateName?: string;
+  assessmentId: string;
+  expiresInDays?: number;
+}) {
+  try {
+    // Backend expects { assessmentId, candidateEmail, expiresInDays } at POST /invitations
+    return await apiClient<ApiResponse<any>>("/invitations", {
+      method: "POST",
+      body: {
+        assessmentId: payload.assessmentId,
+        candidateEmail: payload.candidateEmail,
+        expiresInDays: payload.expiresInDays || 3,
+      },
+    });
+  } catch (err: any) {
+    if (err?.status === 404 || err?.statusCode === 404) {
+      return await apiClient<ApiResponse<any>>("/invitation", {
+        method: "POST",
+        body: payload,
+      });
+    }
+    throw err;
+  }
+}
+
+export async function getCandidateInvitations() {
+  try {
+    return await apiClient<ApiResponse<any>>("/invitations/my");
+  } catch (err: any) {
+    return null;
+  }
+}
+
+export async function acceptAssessmentInvitation(invitationId: string) {
+  return apiClient<ApiResponse<{ invitation: any; attempt: CandidateAttempt }>>(
+    `/invitations/${invitationId}/accept`,
+    {
+      method: "PATCH",
     },
   );
 }
 
-export function getAttemptResult(attemptId: string) {
-  // console.log("fetching attempt evaluation result");
-  return apiClient<ApiResponse<CandidateAttempt>>(
-    `/attempt/${attemptId}/result`,
-  );
-}

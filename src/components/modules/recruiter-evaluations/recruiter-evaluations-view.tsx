@@ -1,7 +1,8 @@
 "use client";
 
-import { Mail, Sparkles, Zap } from "lucide-react";
-import { useState } from "react";
+import { Code2, Mail, Sparkles, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { QuestionCreateModal } from "@/components/modules/admin-manage";
 import { BuyCreditsModal } from "@/components/modules/payment";
 import { Button } from "@/components/ui/button";
 import { EvaluationTasksTable } from "./evaluation-tasks-table";
@@ -14,9 +15,35 @@ export function RecruiterEvaluationsView() {
   const [tasks, setTasks] = useState<EvaluationTask[]>(initialEvaluationTasks);
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("devassess_candidate_submissions");
+      if (stored) {
+        const live: EvaluationTask[] = JSON.parse(stored);
+        if (live.length > 0) {
+          setTasks([...live, ...initialEvaluationTasks]);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const handleInvitationSent = (newTask: EvaluationTask) => {
     setTasks((prev) => [newTask, ...prev]);
+  };
+
+  const handleTasksChange = (newTasks: EvaluationTask[]) => {
+    setTasks(newTasks);
+    try {
+      localStorage.setItem("devassess_candidate_submissions", JSON.stringify(newTasks));
+      window.dispatchEvent(new Event("storage"));
+      window.dispatchEvent(new CustomEvent("devassess_submission_update"));
+    } catch {
+      // ignore
+    }
   };
 
   return (
@@ -54,6 +81,16 @@ export function RecruiterEvaluationsView() {
           <div className="flex flex-wrap items-center gap-2.5 self-stretch sm:self-auto">
             <Button
               type="button"
+              variant="outline"
+              onClick={() => setIsQuestionModalOpen(true)}
+              className="gap-2 h-10 px-4 border-primary/40 text-primary hover:bg-primary/10 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer shadow-xs"
+            >
+              <Code2 className="size-4 shrink-0" />
+              <span>Add Question</span>
+            </Button>
+
+            <Button
+              type="button"
               onClick={() => setIsInviteModalOpen(true)}
               className="gap-2 h-10 px-4.5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] rounded-xl transition-all duration-200 cursor-pointer"
             >
@@ -79,7 +116,7 @@ export function RecruiterEvaluationsView() {
       {/* evaluations task queue table */}
       <EvaluationTasksTable
         tasks={tasks}
-        onTasksChange={setTasks}
+        onTasksChange={handleTasksChange}
         onOpenInvite={() => setIsInviteModalOpen(true)}
       />
 
@@ -94,6 +131,12 @@ export function RecruiterEvaluationsView() {
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
         onInvitationSent={handleInvitationSent}
+      />
+
+      {/* question create modal */}
+      <QuestionCreateModal
+        isOpen={isQuestionModalOpen}
+        onClose={() => setIsQuestionModalOpen(false)}
       />
     </div>
   );
