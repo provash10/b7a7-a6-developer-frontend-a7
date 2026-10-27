@@ -37,7 +37,7 @@ export default function LoginPage() {
           alt="Login illustration"
           fill
           priority
-          className="object-cover dark:brightness-[0.2] dark:grayscale"
+          className="object-cover"
         />
       </div>
     </div>
