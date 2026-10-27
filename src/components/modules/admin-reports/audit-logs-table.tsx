@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Search,
   ShieldAlert,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTableUrlState } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
