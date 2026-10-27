@@ -445,20 +445,40 @@ export function SendInvitationModal({
       // 1. Record invitation in devassess_invitations (simulating Prisma assessment_invitations table)
       try {
         const storedInvites = localStorage.getItem("devassess_invitations");
-        const invitesList = storedInvites ? JSON.parse(storedInvites) : [];
+        let invitesList = storedInvites ? JSON.parse(storedInvites) : [];
+        if (!Array.isArray(invitesList)) invitesList = [];
+
+        // Supersede any older pending invite for this candidate so the newest selected challenge is active
+        const targetEmail = candidateEmail.trim().toLowerCase();
+        invitesList = invitesList.map((inv: any) => {
+          if (inv.candidateEmail?.toLowerCase() === targetEmail && inv.status === "PENDING") {
+            return { ...inv, status: "SUPERSEDED" };
+          }
+          return inv;
+        });
+
         const newInvite = {
           id: `inv-${Date.now()}`,
           inviteToken: generatedToken,
           candidateName: candidateName.trim(),
-          candidateEmail: candidateEmail.trim().toLowerCase(),
+          candidateEmail: targetEmail,
           assessmentId: selectedChallenge.id,
           assessmentTitle: selectedChallenge.title,
+          duration: selectedChallenge.duration || "75 Mins",
+          durationMinutes: parseInt(selectedChallenge.duration, 10) || 75,
+          difficulty: selectedChallenge.difficulty || "Intermediate",
+          language: selectedChallenge.language || "SQL / PostgreSQL",
+          skills: [selectedChallenge.language || "SQL / PostgreSQL", "Database", "Performance"],
           status: "PENDING",
           expiresAt: new Date(Date.now() + parseInt(expiryDays, 10) * 86400000).toISOString(),
           createdAt: new Date().toISOString(),
         };
         invitesList.unshift(newInvite);
         localStorage.setItem("devassess_invitations", JSON.stringify(invitesList));
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("devassess_invitations_update"));
+          window.dispatchEvent(new Event("storage"));
+        }
       } catch (err) {
         // ignore
       }

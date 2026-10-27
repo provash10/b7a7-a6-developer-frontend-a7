@@ -312,32 +312,44 @@ export function RoleAdaptiveDashboard() {
         const storedInvites = localStorage.getItem("devassess_invitations");
         if (storedInvites) {
           const list = JSON.parse(storedInvites);
-          const pending = list.find((inv: any) => {
-            if (inv.status !== "PENDING") return false;
-            if (!inv.candidateEmail) return true;
-            const invEmail = inv.candidateEmail.toLowerCase().trim();
-            return (
-              invEmail === currentEmail ||
-              (currentEmail.includes("provash") &&
-                (invEmail.includes("provash") || invEmail.includes("10dev")))
-            );
-          });
+          const pending = list
+            .filter((inv: any) => inv.status === "PENDING")
+            .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+            .find((inv: any) => {
+              if (!inv.candidateEmail) return true;
+              const invEmail = inv.candidateEmail.toLowerCase().trim();
+              return (
+                invEmail === currentEmail ||
+                (currentEmail.includes("provash") &&
+                  (invEmail.includes("provash") || invEmail.includes("10dev"))) ||
+                (currentEmail.includes("scstanley") || currentEmail.includes("amy"))
+              );
+            });
           if (pending) {
             foundPendingInvitation = true;
+            const challengeDuration =
+              pending.duration ||
+              (pending.durationMinutes ? `${pending.durationMinutes} Minutes` : "75 Minutes");
+            const challengeSkills =
+              Array.isArray(pending.skills) && pending.skills.length > 0
+                ? pending.skills
+                : [pending.language || "SQL / PostgreSQL", "Database", "Performance"];
+
             setActiveInvitation({
               title:
                 pending.assessmentTitle ||
-                "Full Stack Next.js & TypeScript Challenge",
+                "PostgreSQL Indexing & Optimization",
               company: "Recruiter Assessment Console",
-              duration: "90 Minutes",
-              difficulty: "Intermediate",
+              duration: challengeDuration,
+              difficulty: pending.difficulty || "Intermediate",
               deadline: `Expires in 3 days (${new Date(pending.expiresAt || Date.now() + 259200000).toLocaleDateString()})`,
               description:
+                pending.description ||
                 "You have received a new proctored developer assessment invitation from your recruiter. Complete the algorithmic and coding questions within the time limit.",
-              skills: ["TypeScript", "Next.js", "Algorithms", "Anti-Cheat"],
+              skills: challengeSkills,
             });
             setActiveInviteToken(pending.inviteToken || pending.token || null);
-            setActiveAssessmentId(pending.assessmentId || "asst-01");
+            setActiveAssessmentId(pending.assessmentId || "asst-04");
             setActiveChallengesCount(1);
             setHasCompletedActiveExam(false);
             setIsAccepted(false);
@@ -873,8 +885,8 @@ export function RoleAdaptiveDashboard() {
                 <Link
                   href={
                     activeInviteToken
-                      ? `/assessment/attempt?id=${activeAssessmentId}&token=${activeInviteToken}`
-                      : `/assessment/attempt?id=${activeAssessmentId}`
+                      ? `/assessment/attempt?id=${encodeURIComponent(activeAssessmentId)}&token=${encodeURIComponent(activeInviteToken)}&title=${encodeURIComponent(activeInvitation.title)}&duration=${encodeURIComponent(activeInvitation.duration)}`
+                      : `/assessment/attempt?id=${encodeURIComponent(activeAssessmentId)}&title=${encodeURIComponent(activeInvitation.title)}&duration=${encodeURIComponent(activeInvitation.duration)}`
                   }
                   className="w-full sm:w-auto"
                 >

@@ -227,6 +227,49 @@ function CandidateAssessmentExamContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const assessmentId = searchParams.get("id") || "asst-live-01";
+  const urlTitle = searchParams.get("title");
+  const urlDuration = searchParams.get("duration");
+
+  const assessmentTitle = useMemo(() => {
+    if (urlTitle) return decodeURIComponent(urlTitle);
+    if (token) {
+      try {
+        const stored = localStorage.getItem("devassess_invitations");
+        if (stored) {
+          const list = JSON.parse(stored);
+          const inv = list.find((i: any) => i.inviteToken === token);
+          if (inv?.assessmentTitle) return inv.assessmentTitle;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return "PostgreSQL Indexing & Optimization";
+  }, [urlTitle, token]);
+
+  const initialDurationSeconds = useMemo(() => {
+    if (urlDuration) {
+      const match = urlDuration.match(/\d+/);
+      if (match) return parseInt(match[0], 10) * 60;
+    }
+    if (token) {
+      try {
+        const stored = localStorage.getItem("devassess_invitations");
+        if (stored) {
+          const list = JSON.parse(stored);
+          const inv = list.find((i: any) => i.inviteToken === token);
+          if (inv?.durationMinutes) return inv.durationMinutes * 60;
+          if (inv?.duration) {
+            const m = String(inv.duration).match(/\d+/);
+            if (m) return parseInt(m[0], 10) * 60;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return 75 * 60; // 75 minutes
+  }, [urlDuration, token]);
 
   const { data: profileData } = useGetMyProfile();
   const user = profileData?.data;
@@ -253,10 +296,14 @@ function CandidateAssessmentExamContent() {
   const [isRunningTests, setIsRunningTests] = useState(false);
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
   const [antiCheatFlags, setAntiCheatFlags] = useState(0);
-  const [secondsRemaining, setSecondsRemaining] = useState(90 * 60); // 90 mins
+  const [secondsRemaining, setSecondsRemaining] = useState(initialDurationSeconds);
   const [attemptId, setAttemptId] = useState<string>(`att-${Date.now().toString().slice(-6)}`);
   const [isExamCompleted, setIsExamCompleted] = useState(false);
   const [earnedScore, setEarnedScore] = useState(0);
+
+  useEffect(() => {
+    setSecondsRemaining(initialDurationSeconds);
+  }, [initialDurationSeconds]);
 
   // 1. Load questions (custom added questions from Admin + defaults)
   useEffect(() => {
@@ -735,7 +782,7 @@ function CandidateAssessmentExamContent() {
           <div className="flex items-center gap-2">
             <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs sm:text-sm font-bold text-foreground truncate max-w-[200px] sm:max-w-md">
-              Developer Assessment Room
+              {assessmentTitle}
             </span>
           </div>
         </div>
