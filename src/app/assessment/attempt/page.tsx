@@ -378,7 +378,9 @@ function CandidateAssessmentExamContent() {
       "provash10dev@gmail.com";
     let candidateEmail = activeEmail.toLowerCase().trim();
     let candidateName =
-      (user as any)?.name ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem("devassess_active_name")
+        : null) ||
       (candidateEmail.includes("@")
         ? candidateEmail
             .split("@")[0]

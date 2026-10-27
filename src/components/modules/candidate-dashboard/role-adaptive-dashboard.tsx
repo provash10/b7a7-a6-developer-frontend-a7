@@ -649,7 +649,7 @@ export function RoleAdaptiveDashboard() {
           {myAssessments.map((test) => {
             const isTestAccepted =
               test.status === "Accepted ✓" ||
-              test.rawStatus === "ACCEPTED" ||
+              (test as any).rawStatus === "ACCEPTED" ||
               test.verdict?.includes("Accepted");
             const isTestPending =
               test.status === "Under Review" || test.verdict === "Needs Review";

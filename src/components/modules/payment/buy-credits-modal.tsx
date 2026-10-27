@@ -68,8 +68,8 @@ export function BuyCreditsModal({ isOpen, onClose }: BuyCreditsModalProps) {
     initiatePaymentMutation.mutate(
       { credits: currentCredits },
       {
-        onSuccess: (response) => {
-          const paymentUrl = response.data?.paymentUrl;
+        onSuccess: (response: any) => {
+          const paymentUrl = response?.data?.paymentUrl;
           if (paymentUrl) {
             toast.add({
               title: "Redirecting to bKash Gateway...",

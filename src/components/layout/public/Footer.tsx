@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, CheckCircle2, Code2, Github, Globe, Heart, Shield, Terminal, Twitter } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Code2, Globe, Heart, Shield, Terminal } from "lucide-react";
 import Logo from "@/assets/svg/logo";
 
 export default function Footer() {

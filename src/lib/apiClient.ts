@@ -7,7 +7,7 @@ const apiClient = ofetch.create({
   credentials: "include",
   timeout: 120000, // 2 minutes
   retry: 1,
-  onRequest({ options }) {
+  onRequest({ options }: { options: any }) {
     if (typeof window !== "undefined") {
       let token = localStorage.getItem("devassess_token");
       if (!token) {
