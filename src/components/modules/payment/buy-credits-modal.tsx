@@ -69,7 +69,8 @@ export function BuyCreditsModal({ isOpen, onClose }: BuyCreditsModalProps) {
     initiatePaymentMutation.mutate(
       { credits: currentCredits },
       {
-        onSuccess: (response: ApiResponse<InitiatePaymentResponse>) => {
+        onSuccess: (data: unknown) => {
+          const response = data as ApiResponse<InitiatePaymentResponse>;
           const paymentUrl = response?.data?.paymentUrl;
           if (paymentUrl) {
             toast.add({

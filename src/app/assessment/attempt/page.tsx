@@ -485,7 +485,7 @@ function CandidateAssessmentExamContent() {
         ? candidateEmail
             .split("@")[0]
             .replace(/[._]/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase())
+            .replace(/\b\w/g, (c: string) => c.toUpperCase())
         : "Candidate Developer");
     let challengeTitle = currentQ?.title || "Developer Assessment Challenge";
 
