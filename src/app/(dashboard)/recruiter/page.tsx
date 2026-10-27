@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   CheckCircle2,
   ChevronRight,
@@ -5,6 +6,7 @@ import {
   CreditCard,
   FileCode,
   Home,
+  Loader2,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -101,8 +103,17 @@ export default function RecruiterEvaluationsPage() {
         </div>
       </div>
 
-      {/* recruiter evaluations coordinator */}
-      <RecruiterEvaluationsView />
+      {/* recruiter evaluations coordinator wrapped in Suspense */}
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">
+            <Loader2 className="size-5 animate-spin text-primary" />
+            <span className="text-xs font-medium">Loading evaluation queue...</span>
+          </div>
+        }
+      >
+        <RecruiterEvaluationsView />
+      </Suspense>
     </div>
   );
 }

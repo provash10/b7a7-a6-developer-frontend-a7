@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTableUrlState } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,12 +60,45 @@ const INITIAL_USERS: ManagedUser[] = [
 ];
 
 export function ManageUsersTable() {
+  const { getParam, getNumberParam, updateUrl } = useTableUrlState();
+
   const [users, setUsers] = useState<ManagedUser[]>(INITIAL_USERS);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("ALL");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState(() => getParam("search", ""));
+  const [roleFilter, setRoleFilter] = useState<string>(() => getParam("role", "ALL"));
+  const [statusFilter, setStatusFilter] = useState<string>(() => getParam("status", "ALL"));
+  const [currentPage, setCurrentPage] = useState(() => getNumberParam("page", 1));
   const pageSize = 10;
+
+  // Sync state if URL changes externally (e.g. back/forward navigation or shared links)
+  useEffect(() => {
+    setSearchQuery(getParam("search", ""));
+    setRoleFilter(getParam("role", "ALL"));
+    setStatusFilter(getParam("status", "ALL"));
+    setCurrentPage(getNumberParam("page", 1));
+  }, [getParam, getNumberParam]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+    updateUrl({ search: val.trim() ? val : null, page: null });
+  };
+
+  const handleRoleChange = (val: string) => {
+    setRoleFilter(val);
+    setCurrentPage(1);
+    updateUrl({ role: val === "ALL" ? null : val, page: null });
+  };
+
+  const handleStatusChange = (val: string) => {
+    setStatusFilter(val);
+    setCurrentPage(1);
+    updateUrl({ status: val === "ALL" ? null : val, page: null });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    updateUrl({ page: newPage > 1 ? newPage : null });
+  };
 
   // modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -378,10 +412,7 @@ export function ManageUsersTable() {
             <Input
               placeholder="Search user name or email..."
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-8 text-xs h-8"
             />
           </div>
@@ -389,10 +420,7 @@ export function ManageUsersTable() {
           {/* role filter */}
           <select
             value={roleFilter}
-            onChange={(e) => {
-              setRoleFilter(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => handleRoleChange(e.target.value)}
             className="h-8 px-2.5 rounded-none border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="ALL">
@@ -406,10 +434,7 @@ export function ManageUsersTable() {
           {/* status filter */}
           <select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => handleStatusChange(e.target.value)}
             className="h-8 px-2.5 rounded-none border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="ALL">All Statuses (Active, Pending, Blocked)</option>
@@ -587,7 +612,7 @@ export function ManageUsersTable() {
               variant="outline"
               size="icon-xs"
               disabled={currentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
             >
               <ChevronLeft className="size-3.5" />
             </Button>
@@ -598,7 +623,7 @@ export function ManageUsersTable() {
               variant="outline"
               size="icon-xs"
               disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
             >
               <ChevronRight className="size-3.5" />
             </Button>

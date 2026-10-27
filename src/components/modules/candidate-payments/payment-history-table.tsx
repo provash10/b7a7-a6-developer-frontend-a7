@@ -1,7 +1,8 @@
 "use client";
 
 import { CreditCard, Download, Receipt, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTableUrlState } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,12 +73,33 @@ const INVOICE_HISTORY: PaymentInvoice[] = [
 ];
 
 export function PaymentHistoryTable() {
-  // console.log("rendering payment history table component");
+  const { getParam, updateUrl } = useTableUrlState();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "refunded">(
-    "all",
+  const [searchQuery, setSearchQuery] = useState(() =>
+    getParam("pay_search", ""),
   );
+  const [statusFilter, setStatusFilter] = useState<"all" | "paid" | "refunded">(
+    () => {
+      const val = getParam("pay_status", "all");
+      return val === "paid" || val === "refunded" ? val : "all";
+    },
+  );
+
+  useEffect(() => {
+    setSearchQuery(getParam("pay_search", ""));
+    const val = getParam("pay_status", "all");
+    setStatusFilter(val === "paid" || val === "refunded" ? val : "all");
+  }, [getParam]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    updateUrl({ pay_search: val.trim() ? val : null });
+  };
+
+  const handleStatusChange = (val: "all" | "paid" | "refunded") => {
+    setStatusFilter(val);
+    updateUrl({ pay_status: val === "all" ? null : val });
+  };
 
   // filter invoices based on search and status tab
   const filteredInvoices = useMemo(() => {
@@ -123,7 +145,7 @@ export function PaymentHistoryTable() {
           <div className="flex items-center gap-1.5 p-1 rounded-lg bg-muted border border-border/60 self-start sm:self-auto">
             <button
               type="button"
-              onClick={() => setStatusFilter("all")}
+              onClick={() => handleStatusChange("all")}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 statusFilter === "all"
                   ? "bg-background text-foreground shadow-2xs"
@@ -134,7 +156,7 @@ export function PaymentHistoryTable() {
             </button>
             <button
               type="button"
-              onClick={() => setStatusFilter("paid")}
+              onClick={() => handleStatusChange("paid")}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 statusFilter === "paid"
                   ? "bg-background text-foreground shadow-2xs"
@@ -145,7 +167,7 @@ export function PaymentHistoryTable() {
             </button>
             <button
               type="button"
-              onClick={() => setStatusFilter("refunded")}
+              onClick={() => handleStatusChange("refunded")}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                 statusFilter === "refunded"
                   ? "bg-background text-foreground shadow-2xs"
@@ -163,7 +185,7 @@ export function PaymentHistoryTable() {
           <Input
             placeholder="search by invoice id (#INV-...), description, or payment method..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9 text-xs"
           />
         </div>

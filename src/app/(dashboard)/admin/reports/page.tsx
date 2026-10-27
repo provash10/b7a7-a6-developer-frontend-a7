@@ -1,7 +1,9 @@
+import { Suspense } from "react";
 import {
   ChevronRight,
   FileSpreadsheet,
   Home,
+  Loader2,
   Shield,
   Users,
 } from "lucide-react";
@@ -87,8 +89,17 @@ export default function AdminReportsPage() {
         </div>
       </div>
 
-      {/* admin reports view coordinator */}
-      <AdminReportsView />
+      {/* admin reports view coordinator wrapped in Suspense */}
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">
+            <Loader2 className="size-5 animate-spin text-primary" />
+            <span className="text-xs font-medium">Loading reports & audit logs...</span>
+          </div>
+        }
+      >
+        <AdminReportsView />
+      </Suspense>
     </div>
   );
 }

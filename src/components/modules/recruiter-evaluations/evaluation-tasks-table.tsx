@@ -14,7 +14,8 @@ import {
   ShieldAlert,
   XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTableUrlState } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,14 +43,67 @@ export function EvaluationTasksTable({
 }: EvaluationTasksTableProps) {
   // console.log("evaluation tasks table component rendered");
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [antiCheatFilter, setAntiCheatFilter] = useState<string>("ALL");
-  const [currentPage, setCurrentPage] = useState(1);
+  const { getParam, getNumberParam, updateUrl } = useTableUrlState();
+
+  const [searchTerm, setSearchTerm] = useState(() =>
+    getParam("task_search", ""),
+  );
+  const [statusFilter, setStatusFilter] = useState<string>(() =>
+    getParam("task_status", "ALL"),
+  );
+  const [antiCheatFilter, setAntiCheatFilter] = useState<string>(() =>
+    getParam("task_integrity", "ALL"),
+  );
+  const [currentPage, setCurrentPage] = useState(() =>
+    getNumberParam("task_page", 1),
+  );
   const [selectedTask, setSelectedTask] = useState<EvaluationTask | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const pageSize = 5;
+
+  useEffect(() => {
+    setSearchTerm(getParam("task_search", ""));
+    setStatusFilter(getParam("task_status", "ALL"));
+    setAntiCheatFilter(getParam("task_integrity", "ALL"));
+    setCurrentPage(getNumberParam("task_page", 1));
+  }, [getParam, getNumberParam]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchTerm(val);
+    setCurrentPage(1);
+    updateUrl({ task_search: val.trim() ? val : null, task_page: null });
+  };
+
+  const handleStatusChange = (val: string) => {
+    setStatusFilter(val);
+    setCurrentPage(1);
+    updateUrl({ task_status: val === "ALL" ? null : val, task_page: null });
+  };
+
+  const handleAntiCheatChange = (val: string) => {
+    setAntiCheatFilter(val);
+    setCurrentPage(1);
+    updateUrl({ task_integrity: val === "ALL" ? null : val, task_page: null });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    updateUrl({ task_page: newPage > 1 ? newPage : null });
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("ALL");
+    setAntiCheatFilter("ALL");
+    setCurrentPage(1);
+    updateUrl({
+      task_search: null,
+      task_status: null,
+      task_integrity: null,
+      task_page: null,
+    });
+  };
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
@@ -238,12 +292,7 @@ export function EvaluationTasksTable({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  setSearchTerm("");
-                  setStatusFilter("ALL");
-                  setAntiCheatFilter("ALL");
-                  setCurrentPage(1);
-                }}
+                onClick={handleResetFilters}
                 className="gap-1.5 text-xs h-8"
               >
                 <RotateCcw className="size-3.5" />
@@ -262,10 +311,7 @@ export function EvaluationTasksTable({
                 type="text"
                 placeholder="search by candidate, challenge title, role, or language..."
                 value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-9 h-9 text-xs bg-background/80"
               />
             </div>
@@ -275,10 +321,7 @@ export function EvaluationTasksTable({
                 <Filter className="size-3.5 text-muted-foreground" />
                 <select
                   value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
+                  onChange={(e) => handleStatusChange(e.target.value)}
                   className="h-9 px-2.5 rounded-md border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="ALL">All Statuses</option>
@@ -291,10 +334,7 @@ export function EvaluationTasksTable({
 
               <select
                 value={antiCheatFilter}
-                onChange={(e) => {
-                  setAntiCheatFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => handleAntiCheatChange(e.target.value)}
                 className="h-9 px-2.5 rounded-md border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="ALL">All Integrity Signals</option>
@@ -451,7 +491,7 @@ export function EvaluationTasksTable({
                   variant="outline"
                   size="icon-xs"
                   disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage((p) => p - 1)}
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                 >
                   <ChevronLeft className="size-3.5" />
                 </Button>
@@ -462,7 +502,7 @@ export function EvaluationTasksTable({
                   variant="outline"
                   size="icon-xs"
                   disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((p) => p + 1)}
+                  onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                 >
                   <ChevronRight className="size-3.5" />
                 </Button>

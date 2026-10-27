@@ -1,13 +1,19 @@
 "use client";
 
 import { CheckCircle2, FileCode, Sparkles, Users } from "lucide-react";
-import { useState } from "react";
+import { useTableUrlState } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { ManageAssessmentsTable } from "./manage-assessments-table";
 import { ManageUsersTable } from "./manage-users-table";
 
 export function AdminManageView() {
-  const [activeTab, setActiveTab] = useState<"users" | "assessments">("users");
+  const { getParam, updateUrl } = useTableUrlState();
+  const urlTab = getParam("tab", "users");
+  const activeTab = urlTab === "assessments" ? "assessments" : "users";
+
+  const handleTabChange = (newTab: "users" | "assessments") => {
+    updateUrl({ tab: newTab === "users" ? null : newTab });
+  };
 
   return (
     <div className="space-y-6">
@@ -16,7 +22,7 @@ export function AdminManageView() {
         {/* Tab 1: Users & Permissions */}
         <button
           type="button"
-          onClick={() => setActiveTab("users")}
+          onClick={() => handleTabChange("users")}
           className={`group relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
             activeTab === "users"
               ? "bg-gradient-to-br from-primary/20 via-primary/10 to-card border-primary shadow-xl shadow-primary/15 ring-2 ring-primary/25 scale-[1.01]"
@@ -75,7 +81,7 @@ export function AdminManageView() {
         {/* Tab 2: Assessment Challenges & Questions */}
         <button
           type="button"
-          onClick={() => setActiveTab("assessments")}
+          onClick={() => handleTabChange("assessments")}
           className={`group relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
             activeTab === "assessments"
               ? "bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-card border-emerald-500 shadow-xl shadow-emerald-500/15 ring-2 ring-emerald-500/25 scale-[1.01]"

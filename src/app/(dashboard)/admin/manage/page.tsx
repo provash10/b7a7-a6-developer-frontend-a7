@@ -1,4 +1,5 @@
-import { ChevronRight, Home, LayoutDashboard, Shield } from "lucide-react";
+import { Suspense } from "react";
+import { ChevronRight, Home, LayoutDashboard, Loader2, Shield } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdminManageView } from "@/components/modules/admin-manage";
@@ -75,8 +76,17 @@ export default function AdminManagePage() {
         </div>
       </div>
 
-      {/* admin manage view container */}
-      <AdminManageView />
+      {/* admin manage view container wrapped in Suspense for searchParams */}
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">
+            <Loader2 className="size-5 animate-spin text-primary" />
+            <span className="text-xs font-medium">Loading manage console...</span>
+          </div>
+        }
+      >
+        <AdminManageView />
+      </Suspense>
     </div>
   );
 }

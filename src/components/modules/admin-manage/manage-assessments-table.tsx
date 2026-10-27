@@ -15,6 +15,7 @@ import {
   Code2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useTableUrlState } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -126,15 +127,54 @@ const INITIAL_ASSESSMENTS: ManagedAssessment[] = [
 ];
 
 export function ManageAssessmentsTable() {
-  // console.log("rendering manage assessments table component");
+  const { getParam, getNumberParam, updateUrl } = useTableUrlState();
 
   const [assessments, setAssessments] =
     useState<ManagedAssessment[]>(INITIAL_ASSESSMENTS);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [difficultyFilter, setDifficultyFilter] = useState<string>("ALL");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState(() =>
+    getParam("asst_search", ""),
+  );
+  const [statusFilter, setStatusFilter] = useState<string>(() =>
+    getParam("asst_status", "ALL"),
+  );
+  const [difficultyFilter, setDifficultyFilter] = useState<string>(() =>
+    getParam("asst_diff", "ALL"),
+  );
+  const [currentPage, setCurrentPage] = useState(() =>
+    getNumberParam("asst_page", 1),
+  );
   const pageSize = 5;
+
+  // Sync state if URL changes externally
+  useEffect(() => {
+    setSearchQuery(getParam("asst_search", ""));
+    setStatusFilter(getParam("asst_status", "ALL"));
+    setDifficultyFilter(getParam("asst_diff", "ALL"));
+    setCurrentPage(getNumberParam("asst_page", 1));
+  }, [getParam, getNumberParam]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setCurrentPage(1);
+    updateUrl({ asst_search: val.trim() ? val : null, asst_page: null });
+  };
+
+  const handleStatusChange = (val: string) => {
+    setStatusFilter(val);
+    setCurrentPage(1);
+    updateUrl({ asst_status: val === "ALL" ? null : val, asst_page: null });
+  };
+
+  const handleDifficultyChange = (val: string) => {
+    setDifficultyFilter(val);
+    setCurrentPage(1);
+    updateUrl({ asst_diff: val === "ALL" ? null : val, asst_page: null });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    updateUrl({ asst_page: newPage > 1 ? newPage : null });
+  };
 
   // modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -292,10 +332,7 @@ export function ManageAssessmentsTable() {
             <Input
               placeholder="Search title, company, or skills..."
               value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-8 text-xs h-8"
             />
           </div>
@@ -303,10 +340,7 @@ export function ManageAssessmentsTable() {
           {/* status filter */}
           <select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => handleStatusChange(e.target.value)}
             className="h-8 px-2.5 rounded-none border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="ALL">
@@ -320,10 +354,7 @@ export function ManageAssessmentsTable() {
           {/* difficulty filter */}
           <select
             value={difficultyFilter}
-            onChange={(e) => {
-              setDifficultyFilter(e.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(e) => handleDifficultyChange(e.target.value)}
             className="h-8 px-2.5 rounded-none border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="ALL">All Difficulties (Easy, Medium, Hard)</option>
@@ -522,7 +553,7 @@ export function ManageAssessmentsTable() {
               variant="outline"
               size="icon-xs"
               disabled={currentPage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
             >
               <ChevronLeft className="size-3.5" />
             </Button>
@@ -533,7 +564,7 @@ export function ManageAssessmentsTable() {
               variant="outline"
               size="icon-xs"
               disabled={currentPage >= totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
             >
               <ChevronRight className="size-3.5" />
             </Button>

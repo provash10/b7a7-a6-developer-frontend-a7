@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import {
   ChevronRight,
   CreditCard,
   ExternalLink,
   Home,
+  Loader2,
   Sparkles,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -83,8 +85,17 @@ export default function CandidatePaymentsPage() {
       {/* 2. certified badges & download grid */}
       <CertifiedBadgesGrid />
 
-      {/* 3. payment history & pdf invoices table */}
-      <PaymentHistoryTable />
+      {/* 3. payment history & pdf invoices table wrapped in Suspense */}
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
+            <Loader2 className="size-5 animate-spin text-primary" />
+            <span className="text-xs font-medium">Loading invoices & payment history...</span>
+          </div>
+        }
+      >
+        <PaymentHistoryTable />
+      </Suspense>
 
       {/* 4. saved payment methods & recipient details */}
       <BillingDetailsCard />

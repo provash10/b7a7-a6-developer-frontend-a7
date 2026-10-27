@@ -11,8 +11,8 @@ import {
   RotateCcw,
   Search,
   ShieldAlert,
-} from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTableUrlState } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -137,14 +137,65 @@ const mockAuditLogs: AuditLogItem[] = [
 ];
 
 export function AuditLogsTable() {
-  // console.log("audit logs table component rendered");
+  const { getParam, getNumberParam, updateUrl } = useTableUrlState();
 
   const [logs] = useState<AuditLogItem[]>(mockAuditLogs);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [severityFilter, setSeverityFilter] = useState<string>("ALL");
-  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState(() =>
+    getParam("log_search", ""),
+  );
+  const [severityFilter, setSeverityFilter] = useState<string>(() =>
+    getParam("log_severity", "ALL"),
+  );
+  const [categoryFilter, setCategoryFilter] = useState<string>(() =>
+    getParam("log_category", "ALL"),
+  );
+  const [currentPage, setCurrentPage] = useState(() =>
+    getNumberParam("log_page", 1),
+  );
   const pageSize = 5;
+
+  useEffect(() => {
+    setSearchTerm(getParam("log_search", ""));
+    setSeverityFilter(getParam("log_severity", "ALL"));
+    setCategoryFilter(getParam("log_category", "ALL"));
+    setCurrentPage(getNumberParam("log_page", 1));
+  }, [getParam, getNumberParam]);
+
+  const handleSearchChange = (val: string) => {
+    setSearchTerm(val);
+    setCurrentPage(1);
+    updateUrl({ log_search: val.trim() ? val : null, log_page: null });
+  };
+
+  const handleSeverityChange = (val: string) => {
+    setSeverityFilter(val);
+    setCurrentPage(1);
+    updateUrl({ log_severity: val === "ALL" ? null : val, log_page: null });
+  };
+
+  const handleCategoryChange = (val: string) => {
+    setCategoryFilter(val);
+    setCurrentPage(1);
+    updateUrl({ log_category: val === "ALL" ? null : val, log_page: null });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    updateUrl({ log_page: newPage > 1 ? newPage : null });
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSeverityFilter("ALL");
+    setCategoryFilter("ALL");
+    setCurrentPage(1);
+    updateUrl({
+      log_search: null,
+      log_severity: null,
+      log_category: null,
+      log_page: null,
+    });
+  };
 
   const filteredLogs = useMemo(() => {
     return logs.filter((item) => {
@@ -237,12 +288,7 @@ export function AuditLogsTable() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => {
-              setSearchTerm("");
-              setSeverityFilter("ALL");
-              setCategoryFilter("ALL");
-              setCurrentPage(1);
-            }}
+            onClick={handleResetFilters}
             className="gap-1.5 text-xs h-8"
           >
             <RotateCcw className="size-3.5" />
@@ -260,10 +306,7 @@ export function AuditLogsTable() {
               type="text"
               placeholder="search by action, actor, target or ip..."
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9 h-9 text-xs bg-background/80"
             />
           </div>
@@ -273,10 +316,7 @@ export function AuditLogsTable() {
               <Filter className="size-3.5 text-muted-foreground" />
               <select
                 value={severityFilter}
-                onChange={(e) => {
-                  setSeverityFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => handleSeverityChange(e.target.value)}
                 className="h-9 px-2.5 rounded-md border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="ALL">All Severities</option>
@@ -289,10 +329,7 @@ export function AuditLogsTable() {
 
             <select
               value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => handleCategoryChange(e.target.value)}
               className="h-9 px-2.5 rounded-md border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="ALL">All Categories</option>
@@ -405,7 +442,7 @@ export function AuditLogsTable() {
                 variant="outline"
                 size="icon-xs"
                 disabled={currentPage <= 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
               >
                 <ChevronLeft className="size-3.5" />
               </Button>
@@ -416,7 +453,7 @@ export function AuditLogsTable() {
                 variant="outline"
                 size="icon-xs"
                 disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
+                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
               >
                 <ChevronRight className="size-3.5" />
               </Button>
