@@ -3,6 +3,8 @@
 import {
   Check,
   CheckCircle2,
+  CheckSquare,
+  ChevronDown,
   Clock,
   Copy,
   ExternalLink,
@@ -10,11 +12,14 @@ import {
   Mail,
   Send,
   Sparkles,
+  Square,
   User,
+  UserCheck,
+  UserPlus,
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createAssessment,
   createQuestion,
@@ -26,6 +31,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import type { EvaluationTask } from "./types";
+
+export interface SavedCandidate {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+}
+
+const INITIAL_SAVED_CANDIDATES: SavedCandidate[] = [
+  {
+    id: "cand-1",
+    name: "Provash Barman",
+    email: "provash10dev@gmail.com",
+    role: "Candidate (Active)",
+  },
+  {
+    id: "cand-2",
+    name: "Amy Bruckner",
+    email: "scstanley17111991@gmail.com",
+    role: "Candidate (Invited)",
+  },
+  {
+    id: "cand-3",
+    name: "Candidate Demo",
+    email: "candidate@100.com",
+    role: "Candidate (Seed)",
+  },
+];
 
 interface SendInvitationModalProps {
   isOpen: boolean;
@@ -112,6 +145,85 @@ export function SendInvitationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSeedingDb, setIsSeedingDb] = useState(false);
   const [dispatchedToken, setDispatchedToken] = useState<string | null>(null);
+
+  // Saved / Previously Invited Candidates state & dropdown toggle
+  const [savedCandidates, setSavedCandidates] = useState<SavedCandidate[]>(
+    INITIAL_SAVED_CANDIDATES,
+  );
+  const [isCandidateDropdownOpen, setIsCandidateDropdownOpen] = useState(false);
+  const candidateDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close candidate dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        candidateDropdownRef.current &&
+        !candidateDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCandidateDropdownOpen(false);
+      }
+    }
+    if (isCandidateDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isCandidateDropdownOpen]);
+
+  // Load previously invited candidates from localStorage
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const candidateMap = new Map<string, SavedCandidate>();
+      INITIAL_SAVED_CANDIDATES.forEach((c) =>
+        candidateMap.set(c.email.toLowerCase(), c),
+      );
+
+      // Load custom saved candidates
+      const storedSaved = localStorage.getItem("devassess_saved_candidates");
+      if (storedSaved) {
+        const parsed = JSON.parse(storedSaved);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((c: any) => {
+            if (c.email) {
+              candidateMap.set(c.email.toLowerCase(), {
+                id: c.id || `cand-${Date.now()}-${Math.random()}`,
+                name: c.name || c.email.split("@")[0],
+                email: c.email,
+                role: c.role || "Previous Candidate",
+              });
+            }
+          });
+        }
+      }
+
+      // Also merge past dispatched invitations if any
+      const storedInvites = localStorage.getItem("devassess_invitations");
+      if (storedInvites) {
+        const parsedInv = JSON.parse(storedInvites);
+        if (Array.isArray(parsedInv)) {
+          parsedInv.forEach((inv: any) => {
+            if (inv.candidateEmail) {
+              const emailKey = inv.candidateEmail.toLowerCase();
+              if (!candidateMap.has(emailKey)) {
+                candidateMap.set(emailKey, {
+                  id: `cand-${emailKey}`,
+                  name: inv.candidateName || emailKey.split("@")[0],
+                  email: inv.candidateEmail,
+                  role: "Invited Candidate",
+                });
+              }
+            }
+          });
+        }
+      }
+
+      setSavedCandidates(Array.from(candidateMap.values()));
+    } catch {
+      // ignore
+    }
+  }, [isOpen]);
 
   // Load live DB assessments + custom challenges created in Admin Catalog
   useEffect(() => {
@@ -241,12 +353,29 @@ export function SendInvitationModal({
     challenges[0] ||
     DEFAULT_CHALLENGES[0];
 
-  const handleQuickFillProvash = () => {
-    setCandidateName("Provash Barman");
-    setCandidateEmail("provash10dev@gmail.com");
+  const selectedSavedCandidate = savedCandidates.find(
+    (c) =>
+      c.email.trim().toLowerCase() === candidateEmail.trim().toLowerCase(),
+  );
+
+  const handleSelectCandidate = (cand: SavedCandidate) => {
+    setCandidateName(cand.name);
+    setCandidateEmail(cand.email);
+    setIsCandidateDropdownOpen(false);
     toast.add({
       title: "Candidate Selected",
-      description: "Filled Provash Barman (provash10dev@gmail.com)",
+      description: `Filled ${cand.name} (${cand.email})`,
+      type: "info",
+    });
+  };
+
+  const handleSelectNewCandidate = () => {
+    setCandidateName("");
+    setCandidateEmail("");
+    setIsCandidateDropdownOpen(false);
+    toast.add({
+      title: "New Candidate Mode",
+      description: "Enter candidate full name and email manually below.",
       type: "info",
     });
   };
@@ -283,21 +412,27 @@ export function SendInvitationModal({
         assessmentId: selectedChallenge.id,
         expiresInDays: parseInt(expiryDays, 10),
       });
-      if (res?.data?.inviteToken) {
+      if (res && res.success !== false && res?.data?.inviteToken) {
         backendToken = res.data.inviteToken;
+        toast.add({
+          title: "Saved in PostgreSQL Database! 🚀",
+          description: `Invitation recorded in 'assessment_invitations' table.`,
+          type: "success",
+        });
+      } else {
+        const errMsg = res?.message || "Recruiter authentication required";
+        toast.add({
+          title: "Candidate Link Generated 🎯",
+          description: `${errMsg}. (Ready to dispatch & test).`,
+          type: "info",
+        });
       }
-      toast.add({
-        title: "Saved in PostgreSQL Database! 🚀",
-        description: `Invitation recorded in 'assessment_invitations' table.`,
-        type: "success",
-      });
     } catch (err: any) {
-      console.error("Backend invitation error:", err);
       const errMsg =
         err?.data?.message || err?.message || "Check recruiter auth or UUID format";
       toast.add({
-        title: "Database Sync Note",
-        description: `${errMsg}. (Saved in local queue).`,
+        title: "Candidate Link Generated 🎯",
+        description: `${errMsg}. (Ready to dispatch & test).`,
         type: "info",
       });
     }
@@ -355,6 +490,33 @@ export function SendInvitationModal({
         list.unshift(newTask);
         localStorage.setItem("devassess_candidate_submissions", JSON.stringify(list));
       } catch (err) {
+        // ignore
+      }
+
+      // Save newly invited candidate to saved candidates list for future quick pick
+      try {
+        const newCandEntry: SavedCandidate = {
+          id: `cand-${Date.now()}`,
+          name: candidateName.trim(),
+          email: candidateEmail.trim().toLowerCase(),
+          role: "Invited Candidate",
+        };
+        setSavedCandidates((prev) => {
+          const map = new Map<string, SavedCandidate>();
+          map.set(newCandEntry.email.toLowerCase(), newCandEntry);
+          prev.forEach((c) => {
+            if (!map.has(c.email.toLowerCase())) {
+              map.set(c.email.toLowerCase(), c);
+            }
+          });
+          const updated = Array.from(map.values());
+          localStorage.setItem(
+            "devassess_saved_candidates",
+            JSON.stringify(updated),
+          );
+          return updated;
+        });
+      } catch {
         // ignore
       }
 
@@ -500,41 +662,127 @@ export function SendInvitationModal({
           </div>
         ) : (
           <form onSubmit={handleSend} className="space-y-4">
-            {/* Quick 1-Click Candidate Fill Card */}
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            {/* Quick Candidate Select Dropdown Card with Down Arrow */}
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
                   <Sparkles className="size-3.5 text-primary" />
-                  <span>1-Click Candidate Quick Select</span>
+                  <span>Candidate Quick Select &amp; Saved Profiles</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Quickly invite candidate Provash Barman (provash10dev@gmail.com).
+                  {selectedSavedCandidate ? (
+                    <>
+                      Selected: <strong className="text-foreground">{selectedSavedCandidate.name}</strong> ({selectedSavedCandidate.email})
+                    </>
+                  ) : (
+                    "Select a previously saved candidate or enter a new one below."
+                  )}
                 </p>
               </div>
 
-              <Button
-                type="button"
-                size="sm"
-                variant={isProvashSelected ? "default" : "outline"}
-                onClick={handleQuickFillProvash}
-                className={`text-xs font-bold h-8 px-3.5 shrink-0 gap-1.5 cursor-pointer transition-all ${
-                  isProvashSelected
-                    ? "bg-emerald-600 hover:bg-emerald-500 text-white"
-                    : "border-primary/40 hover:bg-primary/10 text-primary"
-                }`}
-              >
-                {isProvashSelected ? (
-                  <>
-                    <Check className="size-3.5" />
-                    <span>Selected: Provash</span>
-                  </>
-                ) : (
-                  <>
-                    <User className="size-3.5" />
-                    <span>👤 Provash Barman</span>
-                  </>
+              {/* Dropdown with Down Arrow (Replaces single button) */}
+              <div className="relative shrink-0 w-full sm:w-auto" ref={candidateDropdownRef}>
+                <button
+                  type="button"
+                  id="candidate-quick-select-dropdown"
+                  onClick={() => setIsCandidateDropdownOpen((prev) => !prev)}
+                  className={`w-full sm:w-auto inline-flex items-center justify-between sm:justify-start gap-2.5 rounded-lg border px-3.5 py-1.5 text-xs font-bold shadow-xs transition-all cursor-pointer ${
+                    selectedSavedCandidate
+                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
+                      : "border-primary/40 bg-background/90 text-primary hover:bg-primary/10"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 truncate">
+                    {selectedSavedCandidate ? (
+                      <>
+                        <UserCheck className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="truncate max-w-[140px]">
+                          👤 {selectedSavedCandidate.name}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <User className="size-3.5 text-primary" />
+                        <span>👤 Select Candidate</span>
+                      </>
+                    )}
+                  </div>
+                  <ChevronDown
+                    className={`size-3.5 text-muted-foreground transition-transform duration-200 ${
+                      isCandidateDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Dropdown Floating Menu with Checkboxes */}
+                {isCandidateDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-72 sm:w-80 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-2.5 py-1.5 border-b border-border/60 flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Saved Candidates ({savedCandidates.length})
+                      </span>
+                      <Badge variant="outline" className="text-[10px] h-4 px-1.5 py-0">
+                        Check to select
+                      </Badge>
+                    </div>
+
+                    <div className="max-h-56 overflow-y-auto py-1 space-y-1">
+                      {savedCandidates.map((cand) => {
+                        const isSelected =
+                          candidateEmail.trim().toLowerCase() ===
+                          cand.email.trim().toLowerCase();
+                        return (
+                          <button
+                            key={cand.id || cand.email}
+                            type="button"
+                            onClick={() => handleSelectCandidate(cand)}
+                            className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer ${
+                              isSelected
+                                ? "bg-primary/15 text-primary font-semibold border border-primary/20"
+                                : "hover:bg-muted text-foreground"
+                            }`}
+                          >
+                            <div className="shrink-0">
+                              {isSelected ? (
+                                <CheckSquare className="size-4 text-primary fill-primary/20" />
+                              ) : (
+                                <Square className="size-4 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-semibold truncate">
+                                  {cand.name}
+                                </span>
+                                {cand.role && (
+                                  <span className="text-[10px] text-muted-foreground shrink-0 font-normal">
+                                    {cand.role}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[11px] text-muted-foreground truncate block">
+                                {cand.email}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* New candidate option (clear form) */}
+                    <div className="border-t border-border/60 pt-1 mt-1">
+                      <button
+                        type="button"
+                        onClick={handleSelectNewCandidate}
+                        className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs text-primary hover:bg-primary/10 font-semibold transition-colors cursor-pointer"
+                      >
+                        <UserPlus className="size-3.5" />
+                        <span>✍️ New Candidate (Type Manually)</span>
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </Button>
+              </div>
             </div>
 
             {/* Candidate Name & Email Grid */}

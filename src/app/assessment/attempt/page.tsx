@@ -23,7 +23,9 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   acceptAssessmentInvitation,
   finishAttempt,
+  getAttemptQuestions,
   getCandidateInvitations,
+  getMyAttempts,
   recordAntiCheatFlag,
   startAttempt,
   submitAnswer,
@@ -326,34 +328,100 @@ function CandidateAssessmentExamContent() {
         const pendingInvite = myInvitesRes?.data?.find(
           (inv: any) =>
             inv.status === "PENDING" &&
-            (inv.assessmentId === assessmentId || (token && inv.token === token)),
+            (inv.assessmentId === assessmentId ||
+              (token && (inv.token === token || inv.inviteToken === token))),
         );
 
         let activeAttId = attemptId;
 
+        // 1. Accept pending invitation if present
         if (pendingInvite?.id) {
-          const acceptRes = await acceptAssessmentInvitation(pendingInvite.id);
-          if (acceptRes?.data?.attempt?.id) {
-            activeAttId = acceptRes.data.attempt.id;
-            setAttemptId(activeAttId);
+          try {
+            const acceptRes = await acceptAssessmentInvitation(pendingInvite.id);
+            if (acceptRes?.data?.attempt?.id) {
+              activeAttId = acceptRes.data.attempt.id;
+              setAttemptId(activeAttId);
+            }
+          } catch {
+            // Already accepted or handled
           }
         }
 
-        const startRes = await startAttempt(activeAttId);
-        if (startRes?.data?.id) {
-          setAttemptId(startRes.data.id);
-          toast.add({
-            title: "PostgreSQL Attempt Connected! 🚀",
-            description: `Attempt recorded in 'candidate_attempts' table. ID: ${startRes.data.id}`,
-            type: "success",
-          });
+        // 2. If no attempt id yet, find active attempt from candidate attempts
+        if (!activeAttId || activeAttId.startsWith("att-")) {
+          try {
+            const myAttemptsRes = await getMyAttempts();
+            const existingAttempt = myAttemptsRes?.data?.find(
+              (a: any) =>
+                a.assessmentId === assessmentId && a.status !== "SUBMITTED",
+            );
+            if (existingAttempt?.id) {
+              activeAttId = existingAttempt.id;
+              setAttemptId(activeAttId);
+            }
+          } catch {
+            // ignore
+          }
+        }
+
+        // 3. Start attempt if not started yet
+        let connectedAttemptId = activeAttId;
+        try {
+          const startRes = await startAttempt(activeAttId);
+          if (startRes?.data?.id) {
+            connectedAttemptId = startRes.data.id;
+            setAttemptId(connectedAttemptId);
+            toast.add({
+              title: "PostgreSQL Attempt Connected! 🚀",
+              description: `Attempt recorded in 'candidate_attempts' table. ID: ${connectedAttemptId}`,
+              type: "success",
+            });
+          }
+        } catch {
+          // Already in progress or fallback
+        }
+
+        // 4. Fetch actual questions for this assessment attempt from PostgreSQL database
+        if (connectedAttemptId && !connectedAttemptId.startsWith("att-")) {
+          try {
+            const qRes = await getAttemptQuestions(connectedAttemptId);
+            const backendQuestions = qRes?.data?.questions;
+            if (Array.isArray(backendQuestions) && backendQuestions.length > 0) {
+              const mappedDbQuestions: ExamQuestion[] = backendQuestions.map(
+                (q: any, idx: number) => ({
+                  id: q.id,
+                  title: `${idx + 1}. ${q.title}`,
+                  difficulty: q.difficulty || "MEDIUM",
+                  marks: q.marks || 20,
+                  description: q.description || "",
+                  starterCode: {
+                    javascript: `// Solution for ${q.title}\nfunction solution(input) {\n  return input;\n}`,
+                    typescript: `// Solution for ${q.title}\nfunction solution(input: any): any {\n  return input;\n}`,
+                    python: `# Solution for ${q.title}\ndef solution(input):\n    return input\n`,
+                  },
+                  testCases: Array.isArray(q.testCases)
+                    ? q.testCases.map((tc: any) => ({
+                        input:
+                          typeof tc.input === "object"
+                            ? JSON.stringify(tc.input)
+                            : String(tc.input || ""),
+                        expected:
+                          typeof tc.expectedOutput === "object"
+                            ? JSON.stringify(tc.expectedOutput)
+                            : String(tc.expectedOutput || ""),
+                        hidden: tc.isHidden || false,
+                      }))
+                    : [{ input: "sample", expected: "sample" }],
+                }),
+              );
+              setQuestions(mappedDbQuestions);
+            }
+          } catch {
+            // fallback to default question set
+          }
         }
       } catch {
-        startAttempt(assessmentId)
-          .then((res: any) => {
-            if (res?.data?.id) setAttemptId(res.data.id);
-          })
-          .catch(() => {});
+        // Fallback gracefully
       }
     }
 

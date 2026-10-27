@@ -106,9 +106,15 @@ export default function LoginForm() {
         onSuccess: (res: any) => {
           const userEmail = loginData.email;
           const userRole =
-            res?.data?.role || res?.role || getEffectiveRole(userEmail);
+            res?.data?.user?.role ||
+            res?.data?.role ||
+            res?.role ||
+            getEffectiveRole(userEmail);
           const userName =
-            res?.data?.name || res?.name || userEmail.split("@")[0];
+            res?.data?.user?.name ||
+            res?.data?.name ||
+            res?.name ||
+            userEmail.split("@")[0];
           const token = res?.data?.accessToken || res?.accessToken;
 
           setActiveSession(userEmail, userRole, userName, token);
@@ -166,8 +172,10 @@ export default function LoginForm() {
     login(loginData, {
       onSuccess: (res: any) => {
         const token = res?.data?.accessToken || res?.accessToken;
-        const serverRole = res?.data?.role || res?.role || effectiveRole;
-        const serverName = res?.data?.name || res?.name || demo.role;
+        const serverRole =
+          res?.data?.user?.role || res?.data?.role || res?.role || effectiveRole;
+        const serverName =
+          res?.data?.user?.name || res?.data?.name || res?.name || demo.role;
 
         setActiveSession(demo.email, serverRole, serverName, token);
 

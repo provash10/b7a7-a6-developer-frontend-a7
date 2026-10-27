@@ -248,12 +248,27 @@ export async function sendAssessmentInvitation(payload: {
     });
   } catch (err: any) {
     if (err?.status === 404 || err?.statusCode === 404) {
-      return await apiClient<ApiResponse<any>>("/invitation", {
-        method: "POST",
-        body: payload,
-      });
+      try {
+        return await apiClient<ApiResponse<any>>("/invitation", {
+          method: "POST",
+          body: payload,
+        });
+      } catch (innerErr: any) {
+        return {
+          success: false,
+          statusCode: innerErr?.statusCode || innerErr?.status || 404,
+          message: innerErr?.data?.message || innerErr?.message || "Assessment endpoint unavailable",
+          data: null,
+        } as any;
+      }
     }
-    throw err;
+
+    return {
+      success: false,
+      statusCode: err?.statusCode || err?.status || 500,
+      message: err?.data?.message || err?.message || "Failed to sync with backend invitations table",
+      data: null,
+    } as any;
   }
 }
 

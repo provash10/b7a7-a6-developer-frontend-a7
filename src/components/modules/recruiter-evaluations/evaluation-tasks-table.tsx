@@ -260,29 +260,31 @@ export function EvaluationTasksTable({
 
   return (
     <>
-      <Card className="border-border/60 bg-card/60 backdrop-blur-xs">
-        <CardHeader className="pb-3 border-b border-border/40">
+      <Card className="rounded-2xl border-2 border-border/80 bg-gradient-to-b from-card via-card to-card/80 shadow-md backdrop-blur-md overflow-hidden">
+        {/* Top accent gradient bar */}
+        <div className="h-1.5 w-full bg-gradient-to-r from-primary via-orange-500 to-amber-500" />
+
+        <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/60">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Edit3 className="size-4 text-primary" />
-                <span>candidate evaluation task queue</span>
-                <Badge variant="outline" className="text-[10px] font-mono">
+              <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2.5 tracking-tight">
+                <Edit3 className="size-5 text-primary" />
+                <span>Candidate Evaluation Task Queue</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold bg-primary/10 text-primary border-primary/30 px-2.5 py-0.5">
                   {filteredTasks.length} submissions
                 </Badge>
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                inspect candidate code quality, test case metrics, and update
-                hiring decision verdicts.
+              <CardDescription className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Inspect candidate code quality, test case metrics, and update hiring decision verdicts.
               </CardDescription>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2.5">
               {onOpenInvite && (
                 <Button
                   size="sm"
                   onClick={onOpenInvite}
-                  className="gap-2 text-xs font-semibold h-8 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer"
+                  className="gap-2 text-xs font-bold h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] rounded-xl transition-all cursor-pointer"
                 >
                   <Mail className="size-3.5" />
                   <span>Invite Candidate</span>
@@ -293,7 +295,7 @@ export function EvaluationTasksTable({
                 variant="outline"
                 size="sm"
                 onClick={handleResetFilters}
-                className="gap-1.5 text-xs h-8"
+                className="gap-1.5 text-xs font-semibold h-9 px-3.5 rounded-xl border-border/80 hover:bg-muted/60 transition-all cursor-pointer"
               >
                 <RotateCcw className="size-3.5" />
                 <span>Reset Filters</span>
@@ -437,38 +439,38 @@ export function EvaluationTasksTable({
                           <div className="space-y-1">
                             {getStatusBadge(task.status)}
                             <div className="pt-0.5">
-                              <select
-                                value={task.status}
-                                onChange={(e) =>
-                                  handleQuickStatusChange(
-                                    task,
-                                    e.target.value as EvaluationStatus,
-                                  )
-                                }
-                                className="h-6 px-1.5 rounded border border-border/70 bg-background text-[10px] text-foreground focus:outline-none"
-                              >
-                                <option value="PENDING_REVIEW">Pending</option>
-                                <option value="IN_REVIEW">In Review</option>
-                                <option value="ACCEPTED">Accept</option>
-                                <option value="REJECTED">Reject</option>
-                              </select>
+                                <select
+                                  value={task.status}
+                                  onChange={(e) =>
+                                    handleQuickStatusChange(
+                                      task,
+                                      e.target.value as EvaluationStatus,
+                                    )
+                                  }
+                                  className="h-7 px-2 rounded-lg border border-border/80 bg-background/90 text-[11px] font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-2xs cursor-pointer hover:border-primary/40 transition-colors"
+                                >
+                                  <option value="PENDING_REVIEW">Pending</option>
+                                  <option value="IN_REVIEW">In Review</option>
+                                  <option value="ACCEPTED">Accept</option>
+                                  <option value="REJECTED">Reject</option>
+                                </select>
+                              </div>
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* action button */}
-                        <td className="py-3 px-3 text-right whitespace-nowrap">
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => handleOpenReview(task)}
-                            className="h-7 px-2.5 text-xs gap-1 font-medium"
-                          >
-                            <Edit3 className="size-3" />
-                            <span>score & review</span>
-                          </Button>
-                        </td>
-                      </tr>
+                          {/* action button */}
+                          <td className="py-3 px-3 text-right whitespace-nowrap">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleOpenReview(task)}
+                              className="h-8 px-3 text-xs gap-1.5 font-bold rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                            >
+                              <Edit3 className="size-3.5" />
+                              <span>Score &amp; Review</span>
+                            </Button>
+                          </td>
+                        </tr>
                     ))
                   )}
                 </tbody>
