@@ -77,7 +77,19 @@ const ACTIVE_ASSESSMENT = {
   skills: ["Next.js 15", "TypeScript", "Tailwind CSS", "API Route Handlers"],
 };
 
-const RECENT_ASSESSMENTS = [
+export interface CandidateAssessmentItem {
+  id: string;
+  title: string;
+  company: string;
+  date: string;
+  score: number;
+  status: string;
+  verdict: string;
+  skills: string[];
+  rawStatus?: string;
+}
+
+const RECENT_ASSESSMENTS: CandidateAssessmentItem[] = [
   {
     id: "asst-8911",
     title: "React Concurrent Features & Architecture",
@@ -131,7 +143,7 @@ export function RoleAdaptiveDashboard() {
     };
   }, [user]);
 
-  const [myAssessments, setMyAssessments] = useState(RECENT_ASSESSMENTS);
+  const [myAssessments, setMyAssessments] = useState<CandidateAssessmentItem[]>(RECENT_ASSESSMENTS);
   const [activeInvitation, setActiveInvitation] = useState(ACTIVE_ASSESSMENT);
   const [activeInviteToken, setActiveInviteToken] = useState<string | null>(null);
   const [activeAssessmentId, setActiveAssessmentId] = useState<string>("asst-01");
@@ -649,7 +661,7 @@ export function RoleAdaptiveDashboard() {
           {myAssessments.map((test) => {
             const isTestAccepted =
               test.status === "Accepted ✓" ||
-              (test as any).rawStatus === "ACCEPTED" ||
+              test.rawStatus === "ACCEPTED" ||
               test.verdict?.includes("Accepted");
             const isTestPending =
               test.status === "Under Review" || test.verdict === "Needs Review";

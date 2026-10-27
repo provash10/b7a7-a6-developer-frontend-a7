@@ -4,6 +4,7 @@ import { ArrowRight, Loader2, Plus, ShieldCheck, X, Zap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { useInitiatePayment } from "@/hooks/payment.hook";
+import type { ApiResponse, InitiatePaymentResponse } from "@/types";
 
 interface BuyCreditsModalProps {
   isOpen: boolean;
@@ -68,7 +69,7 @@ export function BuyCreditsModal({ isOpen, onClose }: BuyCreditsModalProps) {
     initiatePaymentMutation.mutate(
       { credits: currentCredits },
       {
-        onSuccess: (response: any) => {
+        onSuccess: (response: ApiResponse<InitiatePaymentResponse>) => {
           const paymentUrl = response?.data?.paymentUrl;
           if (paymentUrl) {
             toast.add({

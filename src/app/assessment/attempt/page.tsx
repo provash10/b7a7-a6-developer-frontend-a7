@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/toast";
+import { useGetMyProfile } from "@/hooks/auth.hook";
 import { getActiveUserEmail } from "@/lib/session";
 import type { Question } from "@/types";
 
@@ -124,12 +125,109 @@ const DEFAULT_QUESTIONS: ExamQuestion[] = [
       { input: '"race a car"', expected: "false" },
     ],
   },
+  {
+    id: "p3",
+    title: "3. Reverse a String with Case Preservation",
+    difficulty: "EASY",
+    marks: 15,
+    description:
+      "Write a function that reverses a given string. The input string is given as a sequence of characters. Return the reversed string with exact casing and punctuation preserved.",
+    starterCode: {
+      javascript: `function reverseString(s) {
+  return s.split('').reverse().join('');
+}`,
+      typescript: `function reverseString(s: string): string {
+  return s.split('').reverse().join('');
+}`,
+      python: `def reverse_string(s: str) -> str:
+    return s[::-1]`,
+    },
+    testCases: [
+      { input: '"hello"', expected: '"olleh"' },
+      { input: '"OpenAI"', expected: '"IAnepO"' },
+    ],
+  },
+  {
+    id: "p4",
+    title: "4. FizzBuzz Number Evaluator",
+    difficulty: "EASY",
+    marks: 20,
+    description:
+      'Given an integer n, return "FizzBuzz" if n is divisible by 3 and 5, "Fizz" if n is divisible by 3, "Buzz" if n is divisible by 5, or return the number as a string if none apply.',
+    starterCode: {
+      javascript: `function fizzBuzz(n) {
+  if (n % 15 === 0) return "FizzBuzz";
+  if (n % 3 === 0) return "Fizz";
+  if (n % 5 === 0) return "Buzz";
+  return String(n);
+}`,
+      typescript: `function fizzBuzz(n: number): string {
+  if (n % 15 === 0) return "FizzBuzz";
+  if (n % 3 === 0) return "Fizz";
+  if (n % 5 === 0) return "Buzz";
+  return String(n);
+}`,
+      python: `def fizz_buzz(n: int) -> str:
+    if n % 15 == 0: return "FizzBuzz"
+    if n % 3 == 0: return "Fizz"
+    if n % 5 == 0: return "Buzz"
+    return str(n)`,
+    },
+    testCases: [
+      { input: "15", expected: '"FizzBuzz"' },
+      { input: "9", expected: '"Fizz"' },
+      { input: "10", expected: '"Buzz"' },
+      { input: "7", expected: '"7"' },
+    ],
+  },
+  {
+    id: "p5",
+    title: "5. Maximum Subarray Sum (Kadane's Algorithm)",
+    difficulty: "MEDIUM",
+    marks: 25,
+    description:
+      "Given an integer array nums, find the subarray with the largest sum, and return its sum.",
+    starterCode: {
+      javascript: `function maxSubArray(nums) {
+  let maxSum = nums[0];
+  let currentSum = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    currentSum = Math.max(nums[i], currentSum + nums[i]);
+    maxSum = Math.max(maxSum, currentSum);
+  }
+  return maxSum;
+}`,
+      typescript: `function maxSubArray(nums: number[]): number {
+  let maxSum = nums[0];
+  let currentSum = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    currentSum = Math.max(nums[i], currentSum + nums[i]);
+    maxSum = Math.max(maxSum, currentSum);
+  }
+  return maxSum;
+}`,
+      python: `def max_sub_array(nums: list[int]) -> int:
+    max_sum = current_sum = nums[0]
+    for x in nums[1:]:
+        current_sum = max(x, current_sum + x)
+        max_sum = max(max_sum, current_sum)
+    return max_sum`,
+    },
+    testCases: [
+      { input: "[-2, 1, -3, 4, -1, 2, 1, -5, 4]", expected: "6" },
+      { input: "[1]", expected: "1" },
+      { input: "[5, 4, -1, 7, 8]", expected: "23" },
+    ],
+  },
 ];
 
 function CandidateAssessmentExamContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const assessmentId = searchParams.get("id") || "asst-live-01";
+
+  const { data: profileData } = useGetMyProfile();
+  const user = profileData?.data;
 
   const [questions, setQuestions] = useState<ExamQuestion[]>(DEFAULT_QUESTIONS);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -373,11 +471,13 @@ function CandidateAssessmentExamContent() {
     const percentage = Math.round((total / (totalPossible || 1)) * 100);
 
     const activeEmail =
+      user?.email ||
       getActiveUserEmail() ||
       localStorage.getItem("devassess_active_email") ||
       "provash10dev@gmail.com";
     let candidateEmail = activeEmail.toLowerCase().trim();
     let candidateName =
+      user?.name ||
       (typeof window !== "undefined"
         ? localStorage.getItem("devassess_active_name")
         : null) ||
