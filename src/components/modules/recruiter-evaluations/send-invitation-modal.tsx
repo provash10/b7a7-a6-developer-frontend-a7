@@ -108,46 +108,6 @@ const DEFAULT_CHALLENGES: ChallengeOption[] = [
     difficulty: "Intermediate",
     isLiveDb: true,
   },
-  {
-    id: "asst-01",
-    title: "Full Stack Next.js & TypeScript Challenge",
-    role: "Full Stack Software Engineer",
-    language: "TypeScript",
-    duration: "90 Mins",
-    difficulty: "Intermediate",
-  },
-  {
-    id: "asst-02",
-    title: "Algorithmic Problem Solving & Data Structures",
-    role: "Core Software Engineer (Algorithms)",
-    language: "Python",
-    duration: "120 Mins",
-    difficulty: "Advanced",
-  },
-  {
-    id: "asst-03",
-    title: "React Component Architecture & Accessibility",
-    role: "Senior Frontend Engineer",
-    language: "TypeScript",
-    duration: "60 Mins",
-    difficulty: "Intermediate",
-  },
-  {
-    id: "asst-04",
-    title: "PostgreSQL Indexing & Optimization",
-    role: "Database & Backend Engineer",
-    language: "SQL / PostgreSQL",
-    duration: "75 Mins",
-    difficulty: "Intermediate",
-  },
-  {
-    id: "asst-05",
-    title: "Go Microservices & Docker Concurrency",
-    role: "Distributed Systems Engineer",
-    language: "Go",
-    duration: "90 Mins",
-    difficulty: "Advanced",
-  },
 ];
 
 export function SendInvitationModal({
@@ -317,21 +277,27 @@ export function SendInvitationModal({
     let isMounted = true;
 
     async function loadChallenges() {
+      const isUuid = (id?: string) =>
+        Boolean(id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id));
+
       let customOptions: ChallengeOption[] = [];
       try {
         const storedChallenges = localStorage.getItem("devassess_custom_challenges");
         if (storedChallenges) {
           const customList = JSON.parse(storedChallenges);
           if (Array.isArray(customList) && customList.length > 0) {
-            customOptions = customList.map((c: any) => ({
-              id: c.id,
-              title: c.title,
-              role: c.skills?.[0] ? `${c.skills[0]} Specialist` : "Software Engineer",
-              language: c.skills?.[0] || "TypeScript",
-              duration: `${c.durationMinutes || 90} Mins`,
-              difficulty: c.difficulty || "Intermediate",
-              isCustom: true,
-            }));
+            customOptions = customList
+              .filter((c: any) => isUuid(c.id))
+              .map((c: any) => ({
+                id: c.id,
+                title: c.title,
+                role: c.skills?.[0] ? `${c.skills[0]} Specialist` : "Software Engineer",
+                language: c.skills?.[0] || "TypeScript",
+                duration: `${c.durationMinutes || 90} Mins`,
+                difficulty: c.difficulty || "Intermediate",
+                isCustom: true,
+                isLiveDb: true,
+              }));
           }
         }
       } catch (e) {
@@ -343,19 +309,23 @@ export function SendInvitationModal({
         const res = await getAllAssessments();
         const liveAssessments = res?.data;
         if (Array.isArray(liveAssessments) && liveAssessments.length > 0 && isMounted) {
-          const liveOptions: ChallengeOption[] = liveAssessments.map((a: any) => ({
-            id: a.id,
-            title: a.title,
-            role: a.skills?.[0] ? `${a.skills[0]} Specialist` : "Software Engineer",
-            language: a.skills?.[0] || "TypeScript",
-            duration: `${a.durationMinutes || 90} Mins`,
-            difficulty: a.difficulty || "Intermediate",
-            isLiveDb: true,
-          }));
+          const liveOptions: ChallengeOption[] = liveAssessments
+            .filter((a: any) => isUuid(a.id))
+            .map((a: any) => ({
+              id: a.id,
+              title: a.title,
+              role: a.skills?.[0] ? `${a.skills[0]} Specialist` : "Software Engineer",
+              language: a.skills?.[0] || "TypeScript",
+              duration: `${a.durationMinutes || 90} Mins`,
+              difficulty: a.difficulty || "Intermediate",
+              isLiveDb: true,
+            }));
 
-          const combined = [...liveOptions, ...customOptions, ...DEFAULT_CHALLENGES];
-          setChallenges(combined);
-          setSelectedChallengeId(combined[0].id);
+          const combined = [...liveOptions, ...customOptions, ...DEFAULT_CHALLENGES].filter(
+            (c, idx, arr) => arr.findIndex((x) => x.id === c.id) === idx,
+          );
+          setChallenges(combined.length > 0 ? combined : DEFAULT_CHALLENGES);
+          setSelectedChallengeId(combined[0]?.id || DEFAULT_CHALLENGES[0].id);
           return;
         }
       } catch (err) {
@@ -363,7 +333,9 @@ export function SendInvitationModal({
       }
 
       if (isMounted) {
-        const combined = [...customOptions, ...DEFAULT_CHALLENGES];
+        const combined = [...customOptions, ...DEFAULT_CHALLENGES].filter(
+          (c, idx, arr) => arr.findIndex((x) => x.id === c.id) === idx,
+        );
         setChallenges(combined.length > 0 ? combined : DEFAULT_CHALLENGES);
         setSelectedChallengeId(combined[0]?.id || DEFAULT_CHALLENGES[0].id);
       }
@@ -564,11 +536,30 @@ export function SendInvitationModal({
           assessmentId: selectedChallenge.id,
           expiresInDays: parseInt(expiryDays, 10),
         });
-        if (res && res.success !== false && res?.data?.inviteToken) {
-          backendToken = res.data.inviteToken;
+        console.log("sendAssessmentInvitation response:", target.email, res);
+        if (res && res.success !== false && (res?.data?.inviteToken || res?.data?.token || res?.data?.id)) {
+          backendToken = res?.data?.inviteToken || res?.data?.token || res?.data?.id;
+          toast.add({
+            title: "Saved in PostgreSQL Database! 🚀",
+            description: `Invitation recorded in 'assessment_invitations' table for ${target.name}.`,
+            type: "success",
+          });
+        } else {
+          const errMsg = res?.message || "Failed to save in PostgreSQL. Check recruiter login / UUID.";
+          toast.add({
+            title: "Database Sync Alert ⚠️",
+            description: `${target.name}: ${errMsg}`,
+            type: "error",
+          });
         }
-      } catch {
-        // Backend offline or mock fallback
+      } catch (err: any) {
+        console.error("sendAssessmentInvitation error:", err);
+        const errMsg = err?.data?.message || err?.message || "Network error";
+        toast.add({
+          title: "Database Request Failed ⚠️",
+          description: `${target.name}: ${errMsg}`,
+          type: "error",
+        });
       }
 
       const generatedToken =
