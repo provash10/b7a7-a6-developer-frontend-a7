@@ -161,7 +161,7 @@ export function RoleAdaptiveDashboard() {
     useState<string>("PENDING_REVIEW");
   const [recruiterFeedbackNotes, setRecruiterFeedbackNotes] = useState<string>("");
   const [completedCount, setCompletedCount] = useState(3);
-  const [activeChallengesCount, setActiveChallengesCount] = useState(1);
+  const [activeChallengesCount, setActiveChallengesCount] = useState(0);
   const [avgScore, setAvgScore] = useState("91.3");
 
   const loadCandidateData = async () => {
@@ -181,14 +181,22 @@ export function RoleAdaptiveDashboard() {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
           liveSubmissions = parsed.filter((item: any) => {
-            if (!item.candidateEmail) return true;
+            if (!item.candidateEmail) return false;
             const itemEmail = item.candidateEmail.toLowerCase().trim();
-            return (
-              itemEmail === currentEmail ||
-              (currentEmail.includes("provash") &&
-                (itemEmail.includes("provash") || itemEmail.includes("10dev"))) ||
-              (currentEmail.includes("scstanley") || currentEmail.includes("amy"))
-            );
+            if (itemEmail === currentEmail) return true;
+            if (
+              currentEmail.includes("provash") &&
+              (itemEmail.includes("provash") || itemEmail.includes("10dev"))
+            ) {
+              return true;
+            }
+            if (
+              (currentEmail.includes("scstanley") || currentEmail.includes("amy")) &&
+              (itemEmail.includes("scstanley") || itemEmail.includes("amy"))
+            ) {
+              return true;
+            }
+            return false;
           });
         }
       }
@@ -289,14 +297,22 @@ export function RoleAdaptiveDashboard() {
             .filter((inv: any) => inv.status === "PENDING")
             .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
             .find((inv: any) => {
-              if (!inv.candidateEmail) return true;
+              if (!inv.candidateEmail) return false;
               const invEmail = inv.candidateEmail.toLowerCase().trim();
-              return (
-                invEmail === currentEmail ||
-                (currentEmail.includes("provash") &&
-                  (invEmail.includes("provash") || invEmail.includes("10dev"))) ||
-                (currentEmail.includes("scstanley") || currentEmail.includes("amy"))
-              );
+              if (invEmail === currentEmail) return true;
+              if (
+                currentEmail.includes("provash") &&
+                (invEmail.includes("provash") || invEmail.includes("10dev"))
+              ) {
+                return true;
+              }
+              if (
+                (currentEmail.includes("scstanley") || currentEmail.includes("amy")) &&
+                (invEmail.includes("scstanley") || invEmail.includes("amy"))
+              ) {
+                return true;
+              }
+              return false;
             });
         }
       } catch {
@@ -342,15 +358,12 @@ export function RoleAdaptiveDashboard() {
           if (pendingLive) {
             const isPending = pendingLive.status === "PENDING";
             const liveTitle = pendingLive.assessment?.title;
-            const isOldSeed = !liveTitle || liveTitle.includes("React Developer jr") || liveTitle.includes("Full Stack Next.js");
-
-            const finalTitle = isOldSeed ? "PostgreSQL Indexing & Optimization" : liveTitle;
-            const finalDuration = isOldSeed ? "75 Minutes" : `${pendingLive.assessment?.durationMinutes || 75} Minutes`;
-            const finalSkills = isOldSeed
-              ? ["SQL / PostgreSQL", "Database", "Performance"]
-              : (Array.isArray(pendingLive.assessment?.skills) && pendingLive.assessment.skills.length > 0
-                  ? pendingLive.assessment.skills
-                  : ["SQL / PostgreSQL", "Database", "Performance"]);
+            const finalTitle = liveTitle || "React Developer jr";
+            const finalDuration = `${pendingLive.assessment?.durationMinutes || 75} Minutes`;
+            const finalSkills =
+              Array.isArray(pendingLive.assessment?.skills) && pendingLive.assessment.skills.length > 0
+                ? pendingLive.assessment.skills
+                : ["React", "TypeScript", "Frontend Engineering"];
 
             setActiveInvitation({
               title: finalTitle,
@@ -388,7 +401,7 @@ export function RoleAdaptiveDashboard() {
       if (!foundPendingInvitation) {
         setHasCompletedActiveExam(hasCompleted);
         setIsAccepted(anyAccepted);
-        setActiveChallengesCount(hasCompleted ? 0 : 1);
+        setActiveChallengesCount(0);
       }
     } catch {
       // ignore
