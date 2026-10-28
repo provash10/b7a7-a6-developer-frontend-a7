@@ -54,7 +54,7 @@ export function BuyCreditsModal({ isOpen, onClose }: BuyCreditsModalProps) {
   const currentCredits = isCustom
     ? Math.max(10, Number.parseInt(customCredits || "0", 10))
     : selectedCredits;
-  const currentAmount = currentCredits * 5; // ৳5 BDT per credit
+  const currentAmount = currentCredits * 5; // 5 BDT per credit
 
   const handlePayWithBkash = () => {
     if (currentCredits < 10) {

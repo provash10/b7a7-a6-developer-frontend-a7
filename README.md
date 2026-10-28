@@ -1,81 +1,125 @@
-# 🚀 DevAssess — Developer Assessment & Remote Hiring Platform
+# 🚀 DevAssess — Developer Assessment & Technical Hiring Platform
 
-A modern, high-performance developer assessment and technical hiring platform built with **Next.js 16 (App Router)**, **React 19**, and **Tailwind CSS**. Designed for evaluating engineering candidates through automated code challenges, real-time proctored examinations, and collaborative recruiter evaluation workflows.
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16%20(App%20Router)-black?style=for-the-badge&logo=next.js" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=for-the-badge&logo=tailwindcss" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Supabase-336791?style=for-the-badge&logo=postgresql" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Prisma-ORM-2D3748?style=for-the-badge&logo=prisma" alt="Prisma" />
+</p>
+
+A state-of-the-art developer assessment and technical hiring platform built with **Next.js 16 (App Router)**, **React 19**, and **Tailwind CSS**. Designed for evaluating engineering candidates through automated code challenges, real-time proctored examinations, and collaborative recruiter evaluation workflows.
 
 ---
 
 ## 📑 Table of Contents
 
-- [✨ Key Features by Category](#-key-features-by-category)
-  - [👨‍💻 Candidate Portal & Exam Sandbox](#1-candidate-portal--exam-sandbox)
-  - [🏢 Recruiter Console & Evaluation Queue](#2-recruiter-console--evaluation-queue)
-  - [🛡️ Admin Intelligence & System Management](#3-admin-intelligence--system-management)
-- [🛠️ Tech Stack & Architecture](#️-tech-stack--architecture)
+- [🌟 Platform Overview](#-platform-overview)
+- [✨ Core Modules & User Journeys](#-core-modules--user-journeys)
+  - [1. 👨‍💻 Candidate Portal & Exam Sandbox](#1--candidate-portal--exam-sandbox)
+  - [2. 🏢 Recruiter Console & Evaluation Workflow](#2--recruiter-console--evaluation-workflow)
+  - [3. 🛡️ System Administration & Catalog Hub](#3-️-system-administration--catalog-hub)
+- [⚡ Key Innovations & Architecture](#-key-innovations--architecture)
+- [🛠️ Tech Stack](#️-tech-stack)
 - [📂 Project Directory Structure](#-project-directory-structure)
-- [⚙️ Environment Variables](#️-environment-variables)
+- [⚙️ Environment Configuration](#️-environment-configuration)
 - [🚀 Quick Start & Local Setup](#-quick-start--local-setup)
-- [🌐 Production Deployment (Vercel)](#-production-deployment-vercel)
 - [👥 Demo Test Credentials](#-demo-test-credentials)
+- [🌐 Deployment](#-deployment)
+- [📄 License](#-license)
 
 ---
 
-## ✨ Key Features by Category
+## 🌟 Platform Overview
+
+**DevAssess** bridges the gap between hiring managers and top engineering talent:
+* **Recruiters** dispatch multi-candidate assessment invitations, track real-time test progress, inspect code submissions with AST analysis, and submit hiring verdicts.
+* **Candidates** receive tokenized proctored exam invites, solve multi-language algorithmic problems in an interactive code runner, and track their certification status.
+* **Administrators** maintain user role privileges, author problem catalogs, monitor real-time anti-cheat telemetry, and inspect audit logs.
+
+---
+
+## ✨ Core Modules & User Journeys
 
 ### 1. 👨‍💻 Candidate Portal & Exam Sandbox
-- **Adaptive Role Dashboard:**
-  - **Dynamic KPI Stat Cards:** Real-time metrics for *Active Assessments*, *Completed Tests*, *Average Score*, and *Coding Streak* with bold typography, custom dual-tone gradients, and micro-hover animations.
-  - **Hero Assessment Invitation Card:** Displays tokenized invitation alerts, challenge difficulty, time limits, required tech stacks, and anti-cheat status.
-  - **Live Verdict Synchronization:** Instant visual badges reflecting recruiter decisions in real time:
-    - ⏳ `Under Recruiter Review`
-    - 🎉 `Accepted by Recruiter`
-    - ❌ `Evaluation Declined`
-    - ✓ `Exam Completed & Submitted`
-  - **Score Progress Bars & History:** Interactive timeline of all previous challenges with score progress bars, test metrics, and skill tags.
-- **Proctored Coding Exam Room:**
-  - Tokenized assessment entrance (`/assessment/attempt?id=...&token=...`).
-  - Integrated code editor supporting JavaScript, TypeScript, and Python.
-  - Real-time test-case runner with unit test verification and AST syntax validation.
-  - Anti-cheat telemetry tracking tab-switches and submission latency.
+
+* **Role-Adaptive Dashboard:**
+  * **Dynamic KPI Stat Cards:** Instant metrics for *Active Challenges*, *Completed Tests*, *Average Score*, and *Coding Streak* featuring smooth micro-interactions and gradient aesthetics.
+  * **Active Assessment Hero Card:** Shows pending recruiter invitation, challenge time limit, difficulty, required skills, and one-click entrance to the exam room.
+  * **Real-time Recruiter Verdict Synchronization:** Live status badges that reflect recruiter decisions:
+    * ⏳ `Under Recruiter Review`
+    * 🎉 `Accepted by Recruiter`
+    * ❌ `Declined`
+    * ✓ `Passed / Completed`
+  * **Evaluation History & Scores:** Detailed timeline of previous submissions with individual score progress bars and skill badges.
+
+* **Proctored Assessment Room (`/assessment/attempt`):**
+  * **Multi-Language Sandbox:** Code execution and syntax highlighting for **JavaScript**, **TypeScript**, and **Python**.
+  * **Live Unit Test Runner:** Verifies candidate solutions against sample and hidden test cases with execution time metrics.
+  * **Anti-Cheat Telemetry:** Detects and flags tab switching, focus loss, paste anomalies, and excessive latency.
 
 ---
 
-### 2. 🏢 Recruiter Console & Evaluation Queue
-- **Candidate Evaluation Task Queue:**
-  - Instant search and multi-criteria filters by role, challenge, status, and anti-cheat telemetry.
-  - In-place **Review Verdict Dropdown** (`Pending`, `In Review`, `Accept`, `Reject`) that updates candidate views and database state in real time.
-  - Detailed **Score & Review Modal** for inspecting unit test results, code structure, and submitting final hiring decisions.
-- **Candidate Invitation System:**
-  - Send tokenized assessment links with configurable expiry deadlines.
-  - **Saved Candidates Dropdown:** Quick-pick menu with checkmarks to invite previously saved candidates with a single click.
-  - Automatic local and cloud synchronization.
-- **Recruiter Credit Management:**
-  - Credit recharge banner with bKash tokenized integration.
+### 2. 🏢 Recruiter Console & Evaluation Workflow
+
+* **Bulk Candidate Invitation Modal:**
+  * **Multi-Select & Bulk Dispatch:** Select individual candidates or use **"Select All / Deselect All"** with real-time candidate chip previews.
+  * **Dynamic Credit Tracking:** Live computation showing remaining recruiter assessment balance.
+  * **Direct Database Synchronization:** Validates assessment UUIDs and persists invitations directly to the PostgreSQL `assessment_invitations` table.
+  * **Auto-Provisioning & Renewal:** Automatically creates recruiter/candidate profiles if missing and renews existing invitations with fresh tokens.
+
+* **Candidate Evaluation Queue:**
+  * Filter candidate submissions by challenge, candidate name, hiring status, or anti-cheat flags.
+  * **Instant Verdict Updating:** Dropdown menu allowing recruiters to transition candidate state (`Accepted ✓`, `Under Review`, `Rejected`) in real time.
+  * **Detailed Code & Test Inspector:** Review candidate source code, test-case pass rates, execution efficiency, and leave private recruiter evaluation notes.
 
 ---
 
-### 3. 🛡️ Admin Intelligence & System Management
-- **Directory & Permission Hub:**
-  - Centralized user directory with multi-role permissions (`ADMIN`, `RECRUITER`, `CANDIDATE`).
-  - Active session switcher for previewing portal states across roles without relogging.
-- **Assessment & Question Bank:**
-  - CRUD operations for coding assessments, problem descriptions, benchmark test cases, and supported programming languages.
-- **Audit Logs & Telemetry:**
-  - Real-time audit trail capturing administrative modifications, scoring actions, and anti-cheat alerts.
+### 3. 🛡️ System Administration & Catalog Hub
+
+* **User Management & Role Switching:**
+  * View, filter, and manage users across `ADMIN`, `RECRUITER`, and `CANDIDATE` roles.
+  * Instant portal switcher to test views and workflows as different roles without logging out.
+* **Assessment & Question Catalog:**
+  * Create, edit, and publish coding challenges with custom benchmark constraints and time limits.
+* **Audit Trails & Security:**
+  * Real-time logging of user logins, role modifications, invitation dispatches, and anti-cheat triggers.
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## ⚡ Key Innovations & Architecture
 
-| Layer | Technology | Description |
+1. **Dual-Layer Persistence (PostgreSQL + Local Cache):**  
+   Every transaction syncs directly with PostgreSQL via Prisma ORM on the backend, with client-side reactive caches ensuring smooth offline and low-latency interaction.
+2. **Strict Email-Attributed Scoping:**  
+   Candidate stats, past submissions, and active invitations are strictly filtered by normalized candidate email addresses to eliminate cross-profile data leakage.
+3. **One-Click Demo Authentication:**  
+   Pre-configured single-click demo logins for all three primary roles (`Admin`, `Recruiter`, `Candidate`) that automatically authenticate against the live backend database.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend Architecture
+| Layer | Technology | Purpose |
 | :--- | :--- | :--- |
-| **Framework** | [Next.js 16](https://nextjs.org) (Turbopack) | Modern React framework with App Router and Server/Client Components |
-| **Library** | [React 19](https://react.dev) | Modern reactive UI foundation |
-| **Styling** | [Tailwind CSS v4](https://tailwindcss.com) | Utility-first CSS engine with custom glassmorphism and gradient systems |
-| **Icons** | [Lucide React](https://lucide.dev) | Crisp, modern vector icons |
-| **State & Data** | [TanStack React Query](https://tanstack.com/query) | Async state synchronization, caching, and server state management |
-| **Forms & Schema** | [TanStack Form](https://tanstack.com/form) + [Zod](https://zod.dev) | Type-safe form validation and schema parsing |
-| **Network Client** | [ofetch](https://github.com/unjs/ofetch) | Lightweight, robust HTTP client |
-| **Code Quality** | [Biome](https://biomejs.dev) | High-speed linter and code formatter |
+| **Framework** | [Next.js 16](https://nextjs.org) (App Router) | React Server & Client Components, Turbopack |
+| **Core UI** | [React 19](https://react.dev) | Modern reactive state and transitions |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com) | Dynamic styling, glassmorphism, gradient tokens |
+| **Icons** | [Lucide React](https://lucide.dev) | Modern vector icon set |
+| **State Management** | [TanStack React Query v5](https://tanstack.com/query) | Server-state caching, automatic refetching |
+| **Form Handling** | [TanStack Form](https://tanstack.com/form) + [Zod](https://zod.dev) | Strict type-safe form validation |
+| **HTTP Client** | [ofetch](https://github.com/unjs/ofetch) | HTTP request client with Bearer auth handling |
+| **Linter & Formatter** | [Biome](https://biomejs.dev) | High-performance code quality tooling |
+
+### Backend & Database (Microservice)
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Runtime** | Node.js + Express.js | REST API service layer |
+| **Database** | PostgreSQL (Supabase / Prisma Data Platform) | Primary relational data store |
+| **ORM** | Prisma ORM | Type-safe database queries and migrations |
+| **Auth** | JWT (JSON Web Tokens) + Bcrypt | Secure authentication and password hashing |
 
 ---
 
@@ -84,35 +128,39 @@ A modern, high-performance developer assessment and technical hiring platform bu
 ```text
 a6-developer-frontend-a7/
 ├── src/
-│   ├── api/                    # Centralized API service functions
-│   │   ├── auth.api.ts         # User authentication & token management
-│   │   └── assessment.api.ts   # Assessment, attempts, and question endpoints
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── (public)/           # Public landing and authentication pages
-│   │   ├── admin/              # Admin intelligence & management portal
-│   │   ├── recruiter/          # Recruiter evaluation & invitation portal
-│   │   ├── dashboard/          # Candidate dashboard & profile pages
-│   │   └── assessment/         # Assessment exam room & test runners
-│   ├── components/             # Reusable UI component modules
-│   │   ├── layout/             # Header, sidebar, and dashboard shell
-│   │   ├── modules/            # Domain-specific feature modules
-│   │   │   ├── candidate-dashboard/   # Adaptive cards & verdict UI
-│   │   │   ├── recruiter-evaluations/ # Task queue & invite modals
-│   │   │   ├── admin-manage/          # Users & question bank tables
-│   │   │   └── admin-reports/         # Audit logs & telemetry view
-│   │   └── ui/                 # Atomic design components (Card, Badge, Button, etc.)
-│   ├── hooks/                  # Custom React hooks (URL state, table filters)
-│   ├── lib/                    # Client utilities, session helpers, and API client
-│   └── middleware.ts           # Route protection, role-based access & cookie guards
-├── public/                     # Static media assets & badges
-├── Docs/                       # System documentation and workflow guides
-├── .env.local                  # Environment configuration
-└── package.json                # Project dependencies and script definitions
+│   ├── api/                              # Centralized API service methods
+│   │   ├── auth.api.ts                   # User authentication & profile fetching
+│   │   ├── assessment.api.ts             # Assessments, invitations & question APIs
+│   │   └── payment.api.ts                # Payment transactions & credit billing
+│   ├── app/                              # Next.js App Router structure
+│   │   ├── (public)/                     # Public marketing & authentication routes
+│   │   │   ├── login/                    # Login portal with 1-click demo buttons
+│   │   │   └── register/                 # Candidate registration
+│   │   ├── admin/                        # Admin dashboard, user management & audit
+│   │   ├── recruiter/                    # Recruiter console & candidate evaluation
+│   │   ├── dashboard/                    # Candidate adaptive dashboard & profile
+│   │   └── assessment/                   # Assessment exam runner sandbox
+│   ├── components/                       # Modular UI components
+│   │   ├── form/                         # Form modules (Login, Registration, etc.)
+│   │   ├── layout/                       # Navbars, Sidebars, Footers & Shells
+│   │   ├── modules/                      # Domain-specific components
+│   │   │   ├── candidate-dashboard/      # Adaptive KPI cards & live verdict views
+│   │   │   ├── recruiter-evaluations/    # Multi-select invite modal & task queue
+│   │   │   ├── admin-manage/             # User tables & assessment editor
+│   │   │   └── admin-reports/            # Telemetry & security audit logs
+│   │   └── ui/                           # Atomic primitives (Button, Card, Badge, Modal)
+│   ├── hooks/                            # Custom React hooks (auth, filters, mutations)
+│   ├── lib/                              # Session helpers, ofetch apiClient, utility logic
+│   └── middleware.ts                     # Role-based route guard & cookie protection
+├── public/                               # Static brand assets, favicon, mock files
+├── .env.local                            # Local environment configuration
+├── package.json                          # Dependencies and build scripts
+└── tsconfig.json                         # TypeScript compiler configuration
 ```
 
 ---
 
-## ⚙️ Environment Variables
+## ⚙️ Environment Configuration
 
 Create a `.env.local` file in the root directory:
 
@@ -121,8 +169,8 @@ Create a `.env.local` file in the root directory:
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
 ```
 
-> **For Production (Vercel):**  
-> Replace `http://localhost:5000/api/v1` with your live backend production URL (e.g. `https://your-backend.vercel.app/api/v1`).
+> **Production Deployment:**  
+> Set `NEXT_PUBLIC_API_BASE_URL` to your production backend endpoint (e.g. `https://your-api.domain.com/api/v1`).
 
 ---
 
@@ -137,54 +185,39 @@ cd a6-developer-frontend-a7
 ### 2. Install dependencies
 ```bash
 npm install
-# or
-bun install
 ```
 
 ### 3. Start the development server
 ```bash
 npm run dev
-# or
-bun run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
 
 ---
 
-## 🌐 Production Deployment (Vercel)
+## 👥 Demo Test Credentials
 
-Deploying this Next.js frontend to **Vercel** takes just a few steps:
+You can use the **1-Click Quick Demo Login** buttons on the login screen (`/login`) or sign in manually with these pre-seeded accounts:
 
-### Option A: Via Vercel CLI
-```bash
-# 1. Login to Vercel (if not already logged in)
-npx vercel login
-
-# 2. Deploy to production
-npx vercel --prod
-```
-
-### Option B: Via Vercel Git Integration
-1. Push your code to your GitHub / GitLab repository.
-2. Visit [Vercel Dashboard](https://vercel.com/new) and click **"Add New"** > **"Project"**.
-3. Import this repository.
-4. Under **Environment Variables**, add:
-   - **Key:** `NEXT_PUBLIC_API_BASE_URL`
-   - **Value:** `https://your-backend.vercel.app/api/v1`
-5. Click **"Deploy"**.
+| Role | Email | Password | Access Rights |
+| :--- | :--- | :--- | :--- |
+| **System Admin** | `admin@100.com` | `Password@100` | Full administrative control, user permissions, audit telemetry |
+| **Recruiter** | `recruiter@100.com` | `Password@100` | Candidate invitations, evaluation queue, score verdicts |
+| **Candidate** | `candidate@100.com` | `Password@100` | Assessment test room, live dashboard, submissions |
+| **Candidate (Amy)** | `scstanley17111991@gmail.com` | `Password@100` | Pre-registered candidate with active assessment history |
 
 ---
 
-## 👥 Demo Test Credentials
+## 🌐 Deployment
 
-You can use the built-in portal switcher in the bottom-left sidebar or sign in using these demo accounts:
+This application is optimized for deployment on **Vercel**:
 
-| Portal Role | Demo Email | Access Permissions |
-| :--- | :--- | :--- |
-| **System Admin** | `admin@100.com` | Full platform control, directory management, questions, audit logs |
-| **Recruiter** | `recruiter@100.com` | Candidate invitations, code evaluation queue, scoring verdicts |
-| **Candidate** | `candidate@100.com` | Assessment test room, live dashboard, submissions, certification |
+1. Push your latest commits to your GitHub repository.
+2. Import the project in the [Vercel Dashboard](https://vercel.com/new).
+3. Configure the **Environment Variables**:
+   * `NEXT_PUBLIC_API_BASE_URL`: Your live backend API URL.
+4. Click **Deploy**.
 
 ---
 
