@@ -16,6 +16,7 @@ import {
   User,
   UserCheck,
   UserPlus,
+  Users,
   X,
   Zap,
 } from "lucide-react";
@@ -38,6 +39,13 @@ export interface SavedCandidate {
   name: string;
   email: string;
   role?: string;
+}
+
+export interface DispatchedInvite {
+  candidateName: string;
+  candidateEmail: string;
+  token: string;
+  examLink: string;
 }
 
 const INITIAL_SAVED_CANDIDATES: SavedCandidate[] = [
@@ -157,7 +165,8 @@ export function SendInvitationModal({
   const [customNote, setCustomNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSeedingDb, setIsSeedingDb] = useState(false);
-  const [dispatchedToken, setDispatchedToken] = useState<string | null>(null);
+  const [selectedCandidates, setSelectedCandidates] = useState<SavedCandidate[]>([]);
+  const [dispatchedInvites, setDispatchedInvites] = useState<DispatchedInvite[]>([]);
 
   // Saved / Previously Invited Candidates state & dropdown toggle
   const [savedCandidates, setSavedCandidates] = useState<SavedCandidate[]>(
@@ -430,23 +439,71 @@ export function SendInvitationModal({
     challenges[0] ||
     DEFAULT_CHALLENGES[0];
 
-  const selectedSavedCandidate = savedCandidates.find(
-    (c) =>
-      c.email.trim().toLowerCase() === candidateEmail.trim().toLowerCase(),
-  );
+  const isAllSelected =
+    savedCandidates.length > 0 &&
+    savedCandidates.every((sc) =>
+      selectedCandidates.some(
+        (c) => c.email.trim().toLowerCase() === sc.email.trim().toLowerCase(),
+      ),
+    );
 
-  const handleSelectCandidate = (cand: SavedCandidate) => {
-    setCandidateName(cand.name);
-    setCandidateEmail(cand.email);
-    setIsCandidateDropdownOpen(false);
-    toast.add({
-      title: "Candidate Selected",
-      description: `Filled ${cand.name} (${cand.email})`,
-      type: "info",
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedCandidates([]);
+      setCandidateName("");
+      setCandidateEmail("");
+      toast.add({
+        title: "Deselected All",
+        description: "Cleared all candidate selections.",
+        type: "info",
+      });
+    } else {
+      setSelectedCandidates([...savedCandidates]);
+      if (savedCandidates.length === 1) {
+        setCandidateName(savedCandidates[0].name);
+        setCandidateEmail(savedCandidates[0].email);
+      } else {
+        setCandidateName(`${savedCandidates.length} Candidates Selected`);
+        setCandidateEmail(`${savedCandidates.length} recipients`);
+      }
+      toast.add({
+        title: "All Candidates Selected",
+        description: `Selected all ${savedCandidates.length} candidates.`,
+        type: "success",
+      });
+    }
+  };
+
+  const handleToggleCandidate = (cand: SavedCandidate) => {
+    setSelectedCandidates((prev) => {
+      const exists = prev.some(
+        (c) => c.email.trim().toLowerCase() === cand.email.trim().toLowerCase(),
+      );
+      let updated: SavedCandidate[];
+      if (exists) {
+        updated = prev.filter(
+          (c) => c.email.trim().toLowerCase() !== cand.email.trim().toLowerCase(),
+        );
+      } else {
+        updated = [...prev, cand];
+      }
+
+      if (updated.length === 1) {
+        setCandidateName(updated[0].name);
+        setCandidateEmail(updated[0].email);
+      } else if (updated.length === 0) {
+        setCandidateName("");
+        setCandidateEmail("");
+      } else {
+        setCandidateName(`${updated.length} Candidates Selected`);
+        setCandidateEmail(`${updated.length} recipients`);
+      }
+      return updated;
     });
   };
 
   const handleSelectNewCandidate = () => {
+    setSelectedCandidates([]);
     setCandidateName("");
     setCandidateEmail("");
     setIsCandidateDropdownOpen(false);
@@ -460,64 +517,72 @@ export function SendInvitationModal({
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!candidateName.trim() || !candidateEmail.trim()) {
+    // Determine target candidates: either selectedCandidates array OR single manual candidate
+    const targets: { name: string; email: string }[] =
+      selectedCandidates.length > 0
+        ? selectedCandidates.map((c) => ({
+            name: c.name.trim(),
+            email: c.email.trim().toLowerCase(),
+          }))
+        : [
+            {
+              name: candidateName.trim(),
+              email: candidateEmail.trim().toLowerCase(),
+            },
+          ];
+
+    if (targets.length === 0 || !targets[0].name || !targets[0].email) {
       toast.add({
         title: "Required Fields Missing",
-        description: "Please enter candidate's full name and email address.",
+        description: "Please select candidates or enter candidate full name and email address.",
         type: "error",
       });
       return;
     }
 
-    // Basic email validation
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidateEmail)) {
-      toast.add({
-        title: "Invalid Email Address",
-        description: "Please provide a valid recipient email address.",
-        type: "error",
-      });
-      return;
+    // Basic email validation on all targets
+    for (const t of targets) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t.email)) {
+        toast.add({
+          title: "Invalid Email Address",
+          description: `Invalid email address found: ${t.email}`,
+          type: "error",
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
+    const results: DispatchedInvite[] = [];
 
-    let backendToken: string | null = null;
-    try {
-      const res = await sendAssessmentInvitation({
-        candidateEmail: candidateEmail.trim().toLowerCase(),
-        candidateName: candidateName.trim(),
-        assessmentId: selectedChallenge.id,
-        expiresInDays: parseInt(expiryDays, 10),
-      });
-      if (res && res.success !== false && res?.data?.inviteToken) {
-        backendToken = res.data.inviteToken;
-        toast.add({
-          title: "Saved in PostgreSQL Database! 🚀",
-          description: `Invitation recorded in 'assessment_invitations' table.`,
-          type: "success",
+    for (const target of targets) {
+      let backendToken: string | null = null;
+      try {
+        const res = await sendAssessmentInvitation({
+          candidateEmail: target.email,
+          candidateName: target.name,
+          assessmentId: selectedChallenge.id,
+          expiresInDays: parseInt(expiryDays, 10),
         });
-      } else {
-        const errMsg = res?.message || "Recruiter authentication required";
-        toast.add({
-          title: "Candidate Link Generated 🎯",
-          description: `${errMsg}. (Ready to dispatch & test).`,
-          type: "info",
-        });
+        if (res && res.success !== false && res?.data?.inviteToken) {
+          backendToken = res.data.inviteToken;
+        }
+      } catch {
+        // Backend offline or mock fallback
       }
-    } catch (err: any) {
-      const errMsg =
-        err?.data?.message || err?.message || "Check recruiter auth or UUID format";
-      toast.add({
-        title: "Candidate Link Generated 🎯",
-        description: `${errMsg}. (Ready to dispatch & test).`,
-        type: "info",
-      });
-    }
 
-    const generatedToken =
-      backendToken ||
-      `inv_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
-    setDispatchedToken(generatedToken);
+      const generatedToken =
+        backendToken ||
+        `inv_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`;
+
+      const examUrl = `${window.location.origin}/assessment/attempt?id=${selectedChallenge.id}&token=${generatedToken}`;
+
+      results.push({
+        candidateName: target.name,
+        candidateEmail: target.email,
+        token: generatedToken,
+        examLink: examUrl,
+      });
 
       // 1. Record invitation in devassess_invitations (simulating Prisma assessment_invitations table)
       try {
@@ -525,20 +590,19 @@ export function SendInvitationModal({
         let invitesList = storedInvites ? JSON.parse(storedInvites) : [];
         if (!Array.isArray(invitesList)) invitesList = [];
 
-        // Supersede any older pending invite for this candidate so the newest selected challenge is active
-        const targetEmail = candidateEmail.trim().toLowerCase();
+        // Supersede older pending invite for this candidate
         invitesList = invitesList.map((inv: any) => {
-          if (inv.candidateEmail?.toLowerCase() === targetEmail && inv.status === "PENDING") {
+          if (inv.candidateEmail?.toLowerCase() === target.email && inv.status === "PENDING") {
             return { ...inv, status: "SUPERSEDED" };
           }
           return inv;
         });
 
         const newInvite = {
-          id: `inv-${Date.now()}`,
+          id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           inviteToken: generatedToken,
-          candidateName: candidateName.trim(),
-          candidateEmail: targetEmail,
+          candidateName: target.name,
+          candidateEmail: target.email,
           assessmentId: selectedChallenge.id,
           assessmentTitle: selectedChallenge.title,
           duration: selectedChallenge.duration || "75 Mins",
@@ -552,19 +616,15 @@ export function SendInvitationModal({
         };
         invitesList.unshift(newInvite);
         localStorage.setItem("devassess_invitations", JSON.stringify(invitesList));
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("devassess_invitations_update"));
-          window.dispatchEvent(new Event("storage"));
-        }
-      } catch (err) {
+      } catch {
         // ignore
       }
 
       // 2. Create a pending evaluation queue entry for this candidate
       const newTask: EvaluationTask = {
-        id: `eval_${Date.now().toString().slice(-4)}`,
-        candidateName: candidateName.trim(),
-        candidateEmail: candidateEmail.trim().toLowerCase(),
+        id: `eval_${Date.now().toString().slice(-4)}_${Math.random().toString(36).slice(2, 5)}`,
+        candidateName: target.name,
+        candidateEmail: target.email,
         roleApplied: selectedChallenge.role,
         challengeTitle: selectedChallenge.title,
         challengeLanguage: selectedChallenge.language,
@@ -576,26 +636,25 @@ export function SendInvitationModal({
         antiCheatStatus: "CLEAN",
         antiCheatSignals: ["invitation dispatched via tokenized link", "awaiting candidate start"],
         status: "PENDING_REVIEW",
-        codeSnippet: `// Candidate invitation dispatched\n// Status: Awaiting candidate attempt start via tokenized link\n// Candidate: ${candidateName.trim()} (${candidateEmail.trim()})\n// Challenge: ${selectedChallenge.title}\n// Token: ${generatedToken}`,
+        codeSnippet: `// Candidate invitation dispatched\n// Status: Awaiting candidate attempt start via tokenized link\n// Candidate: ${target.name} (${target.email})\n// Challenge: ${selectedChallenge.title}\n// Token: ${generatedToken}`,
         recruiterNotes: customNote.trim() || "Initial candidate assessment invitation.",
       };
 
-      // Save to candidate submissions list
       try {
         const stored = localStorage.getItem("devassess_candidate_submissions");
         const list = stored ? JSON.parse(stored) : [];
         list.unshift(newTask);
         localStorage.setItem("devassess_candidate_submissions", JSON.stringify(list));
-      } catch (err) {
+      } catch {
         // ignore
       }
 
-      // Save newly invited candidate to saved candidates list for future quick pick
+      // 3. Save to saved candidates list for future quick pick
       try {
         const newCandEntry: SavedCandidate = {
-          id: `cand-${Date.now()}`,
-          name: candidateName.trim(),
-          email: candidateEmail.trim().toLowerCase(),
+          id: `cand-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          name: target.name,
+          email: target.email,
           role: "Invited Candidate",
         };
         setSavedCandidates((prev) => {
@@ -618,41 +677,56 @@ export function SendInvitationModal({
       }
 
       onInvitationSent(newTask);
-      setIsSubmitting(false);
+    }
 
-      toast.add({
-        title: "Invitation Dispatched Successfully",
-        description: `Assessment link dispatched to ${candidateEmail.trim()}. 1 credit deducted.`,
-        type: "success",
-      });
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("devassess_invitations_update"));
+      window.dispatchEvent(new Event("storage"));
+    }
+
+    setDispatchedInvites(results);
+    setIsSubmitting(false);
+
+    toast.add({
+      title: targets.length > 1 ? `${targets.length} Invitations Dispatched!` : "Invitation Dispatched Successfully",
+      description: targets.length > 1
+        ? `Assessment links dispatched to ${targets.length} candidates.`
+        : `Assessment link dispatched to ${targets[0].email}.`,
+      type: "success",
+    });
   };
 
-  const handleCopyLink = () => {
-    if (!dispatchedToken) return;
-    const link = `${window.location.origin}/assessment/attempt?id=${selectedChallenge.id}&token=${dispatchedToken}`;
+  const handleCopySingleLink = (link: string, name: string) => {
     navigator.clipboard.writeText(link);
     toast.add({
-      title: "Copied to Clipboard",
-      description: "Direct invitation exam link copied.",
+      title: "Copied Link",
+      description: `Direct invitation exam link for ${name} copied.`,
       type: "info",
     });
   };
 
+  const handleCopyAllLinks = () => {
+    const allText = dispatchedInvites
+      .map((inv) => `${inv.candidateName} (${inv.candidateEmail}): ${inv.examLink}`)
+      .join("\n\n");
+    navigator.clipboard.writeText(allText);
+    toast.add({
+      title: "Copied All Links",
+      description: `Copied ${dispatchedInvites.length} candidate invitation links to clipboard.`,
+      type: "success",
+    });
+  };
+
   const handleResetAndClose = () => {
+    setSelectedCandidates([]);
     setCandidateName("");
     setCandidateEmail("");
     setCustomNote("");
-    setDispatchedToken(null);
+    setDispatchedInvites([]);
     onClose();
   };
 
-  const isProvashSelected =
-    candidateEmail.toLowerCase().includes("provash10dev@gmail.com") &&
-    candidateName.toLowerCase().includes("provash");
-
-  const examLink = dispatchedToken
-    ? `/assessment/attempt?id=${selectedChallenge.id}&token=${dispatchedToken}`
-    : "#";
+  const candidateCount = selectedCandidates.length > 0 ? selectedCandidates.length : 1;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
@@ -677,76 +751,161 @@ export function SendInvitationModal({
             Send Assessment Invitation
           </h2>
           <p className="text-xs text-muted-foreground">
-            Dispatch a secure single-use tokenized test link via automated email to your candidate.
+            Dispatch a secure single-use tokenized test link via automated email to your candidate(s).
           </p>
         </div>
 
-        {/* Confirmation Success View */}
-        {dispatchedToken ? (
+        {/* Confirmation Success View (Single or Multiple Candidates) */}
+        {dispatchedInvites.length > 0 ? (
           <div className="space-y-4 py-2">
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-center space-y-3">
-              <div className="mx-auto size-12 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <CheckCircle2 className="size-7" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-foreground">
-                  Invitation Sent to {candidateName}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  An email with instructions and magic token has been sent to{" "}
-                  <strong className="text-foreground">{candidateEmail}</strong> for{" "}
-                  <span className="font-semibold text-primary">{selectedChallenge.title}</span>.
-                </p>
-              </div>
+            {dispatchedInvites.length === 1 ? (
+              /* Single Candidate Confirmation */
+              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-center space-y-3">
+                <div className="mx-auto size-12 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <CheckCircle2 className="size-7" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-foreground">
+                    Invitation Sent to {dispatchedInvites[0].candidateName}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    An email with instructions and magic token has been sent to{" "}
+                    <strong className="text-foreground">{dispatchedInvites[0].candidateEmail}</strong> for{" "}
+                    <span className="font-semibold text-primary">{selectedChallenge.title}</span>.
+                  </p>
+                </div>
 
-              {/* Direct Open Exam Action */}
-              <div className="pt-2 pb-1 flex flex-col sm:flex-row items-center justify-center gap-2.5">
-                <a
-                  href={examLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs h-10 px-5 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  <ExternalLink className="size-4" />
-                  <span>🚀 Open Exam as Candidate ({candidateName})</span>
-                </a>
-              </div>
+                {/* Direct Open Exam Action */}
+                <div className="pt-2 pb-1 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+                  <a
+                    href={dispatchedInvites[0].examLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs h-10 px-5 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <ExternalLink className="size-4" />
+                    <span>🚀 Open Exam as Candidate ({dispatchedInvites[0].candidateName})</span>
+                  </a>
+                </div>
 
-              {/* Copy Link Bar */}
-              <div className="pt-2">
-                <span className="block text-[11px] font-medium text-muted-foreground mb-1 text-left">
-                  Direct Magic Link (Single-use token):
-                </span>
-                <div className="flex items-center gap-2 rounded-xl border border-border/80 bg-background/90 p-2 text-xs font-mono">
-                  <span className="flex-1 truncate text-left text-muted-foreground">
-                    {typeof window !== "undefined" ? window.location.origin : ""}{examLink}
+                {/* Copy Link Bar */}
+                <div className="pt-2">
+                  <span className="block text-[11px] font-medium text-muted-foreground mb-1 text-left">
+                    Direct Magic Link (Single-use token):
+                  </span>
+                  <div className="flex items-center gap-2 rounded-xl border border-border/80 bg-background/90 p-2 text-xs font-mono">
+                    <span className="flex-1 truncate text-left text-muted-foreground">
+                      {dispatchedInvites[0].examLink}
+                    </span>
+                    <Button
+                      type="button"
+                      size="xs"
+                      onClick={() => handleCopySingleLink(dispatchedInvites[0].examLink, dispatchedInvites[0].candidateName)}
+                      className="gap-1.5 font-sans h-7 px-2.5 cursor-pointer"
+                    >
+                      <Copy className="size-3" />
+                      <span>Copy</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Multiple Candidates Bulk Confirmation */
+              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 space-y-4">
+                <div className="text-center space-y-2">
+                  <div className="mx-auto size-12 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <CheckCircle2 className="size-7" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base text-foreground">
+                      🎉 {dispatchedInvites.length} Invitations Dispatched Successfully!
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Magic tokens generated for challenge:{" "}
+                      <span className="font-semibold text-primary">{selectedChallenge.title}</span>.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Top action bar: Copy all links */}
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-emerald-500/20">
+                  <span className="text-xs font-semibold text-foreground">
+                    Candidate Magic Links ({dispatchedInvites.length})
                   </span>
                   <Button
                     type="button"
                     size="xs"
-                    onClick={handleCopyLink}
-                    className="gap-1.5 font-sans h-7 px-2.5 cursor-pointer"
+                    variant="outline"
+                    onClick={handleCopyAllLinks}
+                    className="gap-1.5 text-xs h-7 px-3 bg-background border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 cursor-pointer font-semibold"
                   >
                     <Copy className="size-3" />
-                    <span>Copy</span>
+                    <span>Copy All Links</span>
                   </Button>
                 </div>
+
+                {/* Scrollable list of dispatched candidate links */}
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                  {dispatchedInvites.map((inv) => (
+                    <div
+                      key={inv.candidateEmail}
+                      className="rounded-xl border border-border/80 bg-background/90 p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-xs text-foreground truncate">
+                            {inv.candidateName}
+                          </span>
+                          <Badge variant="outline" className="text-[9px] h-3.5 px-1 font-mono text-emerald-600 bg-emerald-500/10 border-emerald-500/30">
+                            Ready
+                          </Badge>
+                        </div>
+                        <span className="text-[11px] text-muted-foreground truncate block">
+                          {inv.candidateEmail}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant="outline"
+                          onClick={() => handleCopySingleLink(inv.examLink, inv.candidateName)}
+                          className="gap-1 text-[11px] h-7 px-2.5 cursor-pointer"
+                        >
+                          <Copy className="size-3" />
+                          <span>Copy</span>
+                        </Button>
+                        <a
+                          href={inv.examLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] h-7 px-2.5 shadow-xs transition-colors cursor-pointer"
+                        >
+                          <ExternalLink className="size-3" />
+                          <span>Open</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  setDispatchedToken(null);
+                  setDispatchedInvites([]);
+                  setSelectedCandidates([]);
                   setCandidateName("");
                   setCandidateEmail("");
                   setCustomNote("");
                 }}
                 className="text-xs h-9 px-4 cursor-pointer"
               >
-                Send Another Invitation
+                Send More Invitations
               </Button>
               <Button
                 type="button"
@@ -759,7 +918,7 @@ export function SendInvitationModal({
           </div>
         ) : (
           <form onSubmit={handleSend} className="space-y-4">
-            {/* Quick Candidate Select Dropdown Card with Down Arrow */}
+            {/* Quick Candidate Select Dropdown Card with Multi-select & Select All */}
             <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
@@ -767,40 +926,51 @@ export function SendInvitationModal({
                   <span>Candidate Quick Select &amp; Saved Profiles</span>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  {selectedSavedCandidate ? (
+                  {selectedCandidates.length > 1 ? (
                     <>
-                      Selected: <strong className="text-foreground">{selectedSavedCandidate.name}</strong> ({selectedSavedCandidate.email})
+                      <strong className="text-foreground">{selectedCandidates.length} candidates</strong> selected for bulk invitation.
+                    </>
+                  ) : selectedCandidates.length === 1 ? (
+                    <>
+                      Selected: <strong className="text-foreground">{selectedCandidates[0].name}</strong> ({selectedCandidates[0].email})
                     </>
                   ) : (
-                    "Select a previously saved candidate or enter a new one below."
+                    "Select multiple candidates with checkboxes or enter a new one below."
                   )}
                 </p>
               </div>
 
-              {/* Dropdown with Down Arrow (Replaces single button) */}
+              {/* Dropdown with Down Arrow */}
               <div className="relative shrink-0 w-full sm:w-auto" ref={candidateDropdownRef}>
                 <button
                   type="button"
                   id="candidate-quick-select-dropdown"
                   onClick={() => setIsCandidateDropdownOpen((prev) => !prev)}
                   className={`w-full sm:w-auto inline-flex items-center justify-between sm:justify-start gap-2.5 rounded-lg border px-3.5 py-1.5 text-xs font-bold shadow-xs transition-all cursor-pointer ${
-                    selectedSavedCandidate
+                    selectedCandidates.length > 0
                       ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20"
                       : "border-primary/40 bg-background/90 text-primary hover:bg-primary/10"
                   }`}
                 >
                   <div className="flex items-center gap-1.5 truncate">
-                    {selectedSavedCandidate ? (
+                    {selectedCandidates.length > 1 ? (
+                      <>
+                        <Users className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="truncate max-w-[150px]">
+                          👥 {selectedCandidates.length} Selected
+                        </span>
+                      </>
+                    ) : selectedCandidates.length === 1 ? (
                       <>
                         <UserCheck className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span className="truncate max-w-[140px]">
-                          👤 {selectedSavedCandidate.name}
+                          👤 {selectedCandidates[0].name}
                         </span>
                       </>
                     ) : (
                       <>
                         <User className="size-3.5 text-primary" />
-                        <span>👤 Select Candidate</span>
+                        <span>👤 Select Candidates</span>
                       </>
                     )}
                   </div>
@@ -811,28 +981,41 @@ export function SendInvitationModal({
                   />
                 </button>
 
-                {/* Dropdown Floating Menu with Checkboxes */}
+                {/* Dropdown Floating Menu with Multi-select Checkboxes & Select All */}
                 {isCandidateDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-1.5 w-72 sm:w-80 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-2.5 py-1.5 border-b border-border/60 flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Saved Candidates ({savedCandidates.length})
-                      </span>
-                      <Badge variant="outline" className="text-[10px] h-4 px-1.5 py-0">
-                        Check to select
+                  <div className="absolute right-0 top-full mt-1.5 w-76 sm:w-84 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                    {/* Header: Select All Candidates Toggle */}
+                    <div className="px-2 py-1.5 border-b border-border/60 flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={handleToggleSelectAll}
+                        className="flex items-center gap-2 text-xs font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer select-none"
+                      >
+                        {isAllSelected ? (
+                          <CheckSquare className="size-4 text-primary fill-primary/20" />
+                        ) : (
+                          <Square className="size-4 text-muted-foreground" />
+                        )}
+                        <span>{isAllSelected ? "Deselect All" : "Select All Candidates"}</span>
+                      </button>
+                      <Badge variant="outline" className="text-[10px] h-5 px-1.5 py-0 font-medium">
+                        {selectedCandidates.length} / {savedCandidates.length} selected
                       </Badge>
                     </div>
 
-                    <div className="max-h-56 overflow-y-auto py-1 space-y-1">
+                    {/* Candidate List with Checkbox for each candidate */}
+                    <div className="max-h-60 overflow-y-auto py-1 space-y-1">
                       {savedCandidates.map((cand) => {
-                        const isSelected =
-                          candidateEmail.trim().toLowerCase() ===
-                          cand.email.trim().toLowerCase();
+                        const isSelected = selectedCandidates.some(
+                          (c) =>
+                            c.email.trim().toLowerCase() ===
+                            cand.email.trim().toLowerCase(),
+                        );
                         return (
                           <button
                             key={cand.id || cand.email}
                             type="button"
-                            onClick={() => handleSelectCandidate(cand)}
+                            onClick={() => handleToggleCandidate(cand)}
                             className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-xs transition-colors cursor-pointer ${
                               isSelected
                                 ? "bg-primary/15 text-primary font-semibold border border-primary/20"
@@ -866,53 +1049,117 @@ export function SendInvitationModal({
                       })}
                     </div>
 
-                    {/* New candidate option (clear form) */}
-                    <div className="border-t border-border/60 pt-1 mt-1">
+                    {/* Bottom Actions: New Candidate Mode & Done button */}
+                    <div className="border-t border-border/60 pt-1.5 mt-1 flex items-center justify-between gap-2">
                       <button
                         type="button"
                         onClick={handleSelectNewCandidate}
-                        className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left text-xs text-primary hover:bg-primary/10 font-semibold transition-colors cursor-pointer"
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-md text-left text-[11px] text-primary hover:bg-primary/10 font-semibold transition-colors cursor-pointer"
                       >
-                        <UserPlus className="size-3.5" />
-                        <span>✍️ New Candidate (Type Manually)</span>
+                        <UserPlus className="size-3" />
+                        <span>✍️ Type Manually</span>
                       </button>
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="secondary"
+                        onClick={() => setIsCandidateDropdownOpen(false)}
+                        className="text-[11px] h-6 px-2.5 font-bold cursor-pointer"
+                      >
+                        Done
+                      </Button>
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Candidate Name & Email Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <User className="size-3 text-primary" />
-                  <span>Candidate Full Name *</span>
-                </label>
-                <Input
-                  required
-                  placeholder="e.g. Provash Barman"
-                  value={candidateName}
-                  onChange={(e) => setCandidateName(e.target.value)}
-                  className="h-9 text-xs"
-                />
+            {/* If multiple candidates selected, show Chip List of selected candidates */}
+            {selectedCandidates.length > 1 ? (
+              <div className="rounded-xl border border-primary/20 bg-muted/40 p-3 space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Users className="size-3.5 text-primary" />
+                    <span>Selected Candidates ({selectedCandidates.length})</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCandidates([]);
+                      setCandidateName("");
+                      setCandidateEmail("");
+                    }}
+                    className="text-[11px] text-destructive hover:underline cursor-pointer font-medium"
+                  >
+                    Clear Selection
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto pr-1">
+                  {selectedCandidates.map((cand) => (
+                    <span
+                      key={cand.email}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-background border border-border text-xs font-medium text-foreground shadow-xs"
+                    >
+                      <span>{cand.name}</span>
+                      <span className="text-[10px] text-muted-foreground">({cand.email})</span>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleCandidate(cand)}
+                        className="text-muted-foreground hover:text-foreground cursor-pointer rounded-full p-0.5 hover:bg-muted"
+                        aria-label={`Remove ${cand.name}`}
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground italic">
+                  Assessment invitations with magic tokens will be dispatched to all {selectedCandidates.length} candidates simultaneously.
+                </p>
               </div>
+            ) : (
+              /* Single Candidate Name & Email Inputs */
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <User className="size-3 text-primary" />
+                    <span>Candidate Full Name *</span>
+                  </label>
+                  <Input
+                    required
+                    placeholder="e.g. Provash Barman"
+                    value={candidateName}
+                    onChange={(e) => {
+                      setCandidateName(e.target.value);
+                      if (selectedCandidates.length === 1) {
+                        setSelectedCandidates([]);
+                      }
+                    }}
+                    className="h-9 text-xs"
+                  />
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Mail className="size-3 text-primary" />
-                  <span>Candidate Email *</span>
-                </label>
-                <Input
-                  required
-                  type="email"
-                  placeholder="provash10dev@gmail.com"
-                  value={candidateEmail}
-                  onChange={(e) => setCandidateEmail(e.target.value)}
-                  className="h-9 text-xs"
-                />
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Mail className="size-3 text-primary" />
+                    <span>Candidate Email *</span>
+                  </label>
+                  <Input
+                    required
+                    type="email"
+                    placeholder="provash10dev@gmail.com"
+                    value={candidateEmail}
+                    onChange={(e) => {
+                      setCandidateEmail(e.target.value);
+                      if (selectedCandidates.length === 1) {
+                        setSelectedCandidates([]);
+                      }
+                    }}
+                    className="h-9 text-xs"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Select Assessment Challenge */}
             <div className="space-y-1.5">
@@ -989,15 +1236,15 @@ export function SendInvitationModal({
               />
             </div>
 
-            {/* Credit Cost Notice */}
+            {/* Credit Cost Notice (Dynamic for 1 or multiple candidates) */}
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
                 <Zap className="size-4 text-primary" />
                 <span className="text-muted-foreground">
-                  Cost per candidate invite:
+                  Cost for {candidateCount} candidate{candidateCount > 1 ? "s" : ""}:
                 </span>
                 <span className="font-bold text-foreground font-mono">
-                  1 Credit (৳5.00)
+                  {candidateCount} Credit{candidateCount > 1 ? "s" : ""} (৳{candidateCount * 5}.00)
                 </span>
               </div>
               <Badge variant="outline" className="text-[10px] bg-background">
@@ -1026,7 +1273,11 @@ export function SendInvitationModal({
               >
                 <Send className="size-3.5" />
                 <span>
-                  {isSubmitting ? "Dispatching..." : "Send Invitation"}
+                  {isSubmitting
+                    ? "Dispatching..."
+                    : candidateCount > 1
+                    ? `Send ${candidateCount} Invitations`
+                    : "Send Invitation"}
                 </span>
               </Button>
             </div>
