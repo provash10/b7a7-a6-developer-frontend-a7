@@ -432,7 +432,8 @@ function CandidateAssessmentExamContent() {
         if (connectedAttemptId && !connectedAttemptId.startsWith("att-")) {
           try {
             const qRes = await getAttemptQuestions(connectedAttemptId);
-            const backendQuestions = qRes?.data?.questions;
+            const rawData: any = qRes?.data;
+            const backendQuestions = Array.isArray(rawData) ? rawData : rawData?.questions;
             if (Array.isArray(backendQuestions) && backendQuestions.length > 0) {
               const mappedDbQuestions: ExamQuestion[] = backendQuestions.map(
                 (q: any, idx: number) => ({
