@@ -365,6 +365,7 @@ export default function DashboardSidebar({
           <span className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
             Switch Portal View:
           </span>
+          <div className="grid grid-cols-3 gap-1 text-[11px]">
             <button
               type="button"
               onClick={() => handleSwitchPortal("ADMIN", "/admin")}
