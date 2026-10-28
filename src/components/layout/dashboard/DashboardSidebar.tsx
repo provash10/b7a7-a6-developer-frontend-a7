@@ -23,6 +23,7 @@ import { useGetMyProfile } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getEffectiveRole, setActiveSession } from "@/lib/session";
+import apiClient from "@/lib/apiClient";
 
 interface DashboardSidebarProps {
   onCloseMobile?: () => void;
@@ -37,6 +38,7 @@ export default function DashboardSidebar({
   const { data: profileData } = useGetMyProfile();
   const user = profileData?.data;
   const [mounted, setMounted] = useState(false);
+  const [switchingRole, setSwitchingRole] = useState<string | null>(null);
 
   const fallbackRole = pathname?.startsWith("/admin")
     ? "ADMIN"
@@ -47,6 +49,60 @@ export default function DashboardSidebar({
   const [effectiveRole, setEffectiveRole] = useState<
     "ADMIN" | "RECRUITER" | "CANDIDATE"
   >(fallbackRole);
+
+  const handleSwitchPortal = async (
+    targetRole: "ADMIN" | "RECRUITER" | "CANDIDATE",
+    destination: string,
+  ) => {
+    setSwitchingRole(targetRole);
+
+    const demoCredentials: Record<
+      "ADMIN" | "RECRUITER" | "CANDIDATE",
+      { email: string; pass: string; name: string }
+    > = {
+      ADMIN: {
+        email: "admin@100.com",
+        pass: "Password@100",
+        name: "System Admin",
+      },
+      RECRUITER: {
+        email: "recruiter@100.com",
+        pass: "Password@100",
+        name: "Jane Recruiter",
+      },
+      CANDIDATE: {
+        email: "candidate@100.com",
+        pass: "Password@100",
+        name: "John Developer",
+      },
+    };
+
+    const target = demoCredentials[targetRole];
+
+    try {
+      const res = await apiClient<any>("/auth/login", {
+        method: "POST",
+        body: {
+          email: target.email,
+          password: target.pass,
+        },
+      });
+
+      const token = res?.data?.accessToken || res?.accessToken;
+      const userName = res?.data?.user?.name || target.name;
+
+      if (token) {
+        setActiveSession(target.email, targetRole, userName, token);
+        window.location.href = destination;
+        return;
+      }
+    } catch (err) {
+      console.warn("Portal switch login fallback:", err);
+    }
+
+    setActiveSession(target.email, targetRole, target.name);
+    window.location.href = destination;
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -309,58 +365,48 @@ export default function DashboardSidebar({
           <span className="block text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
             Switch Portal View:
           </span>
-          <div className="grid grid-cols-3 gap-1 text-[11px]">
-            <Link
-              href="/admin"
-              onClick={(e) => {
-                e.preventDefault();
-                const targetEmail = user?.email || "admin@100.com";
-                setActiveSession(targetEmail, "ADMIN", user?.name || "System Admin");
-                window.location.href = "/admin";
-              }}
+            <button
+              type="button"
+              onClick={() => handleSwitchPortal("ADMIN", "/admin")}
+              disabled={switchingRole !== null}
               className={cn(
-                "text-center py-1 rounded font-medium transition-colors",
+                "text-center py-1 rounded font-medium transition-colors cursor-pointer",
                 isAdmin
                   ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                switchingRole === "ADMIN" && "opacity-50 cursor-wait",
               )}
             >
-              Admin
-            </Link>
-            <Link
-              href="/recruiter"
-              onClick={(e) => {
-                e.preventDefault();
-                const targetEmail = user?.email || "recruiter@100.com";
-                setActiveSession(targetEmail, "RECRUITER", "Recruiter");
-                window.location.href = "/recruiter";
-              }}
+              {switchingRole === "ADMIN" ? "..." : "Admin"}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSwitchPortal("RECRUITER", "/recruiter")}
+              disabled={switchingRole !== null}
               className={cn(
-                "text-center py-1 rounded font-medium transition-colors",
+                "text-center py-1 rounded font-medium transition-colors cursor-pointer",
                 isRecruiter
                   ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                switchingRole === "RECRUITER" && "opacity-50 cursor-wait",
               )}
             >
-              Recruiter
-            </Link>
-            <Link
-              href="/dashboard"
-              onClick={(e) => {
-                e.preventDefault();
-                const targetEmail = user?.email || "candidate@100.com";
-                setActiveSession(targetEmail, "CANDIDATE", "Candidate");
-                window.location.href = "/dashboard";
-              }}
+              {switchingRole === "RECRUITER" ? "..." : "Recruiter"}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSwitchPortal("CANDIDATE", "/dashboard")}
+              disabled={switchingRole !== null}
               className={cn(
-                "text-center py-1 rounded font-medium transition-colors",
+                "text-center py-1 rounded font-medium transition-colors cursor-pointer",
                 !isAdmin && !isRecruiter
                   ? "bg-primary/20 text-primary font-bold"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                switchingRole === "CANDIDATE" && "opacity-50 cursor-wait",
               )}
             >
-              Candidate
-            </Link>
+              {switchingRole === "CANDIDATE" ? "..." : "Candidate"}
+            </button>
           </div>
         </div>
 
