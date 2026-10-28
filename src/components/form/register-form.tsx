@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 import { useRegistration } from "@/hooks";
+import { setActiveSession } from "@/lib/session";
 import { registerSchema } from "@/validation";
 
 interface DemoAccount {
@@ -93,48 +94,94 @@ export default function RegisterForm() {
       onSubmit: registerSchema as any,
     },
     onSubmit: ({ value }) => {
+      const candidateName = value.name.trim();
+      const candidateEmail = value.email.trim();
+
+      // Immediately cache new candidate so it is 100% available in dropdown instantly
+      const saveCandidateLocally = () => {
+        try {
+          const storedSaved = JSON.parse(
+            localStorage.getItem("devassess_saved_candidates") || "[]",
+          );
+          const newCandidate = {
+            id: `cand-${Date.now()}`,
+            name: candidateName,
+            email: candidateEmail,
+            role: "Registered Candidate",
+          };
+          localStorage.setItem(
+            "devassess_saved_candidates",
+            JSON.stringify([
+              newCandidate,
+              ...storedSaved.filter(
+                (c: any) =>
+                  c.email?.toLowerCase().trim() !==
+                  candidateEmail.toLowerCase(),
+              ),
+            ]),
+          );
+
+          const storedUsers = JSON.parse(
+            localStorage.getItem("devassess_custom_users") || "[]",
+          );
+          const newUser = {
+            id: `usr-${Date.now().toString().slice(-4)}`,
+            name: candidateName,
+            email: candidateEmail,
+            role: "CANDIDATE",
+            status: "ACTIVE",
+            createdAt: "Today",
+            assessmentsCount: 0,
+          };
+          localStorage.setItem(
+            "devassess_custom_users",
+            JSON.stringify([
+              newUser,
+              ...storedUsers.filter(
+                (u: any) =>
+                  u.email?.toLowerCase().trim() !==
+                  candidateEmail.toLowerCase(),
+              ),
+            ]),
+          );
+
+          window.dispatchEvent(new Event("storage"));
+          window.dispatchEvent(new CustomEvent("devassess_candidates_update"));
+        } catch {}
+      };
+
+      // Save immediately
+      saveCandidateLocally();
+
       const payload = {
-        name: value.name.trim(),
-        email: value.email.trim(),
+        name: candidateName,
+        email: candidateEmail,
         password: value.password,
         phone: value.contactNumber?.trim() || undefined,
         role: "CANDIDATE",
       };
 
       register(payload, {
-        onSuccess: (_res) => {
-          // Persist user so admin dashboard immediately reflects this new account
-          try {
-            const stored = JSON.parse(
-              localStorage.getItem("devassess_custom_users") || "[]",
-            );
-            const newUser = {
-              id: `usr-${Date.now().toString().slice(-4)}`,
-              name: value.name.trim(),
-              email: value.email.trim(),
-              role: "CANDIDATE",
-              status: "ACTIVE",
-              createdAt: "Today",
-              assessmentsCount: 0,
-            };
-            localStorage.setItem(
-              "devassess_custom_users",
-              JSON.stringify([
-                newUser,
-                ...stored.filter((u: any) => u.email !== newUser.email),
-              ]),
-            );
-          } catch {}
+        onSuccess: (res: any) => {
+          saveCandidateLocally();
+
+          const token = res?.data?.accessToken || res?.accessToken;
+          const serverRole =
+            res?.data?.user?.role || res?.data?.role || res?.role || "CANDIDATE";
+          const serverName =
+            res?.data?.user?.name || res?.data?.name || res?.name || candidateName;
+
+          // Automatically log the new candidate in and establish active session
+          setActiveSession(candidateEmail, serverRole, serverName, token);
 
           toast.add({
-            title: "Registration Successful",
-            description:
-              "Your account has been created. Redirecting to login...",
+            title: "Registration Successful 🎉",
+            description: "Account created! Logging you in to your dashboard...",
             type: "success",
           });
           queryClient.invalidateQueries({ queryKey: ["user"] });
           setTimeout(() => {
-            router.push("/login");
+            window.location.href = "/dashboard";
           }, 800);
         },
         onError: (err: any) => {

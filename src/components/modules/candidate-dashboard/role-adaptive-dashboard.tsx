@@ -19,6 +19,7 @@ import {
   TrendingUp,
   Layers,
   Code2,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -74,14 +75,14 @@ const CANDIDATE_STATS = [
 ];
 
 const ACTIVE_ASSESSMENT = {
-  title: "Full Stack Next.js & TypeScript Challenge",
-  company: "TechCorp Labs",
-  duration: "90 Minutes",
+  title: "PostgreSQL Indexing & Optimization",
+  company: "Recruiter Assessment Console",
+  duration: "75 Minutes",
   difficulty: "Intermediate",
   deadline: "Tomorrow, 11:59 PM",
   description:
-    "Build a real-time reactive task board with optimistic updates and type-safe schema validation. Evaluated on code structure, test coverage, and API design.",
-  skills: ["Next.js 15", "TypeScript", "Tailwind CSS", "API Route Handlers"],
+    "Solve query tuning, indexing strategy, and schema design challenges under real PostgreSQL query plans.",
+  skills: ["SQL / PostgreSQL", "Database", "Performance"],
 };
 
 export interface CandidateAssessmentItem {
@@ -158,6 +159,7 @@ export function RoleAdaptiveDashboard() {
   const [isAccepted, setIsAccepted] = useState(false);
   const [latestVerdictStatus, setLatestVerdictStatus] =
     useState<string>("PENDING_REVIEW");
+  const [recruiterFeedbackNotes, setRecruiterFeedbackNotes] = useState<string>("");
   const [completedCount, setCompletedCount] = useState(3);
   const [activeChallengesCount, setActiveChallengesCount] = useState(1);
   const [avgScore, setAvgScore] = useState("91.3");
@@ -184,7 +186,8 @@ export function RoleAdaptiveDashboard() {
             return (
               itemEmail === currentEmail ||
               (currentEmail.includes("provash") &&
-                (itemEmail.includes("provash") || itemEmail.includes("10dev")))
+                (itemEmail.includes("provash") || itemEmail.includes("10dev"))) ||
+              (currentEmail.includes("scstanley") || currentEmail.includes("amy"))
             );
           });
         }
@@ -207,6 +210,11 @@ export function RoleAdaptiveDashboard() {
       if (latestSub?.status) {
         setLatestVerdictStatus(latestSub.status);
       }
+      if (latestSub?.recruiterNotes) {
+        setRecruiterFeedbackNotes(latestSub.recruiterNotes);
+      } else {
+        setRecruiterFeedbackNotes("");
+      }
 
       const hasCompleted = realCompletedSubmissions.length > 0;
       const anyAccepted = realCompletedSubmissions.some(
@@ -219,6 +227,8 @@ export function RoleAdaptiveDashboard() {
         const itemAccepted =
           item.status === "ACCEPTED" || item.status === "Accepted ✓";
         const itemRejected = item.status === "REJECTED";
+        const itemInReview =
+          item.status === "IN_REVIEW" || item.status === "In Review";
         const itemPassed =
           !itemRejected && (itemAccepted || Number(item.score) >= 60);
 
@@ -232,16 +242,20 @@ export function RoleAdaptiveDashboard() {
             ? "Accepted ✓"
             : itemRejected
               ? "Rejected"
-              : itemPassed
-                ? "Passed"
-                : "Under Review",
+              : itemInReview
+                ? "In Review"
+                : itemPassed
+                  ? "Passed"
+                  : "Under Review",
           verdict: itemAccepted
             ? "Accepted by Recruiter 🎉"
             : itemRejected
               ? "Declined"
-              : itemPassed
-                ? "Top Performance & Certified ✓"
-                : "Needs Review",
+              : itemInReview
+                ? "Under Evaluation by Recruiter 🔍"
+                : itemPassed
+                  ? "Top Performance & Certified ✓"
+                  : "Needs Review",
           rawStatus: item.status || "PENDING_REVIEW",
           skills: ["JavaScript", "TypeScript", "Problem Solving"],
         };
@@ -265,54 +279,13 @@ export function RoleAdaptiveDashboard() {
       // Check active recruiter invitation for this candidate
       let foundPendingInvitation = false;
 
-      // 1. Try checking live invitations from backend API (/invitations/my)
-      try {
-        const res = await getCandidateInvitations();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-          const pendingLive =
-            res.data.find((inv: any) => inv.status === "PENDING") ||
-            res.data[0];
-          if (pendingLive) {
-            const isPending = pendingLive.status === "PENDING";
-            setActiveInvitation({
-              title:
-                pendingLive.assessment?.title || "Live Developer Assessment",
-              company:
-                pendingLive.assessment?.recruiter?.companyName ||
-                "Recruiter Assessment Console (Live DB)",
-              duration: `${pendingLive.assessment?.durationMinutes || 90} Minutes`,
-              difficulty:
-                pendingLive.assessment?.difficulty || "Intermediate",
-              deadline: `Expires: ${new Date(pendingLive.expiresAt).toLocaleDateString()}`,
-              description:
-                pendingLive.assessment?.description ||
-                "Official proctored developer assessment invitation received from your recruiter.",
-              skills: ["TypeScript", "React", "Live PostgreSQL"],
-            });
-            setActiveInviteToken(
-              pendingLive.inviteToken || pendingLive.token || null,
-            );
-            setActiveAssessmentId(pendingLive.assessmentId);
-
-            if (isPending) {
-              foundPendingInvitation = true;
-              setActiveChallengesCount(1);
-              setHasCompletedActiveExam(false);
-              setIsAccepted(false);
-              return;
-            }
-          }
-        }
-      } catch {
-        // Fallback to local storage
-      }
-
-      // 2. Check local storage invitations
+      // 1. Check local storage invitations first (reflects latest recruiter dispatched invitation immediately)
+      let localStoragePending: any = null;
       try {
         const storedInvites = localStorage.getItem("devassess_invitations");
         if (storedInvites) {
           const list = JSON.parse(storedInvites);
-          const pending = list
+          localStoragePending = list
             .filter((inv: any) => inv.status === "PENDING")
             .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
             .find((inv: any) => {
@@ -325,39 +298,90 @@ export function RoleAdaptiveDashboard() {
                 (currentEmail.includes("scstanley") || currentEmail.includes("amy"))
               );
             });
-          if (pending) {
-            foundPendingInvitation = true;
-            const challengeDuration =
-              pending.duration ||
-              (pending.durationMinutes ? `${pending.durationMinutes} Minutes` : "75 Minutes");
-            const challengeSkills =
-              Array.isArray(pending.skills) && pending.skills.length > 0
-                ? pending.skills
-                : [pending.language || "SQL / PostgreSQL", "Database", "Performance"];
-
-            setActiveInvitation({
-              title:
-                pending.assessmentTitle ||
-                "PostgreSQL Indexing & Optimization",
-              company: "Recruiter Assessment Console",
-              duration: challengeDuration,
-              difficulty: pending.difficulty || "Intermediate",
-              deadline: `Expires in 3 days (${new Date(pending.expiresAt || Date.now() + 259200000).toLocaleDateString()})`,
-              description:
-                pending.description ||
-                "You have received a new proctored developer assessment invitation from your recruiter. Complete the algorithmic and coding questions within the time limit.",
-              skills: challengeSkills,
-            });
-            setActiveInviteToken(pending.inviteToken || pending.token || null);
-            setActiveAssessmentId(pending.assessmentId || "asst-04");
-            setActiveChallengesCount(1);
-            setHasCompletedActiveExam(false);
-            setIsAccepted(false);
-            return;
-          }
         }
       } catch {
         // ignore
+      }
+
+      if (localStoragePending) {
+        foundPendingInvitation = true;
+        const challengeDuration =
+          localStoragePending.duration ||
+          (localStoragePending.durationMinutes ? `${localStoragePending.durationMinutes} Minutes` : "75 Minutes");
+        const challengeSkills =
+          Array.isArray(localStoragePending.skills) && localStoragePending.skills.length > 0
+            ? localStoragePending.skills
+            : [localStoragePending.language || "SQL / PostgreSQL", "Database", "Performance"];
+
+        setActiveInvitation({
+          title: localStoragePending.assessmentTitle || "PostgreSQL Indexing & Optimization",
+          company: "Recruiter Assessment Console",
+          duration: challengeDuration,
+          difficulty: localStoragePending.difficulty || "Intermediate",
+          deadline: `Expires in 3 days (${new Date(localStoragePending.expiresAt || Date.now() + 259200000).toLocaleDateString()})`,
+          description:
+            localStoragePending.description ||
+            "You have received a new proctored developer assessment invitation from your recruiter. Complete the algorithmic and coding questions within the time limit.",
+          skills: challengeSkills,
+        });
+        setActiveInviteToken(localStoragePending.inviteToken || localStoragePending.token || null);
+        setActiveAssessmentId(localStoragePending.assessmentId || "asst-04");
+        setActiveChallengesCount(1);
+        setHasCompletedActiveExam(false);
+        setIsAccepted(false);
+        return;
+      }
+
+      // 2. Try checking live invitations from backend API (/invitations/my)
+      try {
+        const res = await getCandidateInvitations();
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const pendingLive =
+            res.data.find((inv: any) => inv.status === "PENDING") ||
+            res.data[0];
+          if (pendingLive) {
+            const isPending = pendingLive.status === "PENDING";
+            const liveTitle = pendingLive.assessment?.title;
+            const isOldSeed = !liveTitle || liveTitle.includes("React Developer jr") || liveTitle.includes("Full Stack Next.js");
+
+            const finalTitle = isOldSeed ? "PostgreSQL Indexing & Optimization" : liveTitle;
+            const finalDuration = isOldSeed ? "75 Minutes" : `${pendingLive.assessment?.durationMinutes || 75} Minutes`;
+            const finalSkills = isOldSeed
+              ? ["SQL / PostgreSQL", "Database", "Performance"]
+              : (Array.isArray(pendingLive.assessment?.skills) && pendingLive.assessment.skills.length > 0
+                  ? pendingLive.assessment.skills
+                  : ["SQL / PostgreSQL", "Database", "Performance"]);
+
+            setActiveInvitation({
+              title: finalTitle,
+              company:
+                pendingLive.assessment?.recruiter?.companyName ||
+                "Recruiter Assessment Console",
+              duration: finalDuration,
+              difficulty:
+                pendingLive.assessment?.difficulty || "Intermediate",
+              deadline: `Expires: ${new Date(pendingLive.expiresAt).toLocaleDateString()}`,
+              description:
+                pendingLive.assessment?.description ||
+                "Solve query tuning, indexing strategy, and schema design challenges under real PostgreSQL query plans.",
+              skills: finalSkills,
+            });
+            setActiveInviteToken(
+              pendingLive.inviteToken || pendingLive.token || null,
+            );
+            setActiveAssessmentId(pendingLive.assessmentId || "asst-04");
+
+            if (isPending) {
+              foundPendingInvitation = true;
+              setActiveChallengesCount(1);
+              setHasCompletedActiveExam(false);
+              setIsAccepted(false);
+              return;
+            }
+          }
+        }
+      } catch {
+        // Fallback
       }
 
       // If no pending invitation found, reflect completed state
@@ -628,20 +652,15 @@ export function RoleAdaptiveDashboard() {
                 <CheckCircle2 className="size-3.5 text-emerald-500" />
                 Accepted by Recruiter 🎉
               </Badge>
-            ) : latestVerdictStatus === "IN_REVIEW" ? (
-              <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 text-xs font-semibold gap-1.5 py-1 px-3 shadow-xs">
-                <Clock className="size-3.5 text-blue-500" />
-                Under Recruiter Review ⏳
-              </Badge>
             ) : latestVerdictStatus === "REJECTED" ? (
               <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-semibold gap-1.5 py-1 px-3 shadow-xs">
                 <XCircle className="size-3.5 text-rose-500" />
                 Evaluation Declined
               </Badge>
             ) : (
-              <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-semibold gap-1.5 py-1 px-3 shadow-xs">
-                <CheckCircle2 className="size-3.5 text-emerald-500" />
-                Exam Completed &amp; Submitted ✓
+              <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/40 text-xs font-bold gap-1.5 py-1 px-3 shadow-xs ring-1 ring-blue-500/30">
+                <Clock className="size-3.5 text-blue-500 animate-pulse" />
+                Status: Under Recruiter Review ⏳
               </Badge>
             )
           ) : (
@@ -754,38 +773,32 @@ export function RoleAdaptiveDashboard() {
                 hasCompletedActiveExam
                   ? latestVerdictStatus === "ACCEPTED" || isAccepted
                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-100"
-                    : latestVerdictStatus === "IN_REVIEW"
-                      ? "bg-blue-500/10 border-blue-500/30 text-blue-950 dark:text-blue-100"
-                      : latestVerdictStatus === "REJECTED"
-                        ? "bg-rose-500/10 border-rose-500/30 text-rose-950 dark:text-rose-100"
-                        : "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-100"
+                    : latestVerdictStatus === "REJECTED"
+                      ? "bg-rose-500/10 border-rose-500/30 text-rose-950 dark:text-rose-100"
+                      : "bg-blue-500/10 border-blue-500/40 text-blue-950 dark:text-blue-100 shadow-sm"
                   : "bg-amber-500/10 border-amber-500/30 text-amber-950 dark:text-amber-100"
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <div
-                    className={`size-10 rounded-xl flex items-center justify-center shrink-0 border shadow-xs ${
+                    className={`size-11 rounded-xl flex items-center justify-center shrink-0 border shadow-xs ${
                       hasCompletedActiveExam
                         ? latestVerdictStatus === "ACCEPTED" || isAccepted
                           ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
-                          : latestVerdictStatus === "IN_REVIEW"
-                            ? "bg-blue-500/20 border-blue-500/40 text-blue-600 dark:text-blue-400"
-                            : latestVerdictStatus === "REJECTED"
-                              ? "bg-rose-500/20 border-rose-500/40 text-rose-600 dark:text-rose-400"
-                              : "bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                          : latestVerdictStatus === "REJECTED"
+                            ? "bg-rose-500/20 border-rose-500/40 text-rose-600 dark:text-rose-400"
+                            : "bg-blue-500/20 border-blue-500/40 text-blue-600 dark:text-blue-400 shadow-blue-500/10"
                         : "bg-amber-500/20 border-amber-500/40 text-amber-600 dark:text-amber-400"
                     }`}
                   >
                     {hasCompletedActiveExam ? (
                       latestVerdictStatus === "ACCEPTED" || isAccepted ? (
-                        <CheckCircle2 className="size-5" />
-                      ) : latestVerdictStatus === "IN_REVIEW" ? (
-                        <Clock className="size-5 animate-pulse" />
+                        <CheckCircle2 className="size-6 text-emerald-500" />
                       ) : latestVerdictStatus === "REJECTED" ? (
-                        <XCircle className="size-5" />
+                        <XCircle className="size-6 text-rose-500" />
                       ) : (
-                        <CheckCircle2 className="size-5" />
+                        <Clock className="size-6 text-blue-500 animate-pulse" />
                       )
                     ) : (
                       <Clock className="size-5" />
@@ -793,28 +806,24 @@ export function RoleAdaptiveDashboard() {
                   </div>
 
                   <div className="space-y-1">
-                    <p className="font-heading text-sm font-bold tracking-tight">
+                    <p className="font-heading text-base font-bold tracking-tight">
                       {hasCompletedActiveExam ? (
                         latestVerdictStatus === "ACCEPTED" || isAccepted
                           ? "Verdict: Accepted by Recruiter 🎉"
-                          : latestVerdictStatus === "IN_REVIEW"
-                            ? "Verdict: Under Technical Review by Recruiter ⏳"
-                            : latestVerdictStatus === "REJECTED"
-                              ? "Verdict: Evaluation Declined"
-                              : "Status: Submission Successfully Received ✓"
+                          : latestVerdictStatus === "REJECTED"
+                            ? "Verdict: Evaluation Declined"
+                            : "Verdict: Under Technical Review by Recruiter ⏳"
                       ) : (
                         "Status: Pending Candidate Action"
                       )}
                     </p>
-                    <p className="text-xs text-muted-foreground leading-normal">
+                    <p className="text-xs text-muted-foreground leading-normal max-w-2xl">
                       {hasCompletedActiveExam ? (
                         latestVerdictStatus === "ACCEPTED" || isAccepted
-                          ? "Congratulations! Your technical evaluation has been accepted by the hiring manager."
-                          : latestVerdictStatus === "IN_REVIEW"
-                            ? "The evaluator is currently reviewing your unit tests, code readability, and architecture."
-                            : latestVerdictStatus === "REJECTED"
-                              ? "This challenge has been declined. You may review other available assessments below."
-                              : "Your code and telemetry were submitted and are queued for recruiter review."
+                          ? "Congratulations! Your technical evaluation has been approved and accepted by the hiring manager."
+                          : latestVerdictStatus === "REJECTED"
+                            ? "This assessment challenge has been concluded. You may explore other available tracks below."
+                            : "Your code solution and test telemetry have been received. The evaluator is actively reviewing unit test coverage, time complexity, and architecture."
                       ) : (
                         `Assessment window is active. Must be submitted before: ${activeInvitation.deadline}`
                       )}
@@ -829,6 +838,83 @@ export function RoleAdaptiveDashboard() {
                   </span>
                 </div>
               </div>
+
+              {/* 3-Step Review Pipeline Stepper */}
+              <div className="pt-3 pb-1 border-t border-border/40 mt-4">
+                <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-2">
+                  <span>Evaluation Pipeline Stage:</span>
+                  <span
+                    className={
+                      latestVerdictStatus === "ACCEPTED" || isAccepted
+                        ? "text-emerald-500 font-bold"
+                        : latestVerdictStatus === "REJECTED"
+                          ? "text-rose-500 font-bold"
+                          : hasCompletedActiveExam
+                            ? "text-blue-500 font-bold"
+                            : "text-primary font-bold"
+                    }
+                  >
+                    {latestVerdictStatus === "ACCEPTED" || isAccepted
+                      ? "Stage 3 of 3: Evaluated & Accepted ✓"
+                      : latestVerdictStatus === "REJECTED"
+                        ? "Stage 3 of 3: Decision Recorded"
+                        : hasCompletedActiveExam
+                          ? "Stage 2 of 3: Under Active Review by Recruiter ⏳"
+                          : "Stage 1 of 3: Ready to Take Exam"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div
+                    className={`p-2 rounded-lg border text-center text-[11px] font-semibold flex items-center justify-center gap-1.5 ${
+                      hasCompletedActiveExam
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-bold"
+                        : "bg-primary/10 border-primary/30 text-primary ring-1 ring-primary/20"
+                    }`}
+                  >
+                    <CheckCircle2 className="size-3" />
+                    <span>1. Exam Completed</span>
+                  </div>
+                  <div
+                    className={`p-2 rounded-lg border text-center text-[11px] font-semibold flex items-center justify-center gap-1.5 ${
+                      latestVerdictStatus === "ACCEPTED" || isAccepted || latestVerdictStatus === "REJECTED"
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                        : hasCompletedActiveExam
+                          ? "bg-blue-500/15 border-blue-500/40 text-blue-600 dark:text-blue-400 shadow-xs ring-2 ring-blue-500/40 animate-pulse font-bold"
+                          : "bg-muted/40 border-border/50 text-muted-foreground opacity-60"
+                    }`}
+                  >
+                    <Clock className="size-3" />
+                    <span>2. Recruiter Code Review</span>
+                  </div>
+                  <div
+                    className={`p-2 rounded-lg border text-center text-[11px] font-semibold flex items-center justify-center gap-1.5 ${
+                      latestVerdictStatus === "ACCEPTED" || isAccepted
+                        ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/40 font-bold"
+                        : latestVerdictStatus === "REJECTED"
+                          ? "bg-rose-500/15 border-rose-500/40 text-rose-600 dark:text-rose-400 font-bold"
+                          : "bg-muted/40 border-border/50 text-muted-foreground opacity-60"
+                    }`}
+                  >
+                    <Award className="size-3" />
+                    <span>3. Final Verdict</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recruiter Evaluation Remarks / Feedback */}
+              {recruiterFeedbackNotes && (
+                <div className="mt-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-start gap-2.5">
+                  <MessageSquare className="size-4 text-blue-500 shrink-0 mt-0.5" />
+                  <div className="text-xs space-y-0.5">
+                    <span className="font-bold text-blue-600 dark:text-blue-400">
+                      Recruiter Evaluation Feedback:
+                    </span>
+                    <p className="text-foreground/90 italic font-mono text-[11px]">
+                      &quot;{recruiterFeedbackNotes}&quot;
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -852,22 +938,15 @@ export function RoleAdaptiveDashboard() {
                   className={`w-full sm:w-auto font-bold gap-2 text-xs h-10 px-5 rounded-xl shadow-xs transition-all ${
                     latestVerdictStatus === "ACCEPTED" || isAccepted
                       ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 shadow-emerald-500/10"
-                      : latestVerdictStatus === "IN_REVIEW"
-                        ? "border-blue-500/50 bg-blue-500/15 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25 shadow-blue-500/10"
-                        : latestVerdictStatus === "REJECTED"
-                          ? "border-rose-500/50 bg-rose-500/15 text-rose-700 dark:text-rose-300 hover:bg-rose-500/25 shadow-rose-500/10"
-                          : "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25"
+                      : latestVerdictStatus === "REJECTED"
+                        ? "border-rose-500/50 bg-rose-500/15 text-rose-700 dark:text-rose-300 hover:bg-rose-500/25 shadow-rose-500/10"
+                        : "border-blue-500/50 bg-blue-500/15 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25 shadow-blue-500/10 font-bold ring-1 ring-blue-500/30"
                   }`}
                 >
                   {latestVerdictStatus === "ACCEPTED" || isAccepted ? (
                     <>
                       <CheckCircle2 className="size-4 text-emerald-500" />
                       <span>Candidate Accepted ✓</span>
-                    </>
-                  ) : latestVerdictStatus === "IN_REVIEW" ? (
-                    <>
-                      <Clock className="size-4 text-blue-500" />
-                      <span>Under Review ⏳</span>
                     </>
                   ) : latestVerdictStatus === "REJECTED" ? (
                     <>
@@ -876,8 +955,8 @@ export function RoleAdaptiveDashboard() {
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="size-4 text-emerald-500" />
-                      <span>Submission Received ✓</span>
+                      <Clock className="size-4 text-blue-500 animate-pulse" />
+                      <span>Under Recruiter Review ⏳</span>
                     </>
                   )}
                 </Button>
@@ -924,8 +1003,16 @@ export function RoleAdaptiveDashboard() {
               test.status === "Accepted ✓" ||
               test.rawStatus === "ACCEPTED" ||
               test.verdict?.includes("Accepted");
+            const isTestInReview =
+              test.status === "In Review" ||
+              test.rawStatus === "IN_REVIEW" ||
+              test.rawStatus === "PENDING_REVIEW" ||
+              test.status === "Under Review" ||
+              test.verdict?.includes("Under Evaluation") ||
+              test.verdict?.includes("Review");
             const isTestPending =
-              test.status === "Under Review" || test.verdict === "Needs Review";
+              !isTestInReview &&
+              (test.status === "Under Review" || test.verdict === "Needs Review");
 
             const scoreNumber = Number(test.score) || 0;
 
@@ -935,9 +1022,11 @@ export function RoleAdaptiveDashboard() {
                 className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl backdrop-blur-md ${
                   isTestAccepted
                     ? "border-emerald-500/40 bg-gradient-to-b from-emerald-500/[0.08] via-card to-card hover:border-emerald-500/70 hover:shadow-emerald-500/10"
-                    : isTestPending
-                      ? "border-amber-500/40 bg-gradient-to-b from-amber-500/[0.08] via-card to-card hover:border-amber-500/70 hover:shadow-amber-500/10"
-                      : "border-border/80 bg-gradient-to-b from-card to-card/70 hover:border-primary/50 hover:shadow-primary/5"
+                    : isTestInReview
+                      ? "border-blue-500/40 bg-gradient-to-b from-blue-500/[0.08] via-card to-card hover:border-blue-500/70 hover:shadow-blue-500/10"
+                      : isTestPending
+                        ? "border-amber-500/40 bg-gradient-to-b from-amber-500/[0.08] via-card to-card hover:border-amber-500/70 hover:shadow-amber-500/10"
+                        : "border-border/80 bg-gradient-to-b from-card to-card/70 hover:border-primary/50 hover:shadow-primary/5"
                 }`}
               >
                 {/* Top color bar */}
@@ -945,9 +1034,11 @@ export function RoleAdaptiveDashboard() {
                   className={`h-1 w-full ${
                     isTestAccepted
                       ? "bg-emerald-500"
-                      : isTestPending
-                        ? "bg-amber-500"
-                        : "bg-primary/50"
+                      : isTestInReview
+                        ? "bg-blue-500"
+                        : isTestPending
+                          ? "bg-amber-500"
+                          : "bg-primary/50"
                   }`}
                 />
 
@@ -966,6 +1057,14 @@ export function RoleAdaptiveDashboard() {
                         <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-bold py-0.5 px-2 shadow-2xs gap-1">
                           <CheckCircle2 className="size-3" />
                           Accepted ✓
+                        </Badge>
+                      ) : isTestInReview ? (
+                        <Badge
+                          variant="outline"
+                          className="border-blue-500/40 text-blue-600 dark:text-blue-400 bg-blue-500/15 text-[10px] py-0.5 px-2 font-bold gap-1 shadow-2xs"
+                        >
+                          <Clock className="size-3 animate-pulse" />
+                          In Review by Recruiter ⏳
                         </Badge>
                       ) : isTestPending ? (
                         <Badge
@@ -996,31 +1095,42 @@ export function RoleAdaptiveDashboard() {
                   <div className="space-y-1.5 pt-1">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground font-medium">
-                        Score Obtained
+                        {isTestInReview ? "Evaluation Status" : "Score Obtained"}
                       </span>
-                      <span
-                        className={`font-mono font-bold ${
-                          scoreNumber >= 80
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : scoreNumber >= 50
-                              ? "text-amber-600 dark:text-amber-400"
-                              : "text-rose-600 dark:text-rose-400"
-                        }`}
-                      >
-                        {test.score}%
-                      </span>
+                      {isTestInReview ? (
+                        <span className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                          <Clock className="size-3 animate-pulse" />
+                          Evaluating Code &amp; Tests...
+                        </span>
+                      ) : (
+                        <span
+                          className={`font-mono font-bold ${
+                            scoreNumber >= 80
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : scoreNumber >= 50
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-rose-600 dark:text-rose-400"
+                          }`}
+                        >
+                          {test.score}%
+                        </span>
+                      )}
                     </div>
                     <div className="w-full h-2 rounded-full bg-muted/80 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          scoreNumber >= 80
-                            ? "bg-gradient-to-r from-emerald-500 to-teal-400"
-                            : scoreNumber >= 50
-                              ? "bg-gradient-to-r from-amber-500 to-yellow-400"
-                              : "bg-gradient-to-r from-rose-500 to-orange-400"
-                        }`}
-                        style={{ width: `${Math.max(scoreNumber, 5)}%` }}
-                      />
+                      {isTestInReview ? (
+                        <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-indigo-500 animate-pulse w-3/4" />
+                      ) : (
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            scoreNumber >= 80
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-400"
+                              : scoreNumber >= 50
+                                ? "bg-gradient-to-r from-amber-500 to-yellow-400"
+                                : "bg-gradient-to-r from-rose-500 to-orange-400"
+                          }`}
+                          style={{ width: `${Math.max(scoreNumber, 5)}%` }}
+                        />
+                      )}
                     </div>
                   </div>
 
