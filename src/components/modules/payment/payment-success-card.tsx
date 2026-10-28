@@ -12,13 +12,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/toast";
 import { useGetSinglePaymentTransaction } from "@/hooks/payment.hook";
 import { BuyCreditsModal } from "./buy-credits-modal";
 
 export function PaymentSuccessCard() {
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
 
   const paymentID =
     searchParams.get("paymentID") || searchParams.get("paymentId") || "";
@@ -28,6 +30,17 @@ export function PaymentSuccessCard() {
   const queryCredits = searchParams.get("credits") || "";
 
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("storage"));
+      }
+    } catch {
+      // ignore
+    }
+  }, [queryClient]);
 
   // attempt to load persisted database record if available
   const { data: transactionResponse } = useGetSinglePaymentTransaction(

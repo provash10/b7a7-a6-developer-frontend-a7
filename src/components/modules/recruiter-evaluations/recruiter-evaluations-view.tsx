@@ -1,8 +1,13 @@
 "use client";
 
-import { Code2, Mail, Sparkles, Zap } from "lucide-react";
+import { Code2, HelpCircle, Mail, Sparkles, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
-import { QuestionCreateModal } from "@/components/modules/admin-manage";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetMyProfile } from "@/hooks";
+import {
+  ManageQuestionsTable,
+  QuestionCreateModal,
+} from "@/components/modules/admin-manage";
 import { BuyCreditsModal } from "@/components/modules/payment";
 import { Button } from "@/components/ui/button";
 import { EvaluationTasksTable } from "./evaluation-tasks-table";
@@ -12,10 +17,19 @@ import { SendInvitationModal } from "./send-invitation-modal";
 import type { EvaluationTask } from "./types";
 
 export function RecruiterEvaluationsView() {
+  const queryClient = useQueryClient();
+  const { data: profileResponse, refetch: refetchProfile } = useGetMyProfile();
+
+  const recruiterCredits =
+    profileResponse?.data?.recruiterProfile?.credits ??
+    profileResponse?.recruiterProfile?.credits ??
+    200;
+
   const [tasks, setTasks] = useState<EvaluationTask[]>(initialEvaluationTasks);
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [isQuestionBankOpen, setIsQuestionBankOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -29,10 +43,24 @@ export function RecruiterEvaluationsView() {
     } catch (e) {
       // ignore
     }
-  }, []);
+
+    const handleStorageUpdate = () => {
+      refetchProfile();
+    };
+
+    window.addEventListener("storage", handleStorageUpdate);
+    window.addEventListener("devassess_invitations_update", handleStorageUpdate);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageUpdate);
+      window.removeEventListener("devassess_invitations_update", handleStorageUpdate);
+    };
+  }, [refetchProfile]);
 
   const handleInvitationSent = (newTask: EvaluationTask) => {
     setTasks((prev) => [newTask, ...prev]);
+    queryClient.invalidateQueries({ queryKey: ["user"] });
+    refetchProfile();
   };
 
   const handleTasksChange = (newTasks: EvaluationTask[]) => {
@@ -71,7 +99,7 @@ export function RecruiterEvaluationsView() {
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
                 Available balance:{" "}
                 <span className="font-extrabold text-foreground font-mono">
-                  180 Credits
+                  {recruiterCredits} Credits
                 </span>{" "}
                 <span className="text-xs text-muted-foreground/90">(৳5.00 / Credit)</span>. Top up anytime with instant activation.
               </p>
@@ -79,6 +107,17 @@ export function RecruiterEvaluationsView() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 self-stretch sm:self-auto">
+            {/* Question Bank Catalog Button for Recruiters */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsQuestionBankOpen(true)}
+              className="gap-2 h-10 px-4 border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer shadow-xs"
+            >
+              <HelpCircle className="size-4 shrink-0" />
+              <span>Question Bank</span>
+            </Button>
+
             <Button
               type="button"
               variant="outline"
@@ -123,7 +162,11 @@ export function RecruiterEvaluationsView() {
       {/* buy credits modal */}
       <BuyCreditsModal
         isOpen={isBuyModalOpen}
-        onClose={() => setIsBuyModalOpen(false)}
+        onClose={() => {
+          setIsBuyModalOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["user"] });
+          refetchProfile();
+        }}
       />
 
       {/* send assessment invitation modal */}
@@ -131,6 +174,11 @@ export function RecruiterEvaluationsView() {
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
         onInvitationSent={handleInvitationSent}
+        availableCredits={recruiterCredits}
+        onCreditsUpdated={() => {
+          queryClient.invalidateQueries({ queryKey: ["user"] });
+          refetchProfile();
+        }}
       />
 
       {/* question create modal */}
@@ -138,6 +186,42 @@ export function RecruiterEvaluationsView() {
         isOpen={isQuestionModalOpen}
         onClose={() => setIsQuestionModalOpen(false)}
       />
+
+      {/* recruiter question bank & catalog modal */}
+      {isQuestionBankOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-background/80 backdrop-blur-md overflow-y-auto animate-in fade-in">
+          <div className="relative w-full max-w-5xl rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-border/60">
+              <div className="flex items-center gap-2.5">
+                <div className="size-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                  <HelpCircle className="size-5" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-foreground">
+                    Recruiter Problem Catalog & Question Bank
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Browse all platform questions, inspect sample & hidden test cases, and check marks to prepare assessment challenges.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setIsQuestionBankOpen(false)}
+                className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+
+            <div className="pt-2">
+              <ManageQuestionsTable />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

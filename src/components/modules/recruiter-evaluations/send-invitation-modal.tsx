@@ -32,6 +32,8 @@ import { setActiveSession } from "@/lib/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useQueryClient } from "@tanstack/react-query";
+import { useGetMyProfile } from "@/hooks";
 import { toast } from "@/components/ui/toast";
 import type { EvaluationTask } from "./types";
 
@@ -86,6 +88,8 @@ interface SendInvitationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onInvitationSent: (newTask: EvaluationTask) => void;
+  availableCredits?: number;
+  onCreditsUpdated?: () => void;
 }
 
 interface ChallengeOption {
@@ -115,7 +119,16 @@ export function SendInvitationModal({
   isOpen,
   onClose,
   onInvitationSent,
+  availableCredits,
+  onCreditsUpdated,
 }: SendInvitationModalProps) {
+  const queryClient = useQueryClient();
+  const { data: profileResponse, refetch: refetchProfile } = useGetMyProfile();
+  const dbCredits =
+    profileResponse?.data?.recruiterProfile?.credits ??
+    profileResponse?.recruiterProfile?.credits;
+  const currentCredits = availableCredits ?? dbCredits ?? 200;
+
   const [candidateName, setCandidateName] = useState("");
   const [candidateEmail, setCandidateEmail] = useState("");
   const [challenges, setChallenges] = useState<ChallengeOption[]>(DEFAULT_CHALLENGES);
@@ -703,6 +716,14 @@ export function SendInvitationModal({
       window.dispatchEvent(new Event("storage"));
     }
 
+    try {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      refetchProfile();
+      onCreditsUpdated?.();
+    } catch {
+      // ignore
+    }
+
     setDispatchedInvites(results);
     setIsSubmitting(false);
 
@@ -1256,20 +1277,51 @@ export function SendInvitationModal({
             </div>
 
             {/* Credit Cost Notice (Dynamic for 1 or multiple candidates) */}
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <Zap className="size-4 text-primary" />
-                <span className="text-muted-foreground">
-                  Cost for {candidateCount} candidate{candidateCount > 1 ? "s" : ""}:
-                </span>
-                <span className="font-bold text-foreground font-mono">
-                  {candidateCount} Credit{candidateCount > 1 ? "s" : ""} (৳{candidateCount * 5}.00)
-                </span>
-              </div>
-              <Badge variant="outline" className="text-[10px] bg-background">
-                Balance: 180 Credits
-              </Badge>
-            </div>
+            {(() => {
+              const hasInsufficientCredits = currentCredits < candidateCount;
+              return (
+                <div
+                  className={`rounded-xl border p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs transition-colors ${
+                    hasInsufficientCredits
+                      ? "border-destructive/40 bg-destructive/5"
+                      : "border-primary/20 bg-primary/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <Zap
+                      className={`size-4 ${
+                        hasInsufficientCredits ? "text-destructive" : "text-primary"
+                      }`}
+                    />
+                    <span className="text-muted-foreground">
+                      Cost for {candidateCount} candidate
+                      {candidateCount > 1 ? "s" : ""}:
+                    </span>
+                    <span className="font-bold text-foreground font-mono">
+                      {candidateCount} Credit{candidateCount > 1 ? "s" : ""} (৳
+                      {candidateCount * 5}.00)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] font-mono font-semibold ${
+                        hasInsufficientCredits
+                          ? "border-destructive/50 text-destructive bg-destructive/10"
+                          : "bg-background text-foreground"
+                      }`}
+                    >
+                      Balance: {currentCredits} Credits
+                    </Badge>
+                    {hasInsufficientCredits && (
+                      <span className="text-[11px] text-destructive font-semibold">
+                        (Needs Top-up)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Modal Actions */}
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border/50">
@@ -1287,13 +1339,15 @@ export function SendInvitationModal({
               <Button
                 type="submit"
                 size="sm"
-                disabled={isSubmitting}
-                className="gap-2 h-9 px-5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
+                disabled={isSubmitting || currentCredits < candidateCount}
+                className="gap-2 h-9 px-5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer disabled:opacity-50"
               >
                 <Send className="size-3.5" />
                 <span>
                   {isSubmitting
                     ? "Dispatching..."
+                    : currentCredits < candidateCount
+                    ? "Insufficient Credits"
                     : candidateCount > 1
                     ? `Send ${candidateCount} Invitations`
                     : "Send Invitation"}
