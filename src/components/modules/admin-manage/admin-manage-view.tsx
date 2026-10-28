@@ -1,24 +1,30 @@
 "use client";
 
-import { CheckCircle2, FileCode, Sparkles, Users } from "lucide-react";
+import { CheckCircle2, FileCode, HelpCircle, Sparkles, Users } from "lucide-react";
 import { useTableUrlState } from "@/hooks";
 import { Badge } from "@/components/ui/badge";
 import { ManageAssessmentsTable } from "./manage-assessments-table";
+import { ManageQuestionsTable } from "./manage-questions-table";
 import { ManageUsersTable } from "./manage-users-table";
 
 export function AdminManageView() {
   const { getParam, updateUrl } = useTableUrlState();
   const urlTab = getParam("tab", "users");
-  const activeTab = urlTab === "assessments" ? "assessments" : "users";
+  const activeTab: "users" | "assessments" | "questions" =
+    urlTab === "assessments"
+      ? "assessments"
+      : urlTab === "questions"
+      ? "questions"
+      : "users";
 
-  const handleTabChange = (newTab: "users" | "assessments") => {
+  const handleTabChange = (newTab: "users" | "assessments" | "questions") => {
     updateUrl({ tab: newTab === "users" ? null : newTab });
   };
 
   return (
     <div className="space-y-6">
       {/* Large, prominent tab switcher cards with rich background & hover effects */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl">
         {/* Tab 1: Users & Permissions */}
         <button
           type="button"
@@ -50,7 +56,7 @@ export function AdminManageView() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2 mb-1">
                 <span className="text-base sm:text-lg font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
-                  Users & Permissions
+                  Users & Directory
                 </span>
                 <Badge
                   variant="outline"
@@ -78,7 +84,7 @@ export function AdminManageView() {
           </div>
         </button>
 
-        {/* Tab 2: Assessment Challenges & Questions */}
+        {/* Tab 2: Assessment Challenges */}
         <button
           type="button"
           onClick={() => handleTabChange("assessments")}
@@ -119,12 +125,12 @@ export function AdminManageView() {
                       : "bg-muted text-muted-foreground border-border group-hover:border-emerald-500/40 group-hover:text-emerald-600 dark:group-hover:text-emerald-400"
                   }`}
                 >
-                  Catalog
+                  Challenges
                 </Badge>
               </div>
 
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                Create coding challenges, author test cases, assign questions, and manage evaluation pass marks.
+                Create coding challenges, author time limits, assign questions, and manage evaluation pass marks.
               </p>
 
               {activeTab === "assessments" && (
@@ -136,16 +142,74 @@ export function AdminManageView() {
             </div>
           </div>
         </button>
+
+        {/* Tab 3: Question Bank & Catalog */}
+        <button
+          type="button"
+          onClick={() => handleTabChange("questions")}
+          className={`group relative text-left p-5 sm:p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer overflow-hidden ${
+            activeTab === "questions"
+              ? "bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-card border-amber-500 shadow-xl shadow-amber-500/15 ring-2 ring-amber-500/25 scale-[1.01]"
+              : "bg-card/80 border-border/80 hover:border-amber-500/60 hover:bg-gradient-to-br hover:from-amber-500/10 hover:to-card hover:shadow-lg hover:shadow-amber-500/10 hover:-translate-y-0.5"
+          }`}
+        >
+          {/* ambient background glow */}
+          <div
+            className={`pointer-events-none absolute -right-8 -top-8 size-28 rounded-full bg-amber-500/25 blur-2xl transition-opacity duration-300 ${
+              activeTab === "questions" ? "opacity-100" : "opacity-0 group-hover:opacity-75"
+            }`}
+          />
+
+          <div className="relative flex items-start gap-4">
+            <div
+              className={`size-12 sm:size-14 shrink-0 rounded-2xl flex items-center justify-center border transition-all duration-300 ${
+                activeTab === "questions"
+                  ? "bg-amber-600 text-white border-amber-500 shadow-md shadow-amber-500/30 scale-105"
+                  : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 group-hover:scale-110"
+              }`}
+            >
+              <HelpCircle className="size-6 sm:size-7" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-base sm:text-lg font-bold text-foreground tracking-tight group-hover:text-amber-500 transition-colors">
+                  Question Bank
+                </span>
+                <Badge
+                  variant="outline"
+                  className={`text-xs font-mono px-2.5 py-0.5 uppercase transition-colors ${
+                    activeTab === "questions"
+                      ? "bg-amber-600 text-white border-amber-500 font-bold shadow-xs"
+                      : "bg-muted text-muted-foreground border-border group-hover:border-amber-500/40 group-hover:text-amber-600 dark:group-hover:text-amber-400"
+                  }`}
+                >
+                  Catalog
+                </Badge>
+              </div>
+
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                Browse questions, author new coding problems, test cases, and inspect problem details.
+              </p>
+
+              {activeTab === "questions" && (
+                <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 animate-in fade-in">
+                  <CheckCircle2 className="size-3.5" />
+                  <span>Currently Active View</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </button>
       </div>
 
       {/* Active Tab Content */}
       <div className="pt-2">
-        {activeTab === "users" ? (
-          <ManageUsersTable />
-        ) : (
-          <ManageAssessmentsTable />
-        )}
+        {activeTab === "users" && <ManageUsersTable />}
+        {activeTab === "assessments" && <ManageAssessmentsTable />}
+        {activeTab === "questions" && <ManageQuestionsTable />}
       </div>
     </div>
   );
 }
+
