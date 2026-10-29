@@ -226,8 +226,6 @@ export function RoleAdaptiveDashboard() {
       });
 
       // fetch live attempts from database
-      let dbAttemptAccepted = false;
-      let dbAttemptRejected = false;
       let dbHasCompleted = false;
       let dbAttemptTitle = "";
       let dbAttemptScore = 20;
@@ -246,33 +244,12 @@ export function RoleAdaptiveDashboard() {
               (att: any) => att.status === "SUBMITTED" || att.submittedAt,
             ) || attemptsList[0];
 
-          if (submittedAttempt) {
+          if (submittedAttempt && (submittedAttempt.status === "SUBMITTED" || submittedAttempt.submittedAt)) {
             dbHasCompleted = true;
             dbAttemptTitle =
               submittedAttempt.assessment?.title || "Junior React Nextjs Dev";
             if (typeof submittedAttempt.totalScore === "number") {
               dbAttemptScore = submittedAttempt.totalScore;
-            }
-
-            const hasAcceptedSub =
-              Array.isArray(submittedAttempt.submissions) &&
-              submittedAttempt.submissions.some(
-                (s: any) =>
-                  s.verdict === "ACCEPTED" ||
-                  s.verdict === "Accepted" ||
-                  s.verdict === "PASS",
-              );
-
-            if (submittedAttempt.isPassed || hasAcceptedSub) {
-              dbAttemptAccepted = true;
-            } else if (
-              Array.isArray(submittedAttempt.submissions) &&
-              submittedAttempt.submissions.some(
-                (s: any) =>
-                  s.verdict === "REJECTED" || s.verdict === "Rejected",
-              )
-            ) {
-              dbAttemptRejected = true;
             }
           }
         }
@@ -280,42 +257,54 @@ export function RoleAdaptiveDashboard() {
         // ignore live fetch failure
       }
 
-      if (dbAttemptAccepted && stored) {
+      // sanitize any premature automated acceptance in storage
+      if (stored) {
         try {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed)) {
-            let modified = false;
+            let sanitized = false;
             parsed.forEach((item: any) => {
               const itemEmail = (item.candidateEmail || "").toLowerCase().trim();
               if (
                 itemEmail === currentEmail ||
-                (currentEmail.includes("amy") && itemEmail.includes("amy")) ||
-                (currentEmail.includes("scstanley") && itemEmail.includes("scstanley"))
+                (currentEmail.includes("ava") && itemEmail.includes("ava"))
               ) {
-                if (item.status !== "ACCEPTED") {
-                  item.status = "ACCEPTED";
-                  modified = true;
+                if (
+                  item.status === "ACCEPTED" &&
+                  item.recruiterNotes === "Candidate finished live proctored assessment."
+                ) {
+                  item.status = "PENDING_REVIEW";
+                  sanitized = true;
                 }
               }
             });
-            if (modified) {
+            if (sanitized) {
               localStorage.setItem("devassess_candidate_submissions", JSON.stringify(parsed));
             }
           }
         } catch {
-          // ignore storage sync failure
+          // ignore storage sanitize failure
         }
       }
 
-      const latestSub = liveSubmissions[0];
-      if (dbAttemptAccepted) {
+      const latestSub = realCompletedSubmissions[0] || liveSubmissions[0];
+      const activeVerdict = latestSub?.status || "PENDING_REVIEW";
+
+      if (activeVerdict === "ACCEPTED" || activeVerdict === "Accepted ✓" || activeVerdict === "Accepted") {
         setLatestVerdictStatus("ACCEPTED");
-      } else if (dbAttemptRejected) {
+        setIsAccepted(true);
+      } else if (activeVerdict === "REJECTED" || activeVerdict === "Rejected") {
         setLatestVerdictStatus("REJECTED");
-      } else if (latestSub?.status) {
-        setLatestVerdictStatus(latestSub.status);
+        setIsAccepted(false);
+      } else if (activeVerdict === "IN_REVIEW" || activeVerdict === "In Review") {
+        setLatestVerdictStatus("IN_REVIEW");
+        setIsAccepted(false);
+      } else {
+        setLatestVerdictStatus("PENDING_REVIEW");
+        setIsAccepted(false);
       }
-      if (latestSub?.recruiterNotes) {
+
+      if (latestSub?.recruiterNotes && latestSub.recruiterNotes !== "Candidate finished live proctored assessment.") {
         setRecruiterFeedbackNotes(latestSub.recruiterNotes);
       } else {
         setRecruiterFeedbackNotes("");
@@ -323,11 +312,7 @@ export function RoleAdaptiveDashboard() {
 
       const hasCompleted = realCompletedSubmissions.length > 0 || dbHasCompleted;
       const anyAccepted =
-        dbAttemptAccepted ||
-        realCompletedSubmissions.some(
-          (item: any) =>
-            item.status === "ACCEPTED" || item.status === "Accepted ✓",
-        );
+        activeVerdict === "ACCEPTED" || activeVerdict === "Accepted ✓" || activeVerdict === "Accepted";
 
       // map completed submissions
       const mapped = realCompletedSubmissions.map((item: any) => {
