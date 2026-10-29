@@ -549,10 +549,10 @@ export function AssessmentEditModal({
               <div className="border-b border-border/50 pb-2.5">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <FileCode className="size-4 text-primary" />
-                  <span>Step 1: Basic Details (প্রাথমিক তথ্য)</span>
+                  <span>Step 1: Basic Details</span>
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  পরীক্ষার শিরোনাম, সময়সীমা, পাস মার্কস এবং নির্দেশিকা উল্লেখ করুন।
+                  Specify challenge title, duration, passing score, and candidate instructions.
                 </p>
               </div>
 
@@ -566,7 +566,7 @@ export function AssessmentEditModal({
                     id="assessment-title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="যেমন: Senior Backend Go & SQL Challenge"
+                    placeholder="e.g. Senior Backend Go & SQL Challenge"
                     required
                     className="text-xs sm:text-sm bg-background/80 border-border/80 focus:border-primary/50 transition-colors"
                   />
@@ -580,7 +580,7 @@ export function AssessmentEditModal({
                     id="assessment-company"
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
-                    placeholder="যেমন: TechCorp Labs / Algorithmix"
+                    placeholder="e.g. TechCorp Labs / Algorithmix"
                     required
                     className="text-xs sm:text-sm bg-background/80 border-border/80 focus:border-primary/50 transition-colors"
                   />
@@ -602,7 +602,7 @@ export function AssessmentEditModal({
                       value={durationMinutes}
                       onChange={(e) => setDurationMinutes(Number(e.target.value))}
                       required
-                      placeholder="যেমন: 75"
+                      placeholder="75"
                       className="w-28 text-xs sm:text-sm font-mono"
                     />
                     <div className="flex flex-wrap gap-1">
@@ -636,7 +636,7 @@ export function AssessmentEditModal({
                     value={passMarks}
                     onChange={(e) => setPassMarks(Number(e.target.value))}
                     required
-                    placeholder="যেমন: 60"
+                    placeholder="60"
                     className="text-xs sm:text-sm font-mono font-bold text-emerald-500 bg-background/80"
                   />
                 </div>
@@ -646,12 +646,12 @@ export function AssessmentEditModal({
               <div className="space-y-1.5">
                 <label className="font-semibold text-foreground flex items-center gap-1.5">
                   <Sparkles className="size-3.5 text-primary" />
-                  <span>Description (ক্যান্ডিডেটদের নির্দেশিকা) *</span>
+                  <span>Description & Candidate Guidelines *</span>
                 </label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="যেমন: ক্যান্ডিডেটদের নির্দেশিকা — সকল প্রশ্নের উত্তর নির্ধারিত সময়ের মধ্যে শেষ করতে হবে। কোডের কার্যকারিতা, টাইম কমপ্লেক্সিটি এবং টেস্ট কেসগুলো গুরুত্বের সাথে বিবেচনা করা হবে।"
+                  placeholder="Candidate guidelines: All coding problems must be completed within the allotted time. Solutions are evaluated against automated test cases and runtime constraints."
                   rows={3}
                   className="text-xs sm:text-sm bg-background/80 resize-none min-h-[72px]"
                 />
@@ -666,7 +666,7 @@ export function AssessmentEditModal({
                 <Input
                   value={skillsText}
                   onChange={(e) => setSkillsText(e.target.value)}
-                  placeholder="যেমন: Go, SQL, Docker, PostgreSQL, Concurrency"
+                  placeholder="e.g. Go, SQL, Docker, PostgreSQL, Concurrency"
                   className="text-xs sm:text-sm bg-background/80"
                 />
                 <div className="flex flex-wrap gap-1 pt-0.5">
