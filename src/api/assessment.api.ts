@@ -211,21 +211,44 @@ export async function createAssessment(payload: {
   description: string;
   durationMinutes: number;
   passMarks: number;
-  totalMarks: number;
+  totalMarks?: number;
   status?: string;
   difficulty?: string;
   skills?: string[];
   questionIds?: string[];
+  questions?: { questionId: string; orderIndex?: number }[];
 }) {
+  const isUuid = (id: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+  const formattedQuestions =
+    payload.questions ||
+    (payload.questionIds
+      ? payload.questionIds
+          .filter(isUuid)
+          .map((id, index) => ({ questionId: id, orderIndex: index + 1 }))
+      : []);
+
+  const body: Record<string, any> = {
+    title: payload.title,
+    description: payload.description,
+    durationMinutes: Number(payload.durationMinutes),
+    passMarks: Number(payload.passMarks),
+  };
+
+  if (formattedQuestions.length > 0) {
+    body.questions = formattedQuestions;
+  }
+
   try {
     return await apiClient<ApiResponse<Assessment>>("/assessments", {
       method: "POST",
-      body: payload,
+      body,
     });
   } catch (err: any) {
     return await apiClient<ApiResponse<Assessment>>("/assessment", {
       method: "POST",
-      body: payload,
+      body,
     });
   }
 }

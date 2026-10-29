@@ -19,7 +19,11 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { createAssessment, createQuestion } from "@/api/assessment.api";
+import {
+  createAssessment,
+  createQuestion,
+  getAllQuestions,
+} from "@/api/assessment.api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,8 +148,34 @@ export function AssessmentEditModal({
   const [inlineQInput, setInlineQInput] = useState("[2, 7, 11, 15], 9");
   const [inlineQOutput, setInlineQOutput] = useState("[0, 1]");
 
-  // Load custom questions created by user + defaults
+  // Load database questions + custom questions + defaults
   useEffect(() => {
+    const fetchDbQuestions = async () => {
+      try {
+        const res = await getAllQuestions();
+        const items = res?.data || (res as any)?.data?.data;
+        if (Array.isArray(items) && items.length > 0) {
+          const mapped: QuestionBankItem[] = items.map((q: any) => ({
+            id: q.id,
+            title: q.title,
+            difficulty: (q.difficulty as any) || "MEDIUM",
+            marks: q.marks || 20,
+            description: q.description,
+          }));
+          setAvailableQuestions((prev) => {
+            const combined = [...mapped, ...prev];
+            return Array.from(new Map(combined.map((item) => [item.id, item])).values());
+          });
+        }
+      } catch (err) {
+        // use local defaults if API unreachable
+      }
+    };
+
+    if (isOpen) {
+      fetchDbQuestions();
+    }
+
     try {
       const stored = localStorage.getItem("devassess_custom_questions");
       if (stored) {
