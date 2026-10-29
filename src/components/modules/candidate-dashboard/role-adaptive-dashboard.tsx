@@ -287,7 +287,56 @@ export function RoleAdaptiveDashboard() {
       // Check active recruiter invitation for this candidate
       let foundPendingInvitation = false;
 
-      // 1. Check local storage invitations first (reflects latest recruiter dispatched invitation immediately)
+      // 1. Try checking live invitations directly from PostgreSQL backend API (/invitations/my) FIRST
+      try {
+        const res = await getCandidateInvitations();
+        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const pendingLive =
+            res.data.find((inv: any) => inv.status === "PENDING") ||
+            res.data[0];
+          if (pendingLive) {
+            const isPending = pendingLive.status === "PENDING";
+            const liveTitle = pendingLive.assessment?.title;
+            const finalTitle = liveTitle || "Junior React Nextjs Dev";
+            const finalDuration = `${pendingLive.assessment?.durationMinutes || 45} Minutes`;
+            const finalSkills =
+              Array.isArray(pendingLive.assessment?.skills) && pendingLive.assessment.skills.length > 0
+                ? pendingLive.assessment.skills
+                : ["Next.js", "React", "TypeScript", "Tailwind CSS"];
+
+            setActiveInvitation({
+              title: finalTitle,
+              company:
+                pendingLive.assessment?.recruiter?.companyName ||
+                "Recruiter Assessment Console",
+              duration: finalDuration,
+              difficulty:
+                pendingLive.assessment?.difficulty || "Intermediate",
+              deadline: `Expires: ${new Date(pendingLive.expiresAt).toLocaleDateString()}`,
+              description:
+                pendingLive.assessment?.description ||
+                "Solve real-world frontend and full-stack challenges within the allotted time. Passing score required for certification.",
+              skills: finalSkills,
+            });
+            setActiveInviteToken(
+              pendingLive.inviteToken || pendingLive.token || null,
+            );
+            setActiveAssessmentId(pendingLive.assessmentId || pendingLive.assessment?.id || "asst-04");
+
+            if (isPending) {
+              foundPendingInvitation = true;
+              setActiveChallengesCount(1);
+              setHasCompletedActiveExam(false);
+              setIsAccepted(false);
+              return;
+            }
+          }
+        }
+      } catch (liveErr) {
+        console.warn("Live candidate invitations fetch failed, checking localStorage fallback:", liveErr);
+      }
+
+      // 2. Fallback: Check local storage invitations if backend was unreachable
       let localStoragePending: any = null;
       try {
         const storedInvites = localStorage.getItem("devassess_invitations");
@@ -330,7 +379,7 @@ export function RoleAdaptiveDashboard() {
             : [localStoragePending.language || "SQL / PostgreSQL", "Database", "Performance"];
 
         setActiveInvitation({
-          title: localStoragePending.assessmentTitle || "PostgreSQL Indexing & Optimization",
+          title: localStoragePending.assessmentTitle || "Junior React Nextjs Dev",
           company: "Recruiter Assessment Console",
           duration: challengeDuration,
           difficulty: localStoragePending.difficulty || "Intermediate",
@@ -346,55 +395,6 @@ export function RoleAdaptiveDashboard() {
         setHasCompletedActiveExam(false);
         setIsAccepted(false);
         return;
-      }
-
-      // 2. Try checking live invitations from backend API (/invitations/my)
-      try {
-        const res = await getCandidateInvitations();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-          const pendingLive =
-            res.data.find((inv: any) => inv.status === "PENDING") ||
-            res.data[0];
-          if (pendingLive) {
-            const isPending = pendingLive.status === "PENDING";
-            const liveTitle = pendingLive.assessment?.title;
-            const finalTitle = liveTitle || "React Developer jr";
-            const finalDuration = `${pendingLive.assessment?.durationMinutes || 75} Minutes`;
-            const finalSkills =
-              Array.isArray(pendingLive.assessment?.skills) && pendingLive.assessment.skills.length > 0
-                ? pendingLive.assessment.skills
-                : ["React", "TypeScript", "Frontend Engineering"];
-
-            setActiveInvitation({
-              title: finalTitle,
-              company:
-                pendingLive.assessment?.recruiter?.companyName ||
-                "Recruiter Assessment Console",
-              duration: finalDuration,
-              difficulty:
-                pendingLive.assessment?.difficulty || "Intermediate",
-              deadline: `Expires: ${new Date(pendingLive.expiresAt).toLocaleDateString()}`,
-              description:
-                pendingLive.assessment?.description ||
-                "Solve query tuning, indexing strategy, and schema design challenges under real PostgreSQL query plans.",
-              skills: finalSkills,
-            });
-            setActiveInviteToken(
-              pendingLive.inviteToken || pendingLive.token || null,
-            );
-            setActiveAssessmentId(pendingLive.assessmentId || "asst-04");
-
-            if (isPending) {
-              foundPendingInvitation = true;
-              setActiveChallengesCount(1);
-              setHasCompletedActiveExam(false);
-              setIsAccepted(false);
-              return;
-            }
-          }
-        }
-      } catch {
-        // Fallback
       }
 
       // If no pending invitation found, reflect completed state

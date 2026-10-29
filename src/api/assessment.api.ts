@@ -241,15 +241,43 @@ export async function createAssessment(payload: {
   }
 
   try {
-    return await apiClient<ApiResponse<Assessment>>("/assessments", {
+    const res = await apiClient<ApiResponse<Assessment>>("/assessments", {
       method: "POST",
       body,
     });
+
+    const createdId = (res as any)?.data?.id || (res as any)?.id;
+    if (createdId) {
+      try {
+        await apiClient(`/assessments/${createdId}`, {
+          method: "PATCH",
+          body: { status: "PUBLISHED" },
+        });
+      } catch {
+        // ignore
+      }
+    }
+
+    return res;
   } catch (err: any) {
-    return await apiClient<ApiResponse<Assessment>>("/assessment", {
+    const res = await apiClient<ApiResponse<Assessment>>("/assessment", {
       method: "POST",
       body,
     });
+
+    const createdId = (res as any)?.data?.id || (res as any)?.id;
+    if (createdId) {
+      try {
+        await apiClient(`/assessment/${createdId}`, {
+          method: "PATCH",
+          body: { status: "PUBLISHED" },
+        });
+      } catch {
+        // ignore
+      }
+    }
+
+    return res;
   }
 }
 
