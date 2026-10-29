@@ -36,7 +36,7 @@ import { QuestionCreateModal } from "./question-create-modal";
 const INITIAL_ASSESSMENTS: ManagedAssessment[] = [
   {
     id: "asst-01",
-    title: "Full Stack Next.js 15 & TypeScript Challenge",
+    title: "Full Stack Next.js 15 & TypeScript Challenge [Dummy]",
     description:
       "Build a reactive board with Server Actions, optimistic state, and zod validation.",
     company: "TechCorp Labs",
@@ -51,7 +51,7 @@ const INITIAL_ASSESSMENTS: ManagedAssessment[] = [
   },
   {
     id: "asst-02",
-    title: "Algorithmic Problem Solving & Data Structures",
+    title: "Algorithmic Problem Solving & Data Structures [Dummy]",
     description:
       "Advanced tree traversals, dynamic programming algorithms, and graph shortest path.",
     company: "Algorithmix Systems",
@@ -66,7 +66,7 @@ const INITIAL_ASSESSMENTS: ManagedAssessment[] = [
   },
   {
     id: "asst-03",
-    title: "React Component Architecture & Accessibility",
+    title: "React Component Architecture & Accessibility [Dummy]",
     description:
       "Design design system tokens, keyboard navigation, and ARIA compliant dialogs.",
     company: "PixelCraft Studio",
@@ -81,7 +81,7 @@ const INITIAL_ASSESSMENTS: ManagedAssessment[] = [
   },
   {
     id: "asst-04",
-    title: "PostgreSQL Indexing & Optimization",
+    title: "PostgreSQL Indexing & Optimization [Dummy]",
     description:
       "Analyze query execution plans, configure multi-column indexes, and minimize lock contention.",
     company: "FinScale Technologies",
@@ -96,7 +96,7 @@ const INITIAL_ASSESSMENTS: ManagedAssessment[] = [
   },
   {
     id: "asst-05",
-    title: "Go Microservices & Docker Concurrency",
+    title: "Go Microservices & Docker Concurrency [Dummy]",
     description:
       "Implement worker pool concurrency patterns, mutex locks, and containerized runtime.",
     company: "CloudNative Labs",
@@ -111,7 +111,7 @@ const INITIAL_ASSESSMENTS: ManagedAssessment[] = [
   },
   {
     id: "asst-06",
-    title: "Python Data Processing & ETL Pipelines",
+    title: "Python Data Processing & ETL Pipelines [Dummy]",
     description:
       "Ingest high-throughput JSON stream data, perform vector sanitization, and output parquet.",
     company: "DataWave Corp",

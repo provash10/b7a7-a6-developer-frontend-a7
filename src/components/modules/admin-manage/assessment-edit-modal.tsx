@@ -114,6 +114,27 @@ const DEFAULT_AVAILABLE_QUESTIONS: QuestionBankItem[] = [
   },
 ];
 
+const PREDEFINED_SKILLS = [
+  "Go",
+  "SQL",
+  "PostgreSQL",
+  "Docker",
+  "Next.js 15",
+  "TypeScript",
+  "React 19",
+  "Node.js",
+  "Python",
+  "MongoDB",
+  "Redis",
+  "Microservices",
+  "Algorithms & Data Structures",
+  "System Design",
+  "Tailwind CSS",
+  "GraphQL",
+  "Kubernetes",
+  "AWS",
+];
+
 export function AssessmentEditModal({
   isOpen,
   onClose,
@@ -132,7 +153,13 @@ export function AssessmentEditModal({
   const [totalMarks, setTotalMarks] = useState(100);
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT" | "ARCHIVED">("PUBLISHED");
   const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
-  const [skillsText, setSkillsText] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([
+    "Go",
+    "SQL",
+    "PostgreSQL",
+    "Docker",
+  ]);
+  const [customSkillInput, setCustomSkillInput] = useState("");
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
   const [availableQuestions, setAvailableQuestions] = useState<QuestionBankItem[]>(
     DEFAULT_AVAILABLE_QUESTIONS,
@@ -208,7 +235,11 @@ export function AssessmentEditModal({
       setTotalMarks(assessment.totalMarks);
       setStatus(assessment.status);
       setDifficulty(assessment.difficulty);
-      setSkillsText(assessment.skills.join(", "));
+      setSelectedSkills(
+        Array.isArray(assessment.skills) && assessment.skills.length > 0
+          ? assessment.skills
+          : ["Go", "SQL"],
+      );
       if (assessment.questionIds?.length) {
         setSelectedQuestionIds(assessment.questionIds);
       }
@@ -221,11 +252,23 @@ export function AssessmentEditModal({
       setTotalMarks(40);
       setStatus("PUBLISHED");
       setDifficulty("MEDIUM");
-      setSkillsText("Go, SQL, PostgreSQL, Docker");
+      setSelectedSkills(["Go", "SQL", "PostgreSQL", "Docker"]);
       setSelectedQuestionIds([]);
     }
     setCurrentStep(1);
   }, [assessment, isOpen]);
+
+  const handleAddSkill = (skill: string) => {
+    const trimmed = skill.trim();
+    if (!trimmed) return;
+    if (!selectedSkills.includes(trimmed)) {
+      setSelectedSkills((prev) => [...prev, trimmed]);
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setSelectedSkills((prev) => prev.filter((s) => s !== skillToRemove));
+  };
 
   if (!isOpen) return null;
 
@@ -370,11 +413,6 @@ export function AssessmentEditModal({
     if (!validateStep1() || !validateStep2()) return;
 
     setIsSubmitting(true);
-    const parsedSkills = skillsText
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
     const asstId = assessment
       ? assessment.id
       : `asst-${Date.now().toString().slice(-4)}`;
@@ -395,7 +433,7 @@ export function AssessmentEditModal({
       totalMarks: effectiveTotal,
       status,
       difficulty,
-      skills: parsedSkills.length ? parsedSkills : ["TypeScript", "Next.js"],
+      skills: selectedSkills.length ? selectedSkills : ["Go", "SQL"],
       submissionsCount: assessment ? assessment.submissionsCount : 0,
       passRate: assessment ? assessment.passRate : 0,
       questionIds: selectedQuestionIds,
@@ -690,31 +728,96 @@ export function AssessmentEditModal({
                 />
               </div>
 
-              {/* Evaluated Skills */}
-              <div className="space-y-1.5">
-                <label className="font-semibold text-foreground flex items-center gap-1.5">
-                  <Code2 className="size-3.5 text-primary" />
-                  <span>Skills / Target Tech Stack (comma-separated)</span>
-                </label>
-                <Input
-                  value={skillsText}
-                  onChange={(e) => setSkillsText(e.target.value)}
-                  placeholder="e.g. Go, SQL, Docker, PostgreSQL, Concurrency"
-                  className="text-xs sm:text-sm bg-background/80"
-                />
-                <div className="flex flex-wrap gap-1 pt-0.5">
-                  {skillsText
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                    .map((skill, idx) => (
+              {/* Evaluated Skills with Down Arrow Dropdown & Selectable Pills */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold text-foreground flex items-center gap-1.5">
+                    <Code2 className="size-3.5 text-primary" />
+                    <span>Skills / Target Tech Stack *</span>
+                  </label>
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    {selectedSkills.length} selected
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {/* Dropdown with down arrow to select skills without typing */}
+                  <div className="sm:col-span-2 relative">
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleAddSkill(e.target.value);
+                        }
+                      }}
+                      className="w-full h-9 px-3 rounded-lg border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    >
+                      <option value="">▼ Click to select skill / tech stack from list...</option>
+                      {PREDEFINED_SKILLS.map((sk) => {
+                        const isChosen = selectedSkills.includes(sk);
+                        return (
+                          <option key={sk} value={sk} disabled={isChosen}>
+                            {isChosen ? `✓ ${sk} (Added)` : sk}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+
+                  {/* Option to type custom skill if needed */}
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      value={customSkillInput}
+                      onChange={(e) => setCustomSkillInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddSkill(customSkillInput);
+                          setCustomSkillInput("");
+                        }
+                      }}
+                      placeholder="Or type custom..."
+                      className="text-xs h-9 bg-background"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        handleAddSkill(customSkillInput);
+                        setCustomSkillInput("");
+                      }}
+                      className="h-9 px-2.5 text-xs shrink-0 cursor-pointer"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Selected Skill Badges with (x) remove button */}
+                <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg border border-border/70 bg-muted/20 min-h-[38px]">
+                  {selectedSkills.length === 0 ? (
+                    <span className="text-[11px] text-muted-foreground italic">
+                      No skills selected yet. Choose from the dropdown list above.
+                    </span>
+                  ) : (
+                    selectedSkills.map((skill) => (
                       <span
-                        key={idx}
-                        className="text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 rounded px-2 py-0.5"
+                        key={skill}
+                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-primary/10 text-primary border border-primary/25 rounded-md px-2.5 py-1 shadow-2xs group hover:bg-primary/15 transition-colors"
                       >
-                        {skill}
+                        <span>{skill}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSkill(skill)}
+                          title={`Remove ${skill}`}
+                          className="size-3.5 rounded-full hover:bg-primary/20 flex items-center justify-center text-primary/70 hover:text-primary transition-colors cursor-pointer"
+                        >
+                          <X className="size-2.5" />
+                        </button>
                       </span>
-                    ))}
+                    ))
+                  )}
                 </div>
               </div>
             </div>

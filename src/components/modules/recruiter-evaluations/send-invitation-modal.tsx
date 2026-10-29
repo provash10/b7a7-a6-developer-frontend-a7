@@ -111,7 +111,43 @@ const DEFAULT_CHALLENGES: ChallengeOption[] = [
     language: "SQL / PostgreSQL",
     duration: "75 Mins",
     difficulty: "Intermediate",
-    isLiveDb: true,
+    isLiveDb: false,
+  },
+  {
+    id: "b287cd83-3fa6-482b-941f-57b93eff7c0e",
+    title: "Full Stack Next.js 15 & TypeScript Challenge",
+    role: "Full Stack Engineer",
+    language: "Next.js / TypeScript",
+    duration: "90 Mins",
+    difficulty: "Intermediate",
+    isLiveDb: false,
+  },
+  {
+    id: "c398de94-4ab7-493c-a52a-68c04f0a8d1f",
+    title: "Algorithmic Problem Solving & Data Structures",
+    role: "Software Development Engineer",
+    language: "Python / Algorithms",
+    duration: "120 Mins",
+    difficulty: "Advanced",
+    isLiveDb: false,
+  },
+  {
+    id: "d4a9ef05-5bc8-4a4d-b63b-79d1501b9e2a",
+    title: "React Component Architecture & Accessibility",
+    role: "Frontend Engineer",
+    language: "React 19 / TypeScript",
+    duration: "60 Mins",
+    difficulty: "Intermediate",
+    isLiveDb: false,
+  },
+  {
+    id: "e5ba0016-6cd9-4b5e-c74c-80e2612ca03b",
+    title: "Go Microservices & Docker Concurrency",
+    role: "Cloud & Backend Engineer",
+    language: "Go / Docker",
+    duration: "90 Mins",
+    difficulty: "Advanced",
+    isLiveDb: false,
   },
 ];
 
@@ -363,7 +399,12 @@ export function SendInvitationModal({
             }));
 
           const combined = [...liveOptions, ...customOptions, ...DEFAULT_CHALLENGES].filter(
-            (c, idx, arr) => arr.findIndex((x) => x.id === c.id) === idx,
+            (c, idx, arr) =>
+              arr.findIndex(
+                (x) =>
+                  x.id === c.id ||
+                  x.title.toLowerCase().trim() === c.title.toLowerCase().trim(),
+              ) === idx,
           );
           setChallenges(combined.length > 0 ? combined : DEFAULT_CHALLENGES);
           setSelectedChallengeId(combined[0]?.id || DEFAULT_CHALLENGES[0].id);
@@ -375,7 +416,12 @@ export function SendInvitationModal({
 
       if (isMounted) {
         const combined = [...customOptions, ...DEFAULT_CHALLENGES].filter(
-          (c, idx, arr) => arr.findIndex((x) => x.id === c.id) === idx,
+          (c, idx, arr) =>
+            arr.findIndex(
+              (x) =>
+                x.id === c.id ||
+                x.title.toLowerCase().trim() === c.title.toLowerCase().trim(),
+            ) === idx,
         );
         setChallenges(combined.length > 0 ? combined : DEFAULT_CHALLENGES);
         setSelectedChallengeId(combined[0]?.id || DEFAULT_CHALLENGES[0].id);
@@ -1237,7 +1283,7 @@ export function SendInvitationModal({
               >
                 {challenges.map((challenge) => (
                   <option key={challenge.id} value={challenge.id}>
-                    {challenge.isLiveDb ? "🟢 [PostgreSQL DB] " : challenge.isCustom ? "★ [Custom Challenge] " : ""}
+                    {challenge.isLiveDb ? "🟢 [PostgreSQL DB] " : "⚠️ [Dummy] "}
                     {challenge.title} ({challenge.language} • {challenge.duration})
                   </option>
                 ))}
