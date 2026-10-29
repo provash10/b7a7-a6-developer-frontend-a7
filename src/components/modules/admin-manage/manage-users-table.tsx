@@ -69,7 +69,7 @@ export function ManageUsersTable() {
   const [currentPage, setCurrentPage] = useState(() => getNumberParam("page", 1));
   const pageSize = 10;
 
-  // Sync state if URL changes externally (e.g. back/forward navigation or shared links)
+  // sync state if url changes externally (e.g. back/forward navigation or shared links)
   useEffect(() => {
     setSearchQuery(getParam("search", ""));
     setRoleFilter(getParam("role", "ALL"));
@@ -104,12 +104,12 @@ export function ManageUsersTable() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<ManagedUser | null>(null);
 
-  // Load real users from database and merge with custom users
+  // load real users from database and merge with custom users
   useEffect(() => {
     let isMounted = true;
 
     async function loadUsers() {
-      // 1. Read custom registered users from localStorage and purge any old dummy emails
+      // read custom registered users from localstorage and purge any old dummy emails
       const dummyEmails = new Set([
         "user@devassess.com",
         "sarah@techcorp.io",
@@ -148,13 +148,13 @@ export function ManageUsersTable() {
         }
       } catch {}
 
-      // 2. Fetch live users from backend database API (with limit=100 to get all users)
+      // fetch live users from backend database api (with limit= to get all users)
       try {
         let res: any;
         try {
           res = await apiClient<any>("/users?limit=100");
         } catch (initialErr) {
-          // If unauthorized or token missing/expired, auto-authenticate as admin to retrieve live users
+          // if unauthorized or token missing/expired, auto-authenticate as admin to retrieve live users
           try {
             const loginRes = await apiClient<any>("/auth/login", {
               method: "POST",
@@ -201,11 +201,11 @@ export function ManageUsersTable() {
 
           setUsers(() => {
             const map = new Map<string, ManagedUser>();
-            // Add real DB users
+            // add real db users
             for (const u of dbUsers) {
               map.set(u.email.toLowerCase().trim(), u);
             }
-            // Add any newly created local users
+            // add any newly created local users
             for (const u of customUsers) {
               map.set(u.email.toLowerCase().trim(), u);
             }
@@ -217,7 +217,7 @@ export function ManageUsersTable() {
         console.warn("Backend /users fetch notice:", err);
       }
 
-      // 3. Fallback: merge localStorage with initial list if DB unavailable
+      // fallback: merge localstorage with initial list if db unavailable
       if (isMounted) {
         setUsers(() => {
           const map = new Map<string, ManagedUser>();
@@ -312,7 +312,7 @@ export function ManageUsersTable() {
 
   // save / create user from modal
   const handleSaveUser = async (updated: ManagedUser) => {
-    // 1. Immediately update UI state
+    // immediately update ui state
     setUsers((prev) => {
       const exists = prev.some(
         (u) =>
@@ -369,7 +369,7 @@ export function ManageUsersTable() {
       );
     } catch {}
 
-    // 2. Persist to PostgreSQL Database via API
+    // persist to postgresql database via api
     try {
       let roleSaved = false;
       try {
@@ -379,7 +379,7 @@ export function ManageUsersTable() {
         });
         roleSaved = true;
       } catch {
-        // Fallback: try by email in case updated.id is a demo alias like usr-cand-100
+        // fallback: try by email in case updated.id is a demo alias like usr-cand-
         await apiClient(`/users/${encodeURIComponent(updated.email)}/role`, {
           method: "PATCH",
           body: { role: updated.role },

@@ -288,7 +288,7 @@ export async function sendAssessmentInvitation(payload: {
   expiresInDays?: number;
 }) {
   try {
-    // Backend expects { assessmentId, candidateEmail, expiresInDays } at POST /invitations
+    // backend expects { assessmentid, candidateemail, expiresindays } at post /invitations
     return await apiClient<ApiResponse<any>>("/invitations", {
       method: "POST",
       body: {

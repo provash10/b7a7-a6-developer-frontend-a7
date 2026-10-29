@@ -145,7 +145,7 @@ export function ManageAssessmentsTable() {
   );
   const pageSize = 5;
 
-  // Sync state if URL changes externally
+  // sync state if url changes externally
   useEffect(() => {
     setSearchQuery(getParam("asst_search", ""));
     setStatusFilter(getParam("asst_status", "ALL"));

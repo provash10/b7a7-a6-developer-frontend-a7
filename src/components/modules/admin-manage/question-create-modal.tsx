@@ -90,7 +90,7 @@ export function QuestionCreateModal({
     };
 
     try {
-      // 1. Try real backend API call
+      // try real backend api call
       await createQuestion({
         title: newQuestionData.title,
         description: newQuestionData.description,
@@ -113,7 +113,7 @@ export function QuestionCreateModal({
         type: "success",
       });
     } finally {
-      // Always store in local question bank so candidate exam can load it immediately!
+      // always store in local question bank so candidate exam can load it immediately!
       try {
         const stored = localStorage.getItem("devassess_custom_questions");
         const list = stored ? JSON.parse(stored) : [];
@@ -127,7 +127,7 @@ export function QuestionCreateModal({
       onQuestionCreated?.(newQuestionData);
       onClose();
 
-      // Reset form
+      // reset form
       setTitle("");
       setDescription("");
       setMarks(20);
@@ -137,7 +137,7 @@ export function QuestionCreateModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div className="relative w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl p-6 max-h-[90vh] flex flex-col my-auto">
-        {/* Header */}
+        {/* header */}
         <div className="flex items-center justify-between pb-4 border-b border-border/60">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
@@ -161,9 +161,9 @@ export function QuestionCreateModal({
           </button>
         </div>
 
-        {/* Form Body */}
+        {/* form body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
-          {/* Title */}
+          {/* title */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground">
               Question Title *
@@ -177,7 +177,7 @@ export function QuestionCreateModal({
             />
           </div>
 
-          {/* Type & Difficulty & Marks */}
+          {/* type & difficulty & marks */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
@@ -223,7 +223,7 @@ export function QuestionCreateModal({
             </div>
           </div>
 
-          {/* Description */}
+          {/* description */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground">
               Problem Description *
@@ -238,7 +238,7 @@ export function QuestionCreateModal({
             />
           </div>
 
-          {/* Starter Code */}
+          {/* starter code */}
           {type === "CODING" && (
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center justify-between">
@@ -256,7 +256,7 @@ export function QuestionCreateModal({
             </div>
           )}
 
-          {/* Automated Test Cases */}
+          {/* automated test cases */}
           {type === "CODING" && (
             <div className="space-y-2.5 pt-1">
               <div className="flex items-center justify-between">
@@ -356,7 +356,7 @@ export function QuestionCreateModal({
             </div>
           )}
 
-          {/* Footer Buttons */}
+          {/* footer buttons */}
           <div className="pt-4 border-t border-border flex items-center justify-end gap-2.5">
             <Button
               type="button"

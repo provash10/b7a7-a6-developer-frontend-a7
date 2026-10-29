@@ -15,7 +15,7 @@ interface RoleGuardProps {
 export default function RoleGuard({ children, roles }: RoleGuardProps) {
   const router = useRouter();
 
-  // Fetch logged in user profile data
+  // fetch logged in user profile data
   const { data, isPending, isError } = useGetMe();
 
   const user = data?.data;
@@ -23,12 +23,12 @@ export default function RoleGuard({ children, roles }: RoleGuardProps) {
   const isAuthorized = Boolean(user && roles.includes(user.role));
 
   useEffect(() => {
-    // Wait until profile query finishes loading
+    // wait until profile query finishes loading
     if (isPending) {
       return;
     }
 
-    // Redirect to login if request fails or user does not exist
+    // redirect to login if request fails or user does not exist
     if (isError || !user) {
       router.replace("/login");
     }

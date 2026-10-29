@@ -88,7 +88,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* right column: interactive 3D code editor showcase card */}
+          {/* right column: interactive d code editor showcase card */}
           <div className="lg:col-span-5 relative">
             <div className="relative mx-auto max-w-md lg:max-w-none rounded-2xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-2xl p-4 sm:p-5 transition-all duration-300 hover:shadow-primary/10">
               {/* editor header toolbar */}

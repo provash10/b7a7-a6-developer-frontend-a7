@@ -268,7 +268,7 @@ function CandidateAssessmentExamContent() {
         // ignore
       }
     }
-    return 75 * 60; // 75 minutes
+    return 75 * 60; // minutes
   }, [urlDuration, token]);
 
   const { data: profileData } = useGetMyProfile();
@@ -305,7 +305,7 @@ function CandidateAssessmentExamContent() {
     setSecondsRemaining(initialDurationSeconds);
   }, [initialDurationSeconds]);
 
-  // 1. Load questions (custom added questions from Admin + defaults)
+  // load questions (custom added questions from admin + defaults)
   useEffect(() => {
     try {
       const stored = localStorage.getItem("devassess_custom_questions");
@@ -357,7 +357,7 @@ function CandidateAssessmentExamContent() {
 
   const currentQ = questions[currentIdx] || questions[0];
 
-  // 2. Initialize candidate code for current question
+  // initialize candidate code for current question
   useEffect(() => {
     if (currentQ && !candidateCodes[currentQ.id]) {
       setCandidateCodes((prev) => ({
@@ -367,7 +367,7 @@ function CandidateAssessmentExamContent() {
     }
   }, [currentQ, selectedLanguage, candidateCodes]);
 
-  // 3. Connect attempt on backend (Accept invitation & Start attempt)
+  // connect attempt on backend (accept invitation & start attempt)
   useEffect(() => {
     async function initializeAttempt() {
       try {
@@ -381,7 +381,7 @@ function CandidateAssessmentExamContent() {
 
         let activeAttId = attemptId;
 
-        // 1. Accept pending invitation if present
+        // accept pending invitation if present
         if (pendingInvite?.id) {
           try {
             const acceptRes = await acceptAssessmentInvitation(pendingInvite.id);
@@ -390,11 +390,11 @@ function CandidateAssessmentExamContent() {
               setAttemptId(activeAttId);
             }
           } catch {
-            // Already accepted or handled
+            // already accepted or handled
           }
         }
 
-        // 2. If no attempt id yet, find active attempt from candidate attempts
+        // if no attempt id yet, find active attempt from candidate attempts
         if (!activeAttId || activeAttId.startsWith("att-")) {
           try {
             const myAttemptsRes = await getMyAttempts();
@@ -411,7 +411,7 @@ function CandidateAssessmentExamContent() {
           }
         }
 
-        // 3. Start attempt if not started yet
+        // start attempt if not started yet
         let connectedAttemptId = activeAttId;
         try {
           const startRes = await startAttempt(activeAttId);
@@ -425,10 +425,10 @@ function CandidateAssessmentExamContent() {
             });
           }
         } catch {
-          // Already in progress or fallback
+          // already in progress or fallback
         }
 
-        // 4. Fetch actual questions for this assessment attempt from PostgreSQL database
+        // fetch actual questions for this assessment attempt from postgresql database
         if (connectedAttemptId && !connectedAttemptId.startsWith("att-")) {
           try {
             const qRes = await getAttemptQuestions(connectedAttemptId);
@@ -469,14 +469,14 @@ function CandidateAssessmentExamContent() {
           }
         }
       } catch {
-        // Fallback gracefully
+        // fallback gracefully
       }
     }
 
     initializeAttempt();
   }, [assessmentId, token]);
 
-  // 4. Timer Countdown
+  // timer countdown
   useEffect(() => {
     if (isExamCompleted) return;
     if (secondsRemaining <= 0) {
@@ -489,7 +489,7 @@ function CandidateAssessmentExamContent() {
     return () => clearInterval(interval);
   }, [isExamCompleted, secondsRemaining]);
 
-  // 5. Anti-cheat window blur & visibility tracking
+  // anti-cheat window blur & visibility tracking
   useEffect(() => {
     if (isExamCompleted) return;
     const handleVisibilityChange = () => {
@@ -524,7 +524,7 @@ function CandidateAssessmentExamContent() {
     setIsRunningTests(true);
     setTimeout(() => {
       setIsRunningTests(false);
-      const passed = true; // In browser simulation
+      const passed = true; // in browser simulation
       setTestResults({
         ran: true,
         passed,
@@ -652,7 +652,7 @@ function CandidateAssessmentExamContent() {
     try {
       const stored = localStorage.getItem("devassess_candidate_submissions");
       let list = stored ? JSON.parse(stored) : [];
-      // Replace any pending invite placeholder for this email/challenge with completed submission
+      // replace any pending invite placeholder for this email/challenge with completed submission
       list = list.filter(
         (t: any) =>
           !(
@@ -666,7 +666,7 @@ function CandidateAssessmentExamContent() {
       // ignore
     }
 
-    // Auto-record solution in 'submissions' table in PostgreSQL DB
+    // auto-record solution in 'submissions' table in postgresql db
     for (const q of questions) {
       const code = candidateCodes[q.id];
       if (code) {
@@ -769,7 +769,7 @@ function CandidateAssessmentExamContent() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Top Navigation Bar */}
+      {/* top navigation bar */}
       <header className="h-14 border-b border-border/80 bg-card px-4 sm:px-6 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <Link
@@ -789,7 +789,7 @@ function CandidateAssessmentExamContent() {
         </div>
 
         <div className="flex items-center gap-2.5 sm:gap-4">
-          {/* Anti-cheat telemetry monitor */}
+          {/* anti-cheat telemetry monitor */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/50 border border-border text-xs">
             <Shield className="size-3.5 text-primary" />
             <span className="text-[11px] text-muted-foreground hidden sm:inline">
@@ -804,7 +804,7 @@ function CandidateAssessmentExamContent() {
             </span>
           </div>
 
-          {/* Timer Countdown */}
+          {/* timer countdown */}
           <div
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-mono font-bold ${
               secondsRemaining < 300
@@ -816,7 +816,7 @@ function CandidateAssessmentExamContent() {
             <span>{formatTimer(secondsRemaining)}</span>
           </div>
 
-          {/* Finish Assessment button */}
+          {/* finish assessment button */}
           <Button
             size="sm"
             onClick={handleFinishExam}
@@ -828,11 +828,11 @@ function CandidateAssessmentExamContent() {
         </div>
       </header>
 
-      {/* Main Workspace (Split Screen) */}
+      {/* main workspace (split screen) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
-        {/* Left Panel: Question Navigator & Problem Statement */}
+        {/* left panel: question navigator & problem statement */}
         <div className="lg:col-span-5 border-b lg:border-b-0 lg:border-r border-border/80 bg-card/40 flex flex-col overflow-y-auto max-h-[50vh] lg:max-h-[calc(100vh-3.5rem)]">
-          {/* Questions Tabs */}
+          {/* questions tabs */}
           <div className="p-3 border-b border-border/60 flex items-center gap-2 overflow-x-auto bg-muted/20">
             {questions.map((q, idx) => (
               <button
@@ -856,7 +856,7 @@ function CandidateAssessmentExamContent() {
             ))}
           </div>
 
-          {/* Problem Details */}
+          {/* problem details */}
           <div className="p-5 sm:p-6 space-y-4">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
@@ -889,12 +889,12 @@ function CandidateAssessmentExamContent() {
               </h2>
             </div>
 
-            {/* Description */}
+            {/* description */}
             <div className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-line space-y-2">
               <p>{currentQ.description}</p>
             </div>
 
-            {/* Test Cases list */}
+            {/* test cases list */}
             <div className="space-y-2.5 pt-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Example Test Cases
@@ -922,9 +922,9 @@ function CandidateAssessmentExamContent() {
           </div>
         </div>
 
-        {/* Right Panel: Code Editor, Language Selector, Run & Submit */}
+        {/* right panel: code editor, language selector, run & submit */}
         <div className="lg:col-span-7 flex flex-col bg-card overflow-hidden max-h-[calc(100vh-3.5rem)]">
-          {/* Editor Header */}
+          {/* editor header */}
           <div className="h-11 border-b border-border/80 px-4 flex items-center justify-between bg-muted/30">
             <div className="flex items-center gap-2">
               <Code2 className="size-4 text-primary" />
@@ -968,7 +968,7 @@ function CandidateAssessmentExamContent() {
             </div>
           </div>
 
-          {/* Live Code Area */}
+          {/* live code area */}
           <div className="flex-1 relative overflow-hidden flex flex-col min-h-[300px]">
             <textarea
               value={candidateCodes[currentQ.id] || ""}
@@ -984,7 +984,7 @@ function CandidateAssessmentExamContent() {
             />
           </div>
 
-          {/* Test Runner & Output Console */}
+          {/* test runner & output console */}
           <div className="border-t border-border/80 bg-muted/20 flex flex-col max-h-[220px]">
             <div className="px-4 py-2 border-b border-border/60 flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
@@ -1016,7 +1016,7 @@ function CandidateAssessmentExamContent() {
               </div>
             </div>
 
-            {/* Test Results logs */}
+            {/* test results logs */}
             <div className="p-3 font-mono text-xs overflow-y-auto max-h-[140px] space-y-1">
               {!testResults.ran ? (
                 <p className="text-muted-foreground italic text-[11px]">

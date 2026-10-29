@@ -28,7 +28,7 @@ export default function ContactPage() {
       <section className="py-14 sm:py-20 bg-background">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid gap-10 lg:grid-cols-12 items-start">
-            {/* left column: support channels & contact cards (5 cols) */}
+            {/* left column: support channels & contact cards ( cols) */}
             <div className="lg:col-span-5 space-y-6">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-primary">
@@ -46,7 +46,7 @@ export default function ContactPage() {
               <ContactInfoCards />
             </div>
 
-            {/* right column: direct message validated form (7 cols) */}
+            {/* right column: direct message validated form ( cols) */}
             <div className="lg:col-span-7">
               <ContactForm />
             </div>

@@ -23,25 +23,25 @@ export const metadata: Metadata = {
 export default function AboutUsPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Header */}
+      {/* hero header */}
       <AboutHeader />
 
-      {/* Verified Metrics / Key Platform Stats */}
+      {/* verified metrics / key platform stats */}
       <AboutStats />
 
-      {/* Mission & Vision Sections */}
+      {/* mission & vision sections */}
       <AboutMissionVision />
 
-      {/* Core Engineering Values & Architectural Pillars */}
+      {/* core engineering values & architectural pillars */}
       <AboutValues />
 
-      {/* How the Evaluation Flow Works */}
+      {/* how the evaluation flow works */}
       <AboutArchitecture />
 
-      {/* Engineering & Leadership Team */}
+      {/* engineering & leadership team */}
       <AboutTeam />
 
-      {/* Bottom Conversion CTA */}
+      {/* bottom conversion cta */}
       <AboutCTA />
     </div>
   );

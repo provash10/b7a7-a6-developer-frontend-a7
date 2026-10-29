@@ -111,7 +111,7 @@ export default function DashboardSidebar({
     };
     updateRole();
 
-    // Keep cookies synchronized with live database role
+    // keep cookies synchronized with live database role
     if (user?.role) {
       const normalizedRole = user.role.toUpperCase();
       document.cookie = `userRole=${normalizedRole}; path=/; max-age=31536000;`;
@@ -131,7 +131,7 @@ export default function DashboardSidebar({
 
   const activeRole = mounted ? effectiveRole : fallbackRole;
 
-  // Auto-redirect to appropriate portal if role changed from candidate
+  // auto-redirect to appropriate portal if role changed from candidate
   useEffect(() => {
     if (mounted && pathname === "/dashboard") {
       if (activeRole === "RECRUITER") {

@@ -201,7 +201,7 @@ export function RoleAdaptiveDashboard() {
         }
       }
 
-      // Filter only real completed exam submissions (ignore unsubmitted invitation placeholders)
+      // filter only real completed exam submissions (ignore unsubmitted invitation placeholders)
       const realCompletedSubmissions = liveSubmissions.filter((item: any) => {
         if (!item.submittedAt) return false;
         if (
@@ -230,7 +230,7 @@ export function RoleAdaptiveDashboard() {
           item.status === "ACCEPTED" || item.status === "Accepted ✓",
       );
 
-      // Map completed submissions
+      // map completed submissions
       const mapped = realCompletedSubmissions.map((item: any) => {
         const itemAccepted =
           item.status === "ACCEPTED" || item.status === "Accepted ✓";
@@ -272,7 +272,7 @@ export function RoleAdaptiveDashboard() {
       const all = [...mapped, ...RECENT_ASSESSMENTS];
       setMyAssessments(all);
 
-      // Dynamic stats calculation
+      // dynamic stats calculation
       const totalCompleted = 3 + mapped.length;
       setCompletedCount(totalCompleted);
 
@@ -284,10 +284,10 @@ export function RoleAdaptiveDashboard() {
         all.length > 0 ? (totalScore / all.length).toFixed(1) : "91.3";
       setAvgScore(calculatedAvg);
 
-      // Check active recruiter invitation for this candidate
+      // check active recruiter invitation for this candidate
       let foundPendingInvitation = false;
 
-      // 1. Try checking live invitations directly from PostgreSQL backend API (/invitations/my) FIRST
+      // try checking live invitations directly from postgresql backend api (/invitations/my) first
       try {
         const res = await getCandidateInvitations();
         if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
@@ -336,7 +336,7 @@ export function RoleAdaptiveDashboard() {
         console.warn("Live candidate invitations fetch failed, checking localStorage fallback:", liveErr);
       }
 
-      // 2. Fallback: Check local storage invitations if backend was unreachable
+      // fallback: check local storage invitations if backend was unreachable
       let localStoragePending: any = null;
       try {
         const storedInvites = localStorage.getItem("devassess_invitations");
@@ -397,7 +397,7 @@ export function RoleAdaptiveDashboard() {
         return;
       }
 
-      // If no pending invitation found, reflect completed state
+      // if no pending invitation found, reflect completed state
       if (!foundPendingInvitation) {
         setHasCompletedActiveExam(hasCompleted);
         setIsAccepted(anyAccepted);
@@ -420,11 +420,11 @@ export function RoleAdaptiveDashboard() {
     };
   }, [user]);
 
-  // IF ROLE IS RECRUITER -> RENDER RECRUITER DASHBOARD!
+  // if role is recruiter -> render recruiter dashboard!
   if (role === "RECRUITER") {
     return (
       <div className="space-y-8 pb-12">
-        {/* Recruiter Header Banner */}
+        {/* recruiter header banner */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/50 pb-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -452,13 +452,13 @@ export function RoleAdaptiveDashboard() {
           </div>
         </div>
 
-        {/* Recruiter Evaluation Queue View */}
+        {/* recruiter evaluation queue view */}
         <RecruiterEvaluationsView />
       </div>
     );
   }
 
-  // IF ROLE IS ADMIN -> RENDER ADMIN DASHBOARD!
+  // if role is admin -> render admin dashboard!
   if (role === "ADMIN") {
     return (
       <div className="space-y-8 pb-12">
@@ -491,7 +491,7 @@ export function RoleAdaptiveDashboard() {
     );
   }
 
-  // Build dynamic stat cards
+  // build dynamic stat cards
   const statCards = [
     {
       title: "Active Assessment",
@@ -561,7 +561,7 @@ export function RoleAdaptiveDashboard() {
     },
   ];
 
-  // DEFAULT -> CANDIDATE DASHBOARD!
+  // default -> candidate dashboard!
   return (
     <div className="space-y-8 pb-10">
       {/* welcome banner */}
@@ -683,7 +683,7 @@ export function RoleAdaptiveDashboard() {
           )}
         </div>
 
-        {/* HERO CARD CONTAINER */}
+        {/* hero card container */}
         <div
           className={`relative overflow-hidden rounded-2xl border-2 transition-all duration-300 shadow-md ${
             hasCompletedActiveExam
@@ -713,7 +713,7 @@ export function RoleAdaptiveDashboard() {
           />
 
           <div className="p-6 sm:p-7 space-y-5">
-            {/* Header info */}
+            {/* header info */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -760,12 +760,12 @@ export function RoleAdaptiveDashboard() {
               </div>
             </div>
 
-            {/* Description */}
+            {/* description */}
             <p className="text-sm text-muted-foreground leading-relaxed max-w-4xl">
               {activeInvitation.description}
             </p>
 
-            {/* Skills Pills */}
+            {/* skills pills */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-xs font-semibold text-muted-foreground mr-1">
                 Tech Stack:
@@ -780,7 +780,7 @@ export function RoleAdaptiveDashboard() {
               ))}
             </div>
 
-            {/* Live Verdict & Status Highlight Box */}
+            {/* live verdict & status highlight box */}
             <div
               className={`rounded-xl p-4 sm:p-5 border transition-all ${
                 hasCompletedActiveExam
@@ -852,7 +852,7 @@ export function RoleAdaptiveDashboard() {
                 </div>
               </div>
 
-              {/* 3-Step Review Pipeline Stepper */}
+              {/* -step review pipeline stepper */}
               <div className="pt-3 pb-1 border-t border-border/40 mt-4">
                 <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-2">
                   <span>Evaluation Pipeline Stage:</span>
@@ -914,7 +914,7 @@ export function RoleAdaptiveDashboard() {
                 </div>
               </div>
 
-              {/* Recruiter Evaluation Remarks / Feedback */}
+              {/* recruiter evaluation remarks / feedback */}
               {recruiterFeedbackNotes && (
                 <div className="mt-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-start gap-2.5">
                   <MessageSquare className="size-4 text-blue-500 shrink-0 mt-0.5" />
@@ -931,7 +931,7 @@ export function RoleAdaptiveDashboard() {
             </div>
           </div>
 
-          {/* Footer Bar */}
+          {/* footer bar */}
           <div className="bg-muted/40 border-t border-border/80 px-6 sm:px-7 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="relative flex h-2 w-2">
@@ -1042,7 +1042,7 @@ export function RoleAdaptiveDashboard() {
                         : "border-border/80 bg-gradient-to-b from-card to-card/70 hover:border-primary/50 hover:shadow-primary/5"
                 }`}
               >
-                {/* Top color bar */}
+                {/* top color bar */}
                 <div
                   className={`h-1 w-full ${
                     isTestAccepted
@@ -1056,7 +1056,7 @@ export function RoleAdaptiveDashboard() {
                 />
 
                 <div className="p-5 pb-3 space-y-3">
-                  {/* Company & Status Pill Row */}
+                  {/* company & status pill row */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold">
                       <Building2 className="size-3 text-primary/80" />
@@ -1099,12 +1099,12 @@ export function RoleAdaptiveDashboard() {
                     </div>
                   </div>
 
-                  {/* Challenge Title */}
+                  {/* challenge title */}
                   <h4 className="font-heading text-base font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
                     {test.title}
                   </h4>
 
-                  {/* Score Progress Bar */}
+                  {/* score progress bar */}
                   <div className="space-y-1.5 pt-1">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground font-medium">
@@ -1147,7 +1147,7 @@ export function RoleAdaptiveDashboard() {
                     </div>
                   </div>
 
-                  {/* Skills badges */}
+                  {/* skills badges */}
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {test.skills.map((s: string) => (
                       <span
@@ -1159,14 +1159,14 @@ export function RoleAdaptiveDashboard() {
                     ))}
                   </div>
 
-                  {/* Date */}
+                  {/* date */}
                   <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-1">
                     <Calendar className="size-3 text-muted-foreground/70" />
                     <span>Completed on {test.date}</span>
                   </div>
                 </div>
 
-                {/* Footer action */}
+                {/* footer action */}
                 <div className="p-4 pt-3 border-t border-border/60 bg-muted/20">
                   <button
                     type="button"

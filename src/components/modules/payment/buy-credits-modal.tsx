@@ -54,7 +54,7 @@ export function BuyCreditsModal({ isOpen, onClose }: BuyCreditsModalProps) {
   const currentCredits = isCustom
     ? Math.max(10, Number.parseInt(customCredits || "0", 10))
     : selectedCredits;
-  const currentAmount = currentCredits * 5; // 5 BDT per credit
+  const currentAmount = currentCredits * 5; // bdt per credit
 
   const handlePayWithBkash = () => {
     if (currentCredits < 10) {
@@ -262,7 +262,7 @@ export function BuyCreditsModal({ isOpen, onClose }: BuyCreditsModalProps) {
             </div>
           </div>
 
-          {/* bKash test credentials helper notice */}
+          {/* bkash test credentials helper notice */}
           <div className="rounded-xl border border-pink-500/30 bg-pink-500/5 p-3.5 text-xs text-foreground space-y-1.5">
             <div className="flex items-center gap-1.5 font-semibold text-pink-600 dark:text-pink-400">
               <ShieldCheck className="size-4 shrink-0" />

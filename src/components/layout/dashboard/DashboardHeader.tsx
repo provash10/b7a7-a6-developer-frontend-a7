@@ -42,7 +42,7 @@ export default function DashboardHeader({
     };
     updateRole();
 
-    // Keep cookies synchronized with live database role
+    // keep cookies synchronized with live database role
     if (user?.role) {
       const normalizedRole = user.role.toUpperCase();
       document.cookie = `userRole=${normalizedRole}; path=/; max-age=31536000;`;
@@ -104,7 +104,7 @@ export default function DashboardHeader({
   const queryClient = useQueryClient();
 
   const handleLogout = () => {
-    // 1. Clear all client session storage and cookies
+    // clear all client session storage and cookies
     clearActiveSession();
     try {
       queryClient.clear();
@@ -116,12 +116,12 @@ export default function DashboardHeader({
       type: "info",
     });
 
-    // 2. Fire backend logout in background
+    // fire backend logout in background
     try {
       logout();
     } catch {}
 
-    // 3. Navigate directly to /login?logout=true which commands middleware to purge all server-side cookies
+    // navigate directly to /login?logout=true which commands middleware to purge all server-side cookies
     window.location.href = "/login?logout=true";
   };
 

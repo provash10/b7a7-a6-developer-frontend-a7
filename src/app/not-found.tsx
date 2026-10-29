@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default function NotFound() {
-  // console.log("global 404 not found page rendered");
+  // console.log("global not found page rendered");
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 bg-background text-foreground relative overflow-hidden select-none">

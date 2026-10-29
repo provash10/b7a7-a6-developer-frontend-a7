@@ -12,6 +12,7 @@ import {
   RotateCcw,
   Search,
   ShieldAlert,
+  Trash2,
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -178,6 +179,85 @@ export function EvaluationTasksTable({
     });
   };
 
+  const handleDeleteTask = (taskToDelete: EvaluationTask) => {
+    const updatedTasks = tasks.filter((t) => t.id !== taskToDelete.id);
+    onTasksChange(updatedTasks);
+
+    try {
+      localStorage.setItem("devassess_candidate_submissions", JSON.stringify(updatedTasks));
+    } catch {
+      // ignore
+    }
+
+    try {
+      const storedInv = localStorage.getItem("devassess_invitations");
+      if (storedInv) {
+        const invList = JSON.parse(storedInv);
+        if (Array.isArray(invList)) {
+          const filteredInv = invList.filter(
+            (inv: any) =>
+              !(
+                inv.candidateEmail?.toLowerCase().trim() ===
+                  taskToDelete.candidateEmail.toLowerCase().trim() &&
+                inv.assessmentTitle?.toLowerCase().trim() ===
+                  taskToDelete.challengeTitle.toLowerCase().trim()
+              ) && inv.id !== taskToDelete.id,
+          );
+          localStorage.setItem("devassess_invitations", JSON.stringify(filteredInv));
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new CustomEvent("devassess_submission_update"));
+    window.dispatchEvent(new CustomEvent("devassess_invitations_update"));
+
+    toast.add({
+      title: "Invitation Removed",
+      description: `Removed "${taskToDelete.challengeTitle}" for ${taskToDelete.candidateName}.`,
+      type: "info",
+    });
+  };
+
+  const handleClearAllDispatched = () => {
+    const dispatchedCount = tasks.filter((t) =>
+      t.submittedAt?.toLowerCase().includes("invitation dispatched"),
+    ).length;
+
+    if (dispatchedCount === 0) {
+      toast.add({
+        title: "No Dispatched Invitations",
+        description: "There are no pending dispatched invitations in the queue.",
+        type: "info",
+      });
+      return;
+    }
+
+    const updatedTasks = tasks.filter(
+      (t) => !t.submittedAt?.toLowerCase().includes("invitation dispatched"),
+    );
+    onTasksChange(updatedTasks);
+
+    try {
+      localStorage.setItem("devassess_candidate_submissions", JSON.stringify(updatedTasks));
+      localStorage.removeItem("devassess_invitations");
+    } catch {
+      // ignore
+    }
+
+    window.dispatchEvent(new Event("storage"));
+    window.dispatchEvent(new CustomEvent("devassess_submission_update"));
+    window.dispatchEvent(new CustomEvent("devassess_invitations_update"));
+
+    toast.add({
+      title: "Cleared Dispatched Invitations",
+      description: `Successfully removed ${dispatchedCount} dispatched invitation(s) from the queue.`,
+      type: "success",
+    });
+  };
+
   const getStatusBadge = (status: EvaluationStatus) => {
     switch (status) {
       case "ACCEPTED":
@@ -261,7 +341,7 @@ export function EvaluationTasksTable({
   return (
     <>
       <Card className="rounded-2xl border-2 border-border/80 bg-gradient-to-b from-card via-card to-card/80 shadow-md backdrop-blur-md overflow-hidden">
-        {/* Top accent gradient bar */}
+        {/* top accent gradient bar */}
         <div className="h-1.5 w-full bg-gradient-to-r from-primary via-orange-500 to-amber-500" />
 
         <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/60">
@@ -288,6 +368,19 @@ export function EvaluationTasksTable({
                 >
                   <Mail className="size-3.5" />
                   <span>Invite Candidate</span>
+                </Button>
+              )}
+
+              {tasks.some((t) => t.submittedAt?.toLowerCase().includes("invitation dispatched")) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearAllDispatched}
+                  className="gap-1.5 text-xs font-semibold h-9 px-3 rounded-xl border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer shadow-2xs"
+                  title="Remove all pending dispatched invitations from queue"
+                >
+                  <Trash2 className="size-3.5" />
+                  <span>Clear Dispatched ({tasks.filter((t) => t.submittedAt?.toLowerCase().includes("invitation dispatched")).length})</span>
                 </Button>
               )}
 
@@ -460,15 +553,27 @@ export function EvaluationTasksTable({
 
                           {/* action button */}
                           <td className="py-3 px-3 text-right whitespace-nowrap">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              onClick={() => handleOpenReview(task)}
-                              className="h-8 px-3 text-xs gap-1.5 font-bold rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-                            >
-                              <Edit3 className="size-3.5" />
-                              <span>Score &amp; Review</span>
-                            </Button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleOpenReview(task)}
+                                className="h-8 px-3 text-xs gap-1.5 font-bold rounded-xl shadow-xs hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                              >
+                                <Edit3 className="size-3.5" />
+                                <span>Score &amp; Review</span>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDeleteTask(task)}
+                                title="Delete task / invitation"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer"
+                                aria-label="Delete evaluation task"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                     ))

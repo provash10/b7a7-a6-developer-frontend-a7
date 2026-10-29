@@ -224,7 +224,7 @@ export function CandidateProfileForm({
       }}
       className="space-y-8"
     >
-      {/* 1. personal & professional details */}
+      {/* personal & professional details */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardHeader className="pb-4 border-b border-border/50">
           <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider">
@@ -462,7 +462,7 @@ export function CandidateProfileForm({
         </CardContent>
       </Card>
 
-      {/* 2. developer & portfolio links */}
+      {/* developer & portfolio links */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardHeader className="pb-4 border-b border-border/50">
           <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider">
@@ -606,7 +606,7 @@ export function CandidateProfileForm({
         </CardContent>
       </Card>
 
-      {/* 3. technical skills editor */}
+      {/* technical skills editor */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardHeader className="pb-4 border-b border-border/50">
           <div className="flex items-center justify-between">
@@ -754,7 +754,7 @@ export function CandidateProfileForm({
         </CardContent>
       </Card>
 
-      {/* 4. availability status toggle */}
+      {/* availability status toggle */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardContent className="p-6">
           <form.Field name="isAvailableForHire">
@@ -801,7 +801,7 @@ export function CandidateProfileForm({
         </CardContent>
       </Card>
 
-      {/* 5. form submit actions */}
+      {/* form submit actions */}
       <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
         <Button
           type="button"

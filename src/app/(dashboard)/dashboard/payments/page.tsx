@@ -79,13 +79,13 @@ export default function CandidatePaymentsPage() {
         </div>
       </div>
 
-      {/* 1. summary stat cards */}
+      {/* summary stat cards */}
       <BillingSummaryCards />
 
-      {/* 2. certified badges & download grid */}
+      {/* certified badges & download grid */}
       <CertifiedBadgesGrid />
 
-      {/* 3. payment history & pdf invoices table wrapped in Suspense */}
+      {/* payment history & pdf invoices table wrapped in suspense */}
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
@@ -97,7 +97,7 @@ export default function CandidatePaymentsPage() {
         <PaymentHistoryTable />
       </Suspense>
 
-      {/* 4. saved payment methods & recipient details */}
+      {/* saved payment methods & recipient details */}
       <BillingDetailsCard />
     </div>
   );

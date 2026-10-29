@@ -18,7 +18,7 @@ export function AboutMissionVision() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Mission Card */}
+          {/* mission card */}
           <div className="relative rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-card to-background p-8 md:p-10 shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
             <div className="inline-flex items-center justify-center rounded-xl bg-primary/10 border border-primary/20 p-3 text-primary mb-6">
               <Compass className="size-6" />
@@ -46,7 +46,7 @@ export function AboutMissionVision() {
             </div>
           </div>
 
-          {/* Vision Card */}
+          {/* vision card */}
           <div className="relative rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 via-card to-background p-8 md:p-10 shadow-sm transition-all hover:border-emerald-500/40 hover:shadow-md">
             <div className="inline-flex items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-emerald-500 mb-6">
               <Eye className="size-6" />

@@ -178,14 +178,14 @@ export function SendInvitationModal({
   const [selectedCandidates, setSelectedCandidates] = useState<SavedCandidate[]>([]);
   const [dispatchedInvites, setDispatchedInvites] = useState<DispatchedInvite[]>([]);
 
-  // Saved / Previously Invited Candidates state & dropdown toggle
+  // saved / previously invited candidates state & dropdown toggle
   const [savedCandidates, setSavedCandidates] = useState<SavedCandidate[]>(
     INITIAL_SAVED_CANDIDATES,
   );
   const [isCandidateDropdownOpen, setIsCandidateDropdownOpen] = useState(false);
   const candidateDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close candidate dropdown on click outside
+  // close candidate dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -203,7 +203,7 @@ export function SendInvitationModal({
     };
   }, [isCandidateDropdownOpen]);
 
-  // Load registered candidates & previously invited candidates from localStorage
+  // load registered candidates & previously invited candidates from localstorage
   useEffect(() => {
     if (!isOpen) return;
 
@@ -211,7 +211,7 @@ export function SendInvitationModal({
       try {
         const candidateMap = new Map<string, SavedCandidate>();
 
-        // 1. Newly registered candidates from devassess_saved_candidates (top priority)
+        // newly registered candidates from devassess_saved_candidates (top priority)
         const storedSaved = localStorage.getItem("devassess_saved_candidates");
         if (storedSaved) {
           const parsed = JSON.parse(storedSaved);
@@ -232,7 +232,7 @@ export function SendInvitationModal({
           }
         }
 
-        // 2. Also merge registered candidates from devassess_custom_users (from registration / admin)
+        // also merge registered candidates from devassess_custom_users (from registration / admin)
         const storedUsers = localStorage.getItem("devassess_custom_users");
         if (storedUsers) {
           const parsedUsers = JSON.parse(storedUsers);
@@ -253,7 +253,7 @@ export function SendInvitationModal({
           }
         }
 
-        // 3. Past dispatched invitations
+        // past dispatched invitations
         const storedInvites = localStorage.getItem("devassess_invitations");
         if (storedInvites) {
           const parsedInv = JSON.parse(storedInvites);
@@ -274,7 +274,7 @@ export function SendInvitationModal({
           }
         }
 
-        // 4. Default / seed candidates
+        // default / seed candidates
         INITIAL_SAVED_CANDIDATES.forEach((c) => {
           const emailKey = c.email.toLowerCase().trim();
           if (!candidateMap.has(emailKey)) {
@@ -284,13 +284,13 @@ export function SendInvitationModal({
 
         setSavedCandidates(Array.from(candidateMap.values()));
 
-        // 5. Live DB Fetch: fetch registered candidates directly from backend database API
+        // live db fetch: fetch registered candidates directly from backend database api
         try {
           let res: any;
           try {
             res = await apiClient<any>("/users?role=CANDIDATE&limit=100");
           } catch (initErr) {
-            // Auto-acquire recruiter token if unauthorized
+            // auto-acquire recruiter token if unauthorized
             try {
               const recLogin = await apiClient<any>("/auth/login", {
                 method: "POST",
@@ -332,7 +332,7 @@ export function SendInvitationModal({
             setSavedCandidates(Array.from(candidateMap.values()));
           }
         } catch {
-          // Backend offline or recruiter auth restricted - fallback gracefully
+          // backend offline or recruiter auth restricted - fallback gracefully
         }
       } catch {
         // ignore
@@ -348,7 +348,7 @@ export function SendInvitationModal({
     };
   }, [isOpen]);
 
-  // Load live DB assessments + custom challenges created in Admin Catalog
+  // load live db assessments + custom challenges created in admin catalog
   useEffect(() => {
     if (!isOpen) return;
     let isMounted = true;
@@ -381,7 +381,7 @@ export function SendInvitationModal({
         // ignore
       }
 
-      // Fetch live assessments from database API
+      // fetch live assessments from database api
       try {
         const res = await getAllAssessments();
         const liveAssessments = res?.data;
@@ -437,7 +437,7 @@ export function SendInvitationModal({
   const handleSeedDatabaseChallenge = async () => {
     setIsSeedingDb(true);
     try {
-      // 1. Create a question in PostgreSQL DB
+      // create a question in postgresql db
       const qRes = await createQuestion({
         title: "Two Sum & Algorithm Benchmark",
         description: "Given an array of integers and target, return indices of two numbers that add up to target.",
@@ -447,7 +447,7 @@ export function SendInvitationModal({
       });
       const qId = (qRes as any)?.data?.id || `q-${Date.now()}`;
 
-      // 2. Create the assessment in PostgreSQL DB
+      // create the assessment in postgresql db
       const asstRes = await createAssessment({
         title: "Full Stack Next.js & TypeScript Challenge (PostgreSQL Live)",
         description: "Live interactive coding assessment for software engineering candidates.",
@@ -576,7 +576,7 @@ export function SendInvitationModal({
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Determine target candidates: either selectedCandidates array OR single manual candidate
+    // determine target candidates: either selectedcandidates array or single manual candidate
     const targets: { name: string; email: string }[] =
       selectedCandidates.length > 0
         ? selectedCandidates.map((c) => ({
@@ -599,7 +599,7 @@ export function SendInvitationModal({
       return;
     }
 
-    // Basic email validation on all targets
+    // basic email validation on all targets
     for (const t of targets) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t.email)) {
         toast.add({
@@ -662,13 +662,13 @@ export function SendInvitationModal({
         examLink: examUrl,
       });
 
-      // 1. Record invitation in devassess_invitations (simulating Prisma assessment_invitations table)
+      // record invitation in devassess_invitations (simulating prisma assessment_invitations table)
       try {
         const storedInvites = localStorage.getItem("devassess_invitations");
         let invitesList = storedInvites ? JSON.parse(storedInvites) : [];
         if (!Array.isArray(invitesList)) invitesList = [];
 
-        // Supersede older pending invite for this candidate
+        // supersede older pending invite for this candidate
         invitesList = invitesList.map((inv: any) => {
           if (inv.candidateEmail?.toLowerCase() === target.email && inv.status === "PENDING") {
             return { ...inv, status: "SUPERSEDED" };
@@ -698,7 +698,7 @@ export function SendInvitationModal({
         // ignore
       }
 
-      // 2. Create a pending evaluation queue entry for this candidate
+      // create a pending evaluation queue entry for this candidate
       const newTask: EvaluationTask = {
         id: `eval_${Date.now().toString().slice(-4)}_${Math.random().toString(36).slice(2, 5)}`,
         candidateName: target.name,
@@ -727,7 +727,7 @@ export function SendInvitationModal({
         // ignore
       }
 
-      // 3. Save to saved candidates list for future quick pick
+      // save to saved candidates list for future quick pick
       try {
         const newCandEntry: SavedCandidate = {
           id: `cand-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -817,7 +817,7 @@ export function SendInvitationModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div className="relative w-full max-w-xl rounded-2xl border border-border bg-card p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-        {/* Close Button */}
+        {/* close button */}
         <button
           type="button"
           onClick={handleResetAndClose}
@@ -827,7 +827,7 @@ export function SendInvitationModal({
           <X className="size-4" />
         </button>
 
-        {/* Modal Header */}
+        {/* modal header */}
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider">
             <Mail className="size-3.5" />
@@ -841,11 +841,11 @@ export function SendInvitationModal({
           </p>
         </div>
 
-        {/* Confirmation Success View (Single or Multiple Candidates) */}
+        {/* confirmation success view (single or multiple candidates) */}
         {dispatchedInvites.length > 0 ? (
           <div className="space-y-4 py-2">
             {dispatchedInvites.length === 1 ? (
-              /* Single Candidate Confirmation */
+              /* single candidate confirmation */
               <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-center space-y-3">
                 <div className="mx-auto size-12 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <CheckCircle2 className="size-7" />
@@ -861,7 +861,7 @@ export function SendInvitationModal({
                   </p>
                 </div>
 
-                {/* Direct Open Exam Action */}
+                {/* direct open exam action */}
                 <div className="pt-2 pb-1 flex flex-col sm:flex-row items-center justify-center gap-2.5">
                   <a
                     href={dispatchedInvites[0].examLink}
@@ -874,7 +874,7 @@ export function SendInvitationModal({
                   </a>
                 </div>
 
-                {/* Copy Link Bar */}
+                {/* copy link bar */}
                 <div className="pt-2">
                   <span className="block text-[11px] font-medium text-muted-foreground mb-1 text-left">
                     Direct Magic Link (Single-use token):
@@ -896,7 +896,7 @@ export function SendInvitationModal({
                 </div>
               </div>
             ) : (
-              /* Multiple Candidates Bulk Confirmation */
+              /* multiple candidates bulk confirmation */
               <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 space-y-4">
                 <div className="text-center space-y-2">
                   <div className="mx-auto size-12 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -913,7 +913,7 @@ export function SendInvitationModal({
                   </div>
                 </div>
 
-                {/* Top action bar: Copy all links */}
+                {/* top action bar: copy all links */}
                 <div className="flex items-center justify-between gap-2 pt-1 border-t border-emerald-500/20">
                   <span className="text-xs font-semibold text-foreground">
                     Candidate Magic Links ({dispatchedInvites.length})
@@ -930,7 +930,7 @@ export function SendInvitationModal({
                   </Button>
                 </div>
 
-                {/* Scrollable list of dispatched candidate links */}
+                {/* scrollable list of dispatched candidate links */}
                 <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
                   {dispatchedInvites.map((inv) => (
                     <div
@@ -1004,7 +1004,7 @@ export function SendInvitationModal({
           </div>
         ) : (
           <form onSubmit={handleSend} className="space-y-4">
-            {/* Quick Candidate Select Dropdown Card with Multi-select & Select All */}
+            {/* quick candidate select dropdown card with multi-select & select all */}
             <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 relative">
               <div className="space-y-0.5">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
@@ -1026,7 +1026,7 @@ export function SendInvitationModal({
                 </p>
               </div>
 
-              {/* Dropdown with Down Arrow */}
+              {/* dropdown with down arrow */}
               <div className="relative shrink-0 w-full sm:w-auto" ref={candidateDropdownRef}>
                 <button
                   type="button"
@@ -1067,10 +1067,10 @@ export function SendInvitationModal({
                   />
                 </button>
 
-                {/* Dropdown Floating Menu with Multi-select Checkboxes & Select All */}
+                {/* dropdown floating menu with multi-select checkboxes & select all */}
                 {isCandidateDropdownOpen && (
                   <div className="absolute right-0 top-full mt-1.5 w-76 sm:w-84 rounded-xl border border-border bg-card/95 backdrop-blur-md shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    {/* Header: Select All Candidates Toggle */}
+                    {/* header: select all candidates toggle */}
                     <div className="px-2 py-1.5 border-b border-border/60 flex items-center justify-between gap-2">
                       <button
                         type="button"
@@ -1089,7 +1089,7 @@ export function SendInvitationModal({
                       </Badge>
                     </div>
 
-                    {/* Candidate List with Checkbox for each candidate */}
+                    {/* candidate list with checkbox for each candidate */}
                     <div className="max-h-60 overflow-y-auto py-1 space-y-1">
                       {savedCandidates.map((cand) => {
                         const isSelected = selectedCandidates.some(
@@ -1135,7 +1135,7 @@ export function SendInvitationModal({
                       })}
                     </div>
 
-                    {/* Bottom Actions: New Candidate Mode & Done button */}
+                    {/* bottom actions: new candidate mode & done button */}
                     <div className="border-t border-border/60 pt-1.5 mt-1 flex items-center justify-between gap-2">
                       <button
                         type="button"
@@ -1160,7 +1160,7 @@ export function SendInvitationModal({
               </div>
             </div>
 
-            {/* If multiple candidates selected, show Chip List of selected candidates */}
+            {/* if multiple candidates selected, show chip list of selected candidates */}
             {selectedCandidates.length > 1 ? (
               <div className="rounded-xl border border-primary/20 bg-muted/40 p-3 space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold text-foreground">
@@ -1204,7 +1204,7 @@ export function SendInvitationModal({
                 </p>
               </div>
             ) : (
-              /* Single Candidate Name & Email Inputs */
+              /* single candidate name & email inputs */
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -1247,7 +1247,7 @@ export function SendInvitationModal({
               </div>
             )}
 
-            {/* Select Assessment Challenge */}
+            {/* select assessment challenge */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -1290,7 +1290,7 @@ export function SendInvitationModal({
               </select>
             </div>
 
-            {/* Expiry Window */}
+            {/* expiry window */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <Clock className="size-3 text-primary" />
@@ -1308,7 +1308,7 @@ export function SendInvitationModal({
               </select>
             </div>
 
-            {/* Optional Note */}
+            {/* optional note */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-foreground">
                 Custom Message / Instructions (Optional)
@@ -1322,7 +1322,7 @@ export function SendInvitationModal({
               />
             </div>
 
-            {/* Credit Cost Notice (Dynamic for 1 or multiple candidates) */}
+            {/* credit cost notice (dynamic for or multiple candidates) */}
             {(() => {
               const hasInsufficientCredits = currentCredits < candidateCount;
               return (
@@ -1369,7 +1369,7 @@ export function SendInvitationModal({
               );
             })()}
 
-            {/* Modal Actions */}
+            {/* modal actions */}
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border/50">
               <Button
                 type="button"

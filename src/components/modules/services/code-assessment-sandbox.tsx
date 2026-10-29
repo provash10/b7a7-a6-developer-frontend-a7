@@ -279,7 +279,7 @@ export default function CodeAssessmentSandbox() {
 
           {/* main grid: left spec/details, right code sandbox */}
           <div className="grid lg:grid-cols-12 min-h-[460px]">
-            {/* left panel: problem details & tabs (5 cols) */}
+            {/* left panel: problem details & tabs ( cols) */}
             <div className="lg:col-span-5 border-r border-border/80 flex flex-col bg-background/50">
               {/* tab selector */}
               <div className="flex border-b border-border/80 text-xs">
@@ -499,7 +499,7 @@ export default function CodeAssessmentSandbox() {
               </div>
             </div>
 
-            {/* right panel: simulated code editor (7 cols) */}
+            {/* right panel: simulated code editor ( cols) */}
             <div className="lg:col-span-7 flex flex-col bg-zinc-950 text-zinc-100 font-mono text-xs">
               {/* editor top bar */}
               <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900/90 px-4 py-2 text-[11px]">

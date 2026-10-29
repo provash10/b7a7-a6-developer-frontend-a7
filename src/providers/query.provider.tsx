@@ -21,11 +21,11 @@ let browserQueryClient: QueryClient | undefined;
 
 function getQueryClient() {
   if (isServer) {
-    // Server: always make a new query client
+    // server: always make a new query client
     return makeQueryClient();
   } else {
-    // Browser: make a new query client if we don't already have one
-    // This is very important, so we don't re-make a new client if React
+    // browser: make a new query client if we don't already have one
+    // this is very important, so we don't re-make a new client if react
     // suspends during the initial render.
     if (!browserQueryClient) {
       browserQueryClient = makeQueryClient();

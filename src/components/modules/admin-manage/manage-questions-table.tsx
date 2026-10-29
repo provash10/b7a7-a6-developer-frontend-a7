@@ -114,7 +114,7 @@ export function ManageQuestionsTable() {
 
   const pageSize = 10;
 
-  // Load live questions from database
+  // load live questions from database
   const loadQuestions = async () => {
     setLoading(true);
     let dbQuestions: Question[] = [];
@@ -129,7 +129,7 @@ export function ManageQuestionsTable() {
       console.warn("Could not fetch questions from /questions:", e);
     }
 
-    // Merge with any custom local questions
+    // merge with any custom local questions
     let customQuestions: Question[] = [];
     try {
       const stored = localStorage.getItem("devassess_custom_questions");
@@ -238,7 +238,7 @@ export function ManageQuestionsTable() {
             </Button>
           </div>
 
-          {/* Filters */}
+          {/* filters */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-4">
             <div className="relative">
               <Search className="size-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -370,7 +370,7 @@ export function ManageQuestionsTable() {
             </table>
           </div>
 
-          {/* Pagination */}
+          {/* pagination */}
           <div className="flex items-center justify-between p-4 border-t border-border/60 text-xs text-muted-foreground">
             <span>
               Showing {filteredQuestions.length === 0 ? 0 : 1} to{" "}
@@ -404,7 +404,7 @@ export function ManageQuestionsTable() {
         </CardContent>
       </Card>
 
-      {/* Question Details Modal */}
+      {/* question details modal */}
       {selectedQuestion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 max-w-lg w-full space-y-4 max-h-[85vh] overflow-y-auto">
@@ -505,7 +505,7 @@ export function ManageQuestionsTable() {
         </div>
       )}
 
-      {/* Create Question Modal */}
+      {/* create question modal */}
       <QuestionCreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

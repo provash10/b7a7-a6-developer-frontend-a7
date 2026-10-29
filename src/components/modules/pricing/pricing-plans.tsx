@@ -183,7 +183,7 @@ export default function PricingPlans() {
           </div>
         </div>
 
-        {/* pricing cards 3-column grid */}
+        {/* pricing cards -column grid */}
         <div className="grid gap-8 lg:grid-cols-3 items-stretch">
           {plans.map((plan) => {
             const currentPrice = plan.price[currency][billingCycle];
@@ -312,7 +312,7 @@ export default function PricingPlans() {
           </div>
         </div>
 
-        {/* bKash credit purchase modal */}
+        {/* bkash credit purchase modal */}
         <BuyCreditsModal
           isOpen={isBuyModalOpen}
           onClose={() => setIsBuyModalOpen(false)}

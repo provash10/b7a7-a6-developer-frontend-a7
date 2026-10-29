@@ -54,16 +54,16 @@ export const RegisterSchema = registerSchema;
 export const patientRegistrationSchema = registerSchema;
 export const PatientRegistrationZodSchema = registerSchema;
 
-//* GP - 017, 013
-//* BL - 019, 014
-//* Airtel - 016
-//* Robi - 018
-//* TeleTalk - 01512345678
-//! City Cell - 011 (Already dead)
-//! there is no 012
-//todo we need to confirm from [3-9]
+// * gp - ,
+// * bl - ,
+// * airtel -
+// * robi -
+// * teletalk -
+// ! city cell - (already dead)
+// ! there is no
+// todo we need to confirm from [-]
 
-//? Either +880, 880, 0
+// ? either +, ,
 
 export const verifyAccountSchema = z.object({
   email: z.string().email("Please enter a valid email"),

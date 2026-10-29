@@ -35,10 +35,10 @@ export default function Footer() {
 
   return (
     <footer className="w-full border-t border-border/80 bg-card text-foreground">
-      {/* Upper Footer: Columns */}
+      {/* upper footer: columns */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
-          {/* Brand Column */}
+          {/* brand column */}
           <div className="lg:col-span-2 space-y-4">
             <Link
               href="/"
@@ -54,14 +54,14 @@ export default function Footer() {
               The next-generation technical hiring and code assessment platform. Evaluate candidates with real-world Docker sandboxes, automated test scoring, and intelligent proctoring telemetry.
             </p>
 
-            {/* System Status Pill */}
+            {/* system status pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
               <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>All Evaluation Sandboxes Operational</span>
             </div>
           </div>
 
-          {/* Product Column */}
+          {/* product column */}
           <div className="space-y-3">
             <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-foreground">
               Product
@@ -80,7 +80,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Platform Column */}
+          {/* platform column */}
           <div className="space-y-3">
             <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-foreground">
               Platform
@@ -99,7 +99,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Legal & Security Column */}
+          {/* legal & security column */}
           <div className="space-y-3">
             <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-foreground">
               Trust & Legal
@@ -120,7 +120,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Lower Footer: Copyright & Attribution */}
+      {/* lower footer: copyright & attribution */}
       <div className="border-t border-border/60 bg-muted/20 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© {currentYear} DevAssess. All rights reserved. Technical Evaluation & Certification.</p>

@@ -1,12 +1,12 @@
 // {
-//     title: "Management",
+//     title: "management",
 //     items: [
 //         {
-//             title: "Overview",
+//             title: "overview",
 //             url: `${prefix}`,
 //         },
 //         {
-//             title: "Doctor Approval",
+//             title: "doctor approval",
 //             url: `${prefix}/approve-doctor`,
 //         },
 //     ],

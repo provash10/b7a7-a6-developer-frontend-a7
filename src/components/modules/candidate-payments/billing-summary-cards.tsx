@@ -9,7 +9,7 @@ export function BillingSummaryCards() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* 1. active membership card */}
+      {/* active membership card */}
       <Card className="border-border/80 bg-card shadow-xs relative overflow-hidden">
         <div className="pointer-events-none absolute -top-8 -right-8 size-24 rounded-full bg-primary/10 blur-xl" />
         <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -35,7 +35,7 @@ export function BillingSummaryCards() {
         </CardContent>
       </Card>
 
-      {/* 2. total invoiced card */}
+      {/* total invoiced card */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
           <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -55,7 +55,7 @@ export function BillingSummaryCards() {
         </CardContent>
       </Card>
 
-      {/* 3. certified badges card */}
+      {/* certified badges card */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
           <CardTitle className="text-xs font-medium text-muted-foreground">
@@ -80,7 +80,7 @@ export function BillingSummaryCards() {
         </CardContent>
       </Card>
 
-      {/* 4. candidate benchmark percentile */}
+      {/* candidate benchmark percentile */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
           <CardTitle className="text-xs font-medium text-muted-foreground">

@@ -21,7 +21,7 @@ function decodeJwtPayload(token: string): any {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 0. Handle explicit logout: /logout or /login?logout=true - ALWAYS purge server cookies!
+  // handle explicit logout: /logout or /login?logout=true - always purge server cookies!
   if (
     pathname === "/logout" ||
     (pathname.startsWith("/login") && request.nextUrl.searchParams.get("logout") === "true")
@@ -72,7 +72,7 @@ export function middleware(request: NextRequest) {
   const email = jwtPayload?.email?.toLowerCase().trim() || decodedEmail;
   const cleanEmail = email ? email.replace(/[@.]/g, "_") : null;
 
-  // Check email-specific role set by admin, or general userRole cookie
+  // check email-specific role set by admin, or general userrole cookie
   const emailAssignedRole = cleanEmail
     ? request.cookies.get(`role_${cleanEmail}`)?.value?.toUpperCase()
     : null;
@@ -95,7 +95,7 @@ export function middleware(request: NextRequest) {
     userRole = String(jwtPayload.role).toUpperCase();
   }
 
-  // 1. If already authenticated and visiting login/register, redirect to appropriate role portal
+  // if already authenticated and visiting login/register, redirect to appropriate role portal
   if (accessToken && isAuthRoute && userRole) {
     if (userRole === "ADMIN") {
       return NextResponse.redirect(new URL("/admin", request.url));
@@ -106,21 +106,21 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // 1.5. If completely unauthenticated visitor tries to access protected dashboard routes, redirect to login
+  // . if completely unauthenticated visitor tries to access protected dashboard routes, redirect to login
   if (!accessToken && !cookieRole && isDashboardRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 2. Strict Role Enforcement for Protected Dashboards
+  // strict role enforcement for protected dashboards
   if (isDashboardRoute && userRole) {
-    // Admin only routes
+    // admin only routes
     if (pathname.startsWith("/admin") && userRole !== "ADMIN") {
       const fallbackUrl =
         userRole === "RECRUITER" ? "/recruiter" : "/dashboard";
       return NextResponse.redirect(new URL(fallbackUrl, request.url));
     }
 
-    // Recruiter only routes
+    // recruiter only routes
     if (
       pathname.startsWith("/recruiter") &&
       userRole !== "RECRUITER" &&
@@ -129,7 +129,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    // Candidate routes restriction (cannot access admin or recruiter)
+    // candidate routes restriction (cannot access admin or recruiter)
     if (
       userRole === "CANDIDATE" &&
       (pathname.startsWith("/recruiter") || pathname.startsWith("/admin"))
@@ -137,7 +137,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    // Keep userRole cookie synced on responses
+    // keep userrole cookie synced on responses
     if (cleanEmail && emailAssignedRole) {
       const response = NextResponse.next();
       response.cookies.set("userRole", emailAssignedRole, { path: "/", maxAge: 31536000 });

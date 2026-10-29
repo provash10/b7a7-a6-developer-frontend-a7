@@ -99,7 +99,7 @@ export function PaymentSuccessCard() {
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
-      {/* 1. celebratory banner card */}
+      {/* celebratory banner card */}
       <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-transparent p-6 sm:p-10 text-center shadow-xl">
         <div className="absolute -top-16 -right-16 size-48 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 size-48 rounded-full bg-pink-500/10 blur-3xl pointer-events-none" />
@@ -153,7 +153,7 @@ export function PaymentSuccessCard() {
         </div>
       </div>
 
-      {/* 2. official printable tax receipt / invoice */}
+      {/* official printable tax receipt / invoice */}
       <div
         id="printable-receipt"
         className="rounded-3xl border border-border/80 bg-card p-6 sm:p-9 shadow-lg relative print:border-none print:shadow-none print:p-0"
@@ -327,7 +327,7 @@ export function PaymentSuccessCard() {
         </div>
       </div>
 
-      {/* 3. action buttons toolbar (hidden in print) */}
+      {/* action buttons toolbar (hidden in print) */}
       <div className="flex flex-wrap items-center justify-center gap-3 print:hidden">
         <button
           type="button"

@@ -141,10 +141,10 @@ export function AssessmentEditModal({
   assessment,
   onSave,
 }: AssessmentEditModalProps) {
-  // Wizard Step State: 1 = Basic Info, 2 = Questions, 3 = Settings & Publish
+  // wizard step state: = basic info, = questions, = settings & publish
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
-  // Form Fields
+  // form fields
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [company, setCompany] = useState("");
@@ -166,7 +166,7 @@ export function AssessmentEditModal({
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Inline question creator state (inside Step 2)
+  // inline question creator state (inside step )
   const [isInlineAddingQ, setIsInlineAddingQ] = useState(false);
   const [inlineQTitle, setInlineQTitle] = useState("");
   const [inlineQDesc, setInlineQDesc] = useState("");
@@ -175,7 +175,7 @@ export function AssessmentEditModal({
   const [inlineQInput, setInlineQInput] = useState("[2, 7, 11, 15], 9");
   const [inlineQOutput, setInlineQOutput] = useState("[0, 1]");
 
-  // Load database questions + custom questions + defaults
+  // load database questions + custom questions + defaults
   useEffect(() => {
     const fetchDbQuestions = async () => {
       try {
@@ -195,7 +195,7 @@ export function AssessmentEditModal({
           });
         }
       } catch (err) {
-        // use local defaults if API unreachable
+        // use local defaults if api unreachable
       }
     };
 
@@ -340,7 +340,7 @@ export function AssessmentEditModal({
     .filter((q) => selectedQuestionIds.includes(q.id))
     .reduce((sum, q) => sum + q.marks, 0);
 
-  // Step 1 Validation
+  // step validation
   const validateStep1 = () => {
     if (!title.trim()) {
       toast.add({
@@ -377,7 +377,7 @@ export function AssessmentEditModal({
     return true;
   };
 
-  // Step 2 Validation
+  // step validation
   const validateStep2 = () => {
     if (selectedQuestionIds.length === 0) {
       toast.add({
@@ -483,11 +483,11 @@ export function AssessmentEditModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
       <div className="relative w-full max-w-3xl rounded-2xl border border-primary/30 bg-card/95 shadow-2xl shadow-primary/10 flex flex-col max-h-[92vh] my-auto overflow-hidden">
-        {/* Glow Effects */}
+        {/* glow effects */}
         <div className="pointer-events-none absolute -right-20 -top-20 size-60 rounded-full bg-primary/20 blur-3xl opacity-75" />
         <div className="pointer-events-none absolute -left-20 -bottom-20 size-60 rounded-full bg-emerald-500/15 blur-3xl opacity-75" />
 
-        {/* Modal Header */}
+        {/* modal header */}
         <div className="relative flex items-center justify-between px-6 py-4 border-b border-border/80 bg-gradient-to-r from-primary/10 via-background/60 to-transparent">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-primary/20 border border-primary/30 text-primary shadow-xs">
@@ -520,10 +520,10 @@ export function AssessmentEditModal({
           </button>
         </div>
 
-        {/* 🚀 Step Progress Navigation Bar */}
+        {/* 🚀 step progress navigation bar */}
         <div className="px-6 py-3 border-b border-border/60 bg-muted/30">
           <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            {/* Step 1 Pill */}
+            {/* step pill */}
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
@@ -552,7 +552,7 @@ export function AssessmentEditModal({
               </div>
             </button>
 
-            {/* Step 2 Pill */}
+            {/* step pill */}
             <button
               type="button"
               onClick={() => {
@@ -583,7 +583,7 @@ export function AssessmentEditModal({
               </div>
             </button>
 
-            {/* Step 3 Pill */}
+            {/* step pill */}
             <button
               type="button"
               onClick={() => {
@@ -612,9 +612,9 @@ export function AssessmentEditModal({
           </div>
         </div>
 
-        {/* Wizard Form Content */}
+        {/* wizard form content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 text-xs flex flex-col justify-between">
-          {/* ================= STEP 1: BASIC DETAILS ================= */}
+          {/* ================= step : basic details ================= */}
           {currentStep === 1 && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-3 duration-200">
               <div className="border-b border-border/50 pb-2.5">
@@ -627,7 +627,7 @@ export function AssessmentEditModal({
                 </p>
               </div>
 
-              {/* Title & Company */}
+              {/* title & company */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
                   <label htmlFor="assessment-title" className="font-semibold text-foreground flex items-center gap-1.5">
@@ -658,7 +658,7 @@ export function AssessmentEditModal({
                 </div>
               </div>
 
-              {/* Duration and Passing Marks */}
+              {/* duration and passing marks */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
                   <label className="font-semibold text-foreground flex items-center gap-1.5">
@@ -713,7 +713,7 @@ export function AssessmentEditModal({
                 </div>
               </div>
 
-              {/* Description / Candidate Guidelines */}
+              {/* description / candidate guidelines */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-foreground flex items-center gap-1.5">
                   <Sparkles className="size-3.5 text-primary" />
@@ -728,7 +728,7 @@ export function AssessmentEditModal({
                 />
               </div>
 
-              {/* Evaluated Skills with Down Arrow Dropdown & Selectable Pills */}
+              {/* evaluated skills with down arrow dropdown & selectable pills */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="font-semibold text-foreground flex items-center gap-1.5">
@@ -741,7 +741,7 @@ export function AssessmentEditModal({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {/* Dropdown with down arrow to select skills without typing */}
+                  {/* dropdown with down arrow to select skills without typing */}
                   <div className="sm:col-span-2 relative">
                     <select
                       value=""
@@ -764,7 +764,7 @@ export function AssessmentEditModal({
                     </select>
                   </div>
 
-                  {/* Option to type custom skill if needed */}
+                  {/* option to type custom skill if needed */}
                   <div className="flex items-center gap-1.5">
                     <Input
                       value={customSkillInput}
@@ -794,7 +794,7 @@ export function AssessmentEditModal({
                   </div>
                 </div>
 
-                {/* Selected Skill Badges with (x) remove button */}
+                {/* selected skill badges with (x) remove button */}
                 <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg border border-border/70 bg-muted/20 min-h-[38px]">
                   {selectedSkills.length === 0 ? (
                     <span className="text-[11px] text-muted-foreground italic">
@@ -823,7 +823,7 @@ export function AssessmentEditModal({
             </div>
           )}
 
-          {/* ================= STEP 2: CODING QUESTIONS ================= */}
+          {/* ================= step : coding questions ================= */}
           {currentStep === 2 && (
             <div className="space-y-4 animate-in fade-in slide-in-from-right-3 duration-200">
               <div className="border-b border-border/50 pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -858,7 +858,7 @@ export function AssessmentEditModal({
                 </div>
               </div>
 
-              {/* Inline Question Authoring Form */}
+              {/* inline question authoring form */}
               {isInlineAddingQ && (
                 <div className="p-4 rounded-xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-background to-card shadow-lg space-y-3 animate-in fade-in zoom-in-95 duration-200">
                   <div className="flex items-center justify-between border-b border-border/60 pb-2">
@@ -962,7 +962,7 @@ export function AssessmentEditModal({
                 </div>
               )}
 
-              {/* Questions Grid with rich hover and selection states */}
+              {/* questions grid with rich hover and selection states */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[360px] overflow-y-auto pr-1">
                 {availableQuestions.map((q) => {
                   const isSelected = selectedQuestionIds.includes(q.id);
@@ -976,7 +976,7 @@ export function AssessmentEditModal({
                           : "bg-card/70 border-border/80 hover:border-primary/50 hover:bg-card hover:shadow-md hover:scale-[1.01]"
                       }`}
                     >
-                      {/* Checkbox indicator */}
+                      {/* checkbox indicator */}
                       <div
                         className={`mt-0.5 size-4.5 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
@@ -1026,7 +1026,7 @@ export function AssessmentEditModal({
             </div>
           )}
 
-          {/* ================= STEP 3: SETTINGS & PUBLISH ================= */}
+          {/* ================= step : settings & publish ================= */}
           {currentStep === 3 && (
             <div className="space-y-5 animate-in fade-in slide-in-from-right-3 duration-200">
               <div className="border-b border-border/50 pb-3">
@@ -1039,7 +1039,7 @@ export function AssessmentEditModal({
                 </p>
               </div>
 
-              {/* Pass Marks, Total Marks, Difficulty, Status */}
+              {/* pass marks, total marks, difficulty, status */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl border border-border/80 bg-background/60 space-y-3">
                   <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
@@ -1117,7 +1117,7 @@ export function AssessmentEditModal({
                 </div>
               </div>
 
-              {/* 🎯 Real-Time Challenge Card Preview */}
+              {/* 🎯 real-time challenge card preview */}
               <div className="p-4 rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-background space-y-3 shadow-md">
                 <div className="flex items-center justify-between border-b border-border/60 pb-2">
                   <div className="flex items-center gap-2">
@@ -1161,7 +1161,7 @@ export function AssessmentEditModal({
             </div>
           )}
 
-          {/* Wizard Navigation Footer */}
+          {/* wizard navigation footer */}
           <div className="flex items-center justify-between pt-5 mt-4 border-t border-border/80">
             {currentStep > 1 ? (
               <Button

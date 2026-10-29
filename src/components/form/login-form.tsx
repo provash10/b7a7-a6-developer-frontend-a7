@@ -196,7 +196,7 @@ export default function LoginForm() {
         window.location.href = redirectUrl;
       },
       onError: (_err) => {
-        // Fallback for offline demo evaluations
+        // fallback for offline demo evaluations
         setActiveSession(demo.email, effectiveRole, demo.role);
         const redirectUrl =
           effectiveRole === "ADMIN"
@@ -218,7 +218,7 @@ export default function LoginForm() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Header based on project requirements */}
+      {/* header based on project requirements */}
       <div className="flex flex-col items-center gap-2 text-center">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold">
           <Sparkles className="size-3.5 animate-pulse" />
@@ -232,7 +232,7 @@ export default function LoginForm() {
         </p>
       </div>
 
-      {/* Main Standard Form with @tanstack/react-form */}
+      {/* main standard form with @tanstack/react-form */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -242,7 +242,7 @@ export default function LoginForm() {
         className="flex flex-col gap-4"
       >
         <FieldGroup>
-          {/* Email Field */}
+          {/* email field */}
           <form.Field name="email">
             {(field) => {
               const isInvalid =
@@ -271,7 +271,7 @@ export default function LoginForm() {
             }}
           </form.Field>
 
-          {/* Password Field */}
+          {/* password field */}
           <form.Field name="password">
             {(field) => {
               const isInvalid =
@@ -315,7 +315,7 @@ export default function LoginForm() {
             }}
           </form.Field>
 
-          {/* Submit Button */}
+          {/* submit button */}
           <Button
             disabled={loginPending}
             type="submit"
@@ -336,14 +336,14 @@ export default function LoginForm() {
         </FieldGroup>
       </form>
 
-      {/* Divider */}
+      {/* divider */}
       <div className="relative my-1 text-center text-xs uppercase after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
         <span className="relative z-10 bg-background px-3 font-semibold text-muted-foreground tracking-wider">
           ─── OR ───
         </span>
       </div>
 
-      {/* MANDATORY REQUIREMENT: One-Click Quick Demo Login Section */}
+      {/* mandatory requirement: one-click quick demo login section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
@@ -357,7 +357,7 @@ export default function LoginForm() {
           </Badge>
         </div>
 
-        {/* 3 Role Demo Cards based on project requirements diagram */}
+        {/* role demo cards based on project requirements diagram */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {DEMO_ROLES.map((demo) => {
             const isThisLoading = loginPending && activeDemoRole === demo.role;
@@ -403,7 +403,7 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {/* Sign Up Redirect */}
+      {/* sign up redirect */}
       <div className="pt-1 text-center text-xs text-muted-foreground border-t border-border/40 flex items-center justify-center gap-1">
         <span>Don&apos;t have an account?</span>
         <Link

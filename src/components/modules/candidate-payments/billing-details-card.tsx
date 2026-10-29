@@ -36,7 +36,7 @@ export function BillingDetailsCard() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* 1. payment methods on file */}
+      {/* payment methods on file */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardHeader className="pb-3 border-b border-border/50">
           <div className="flex items-center justify-between">
@@ -108,7 +108,7 @@ export function BillingDetailsCard() {
         </CardContent>
       </Card>
 
-      {/* 2. invoice & tax receipt recipient */}
+      {/* invoice & tax receipt recipient */}
       <Card className="border-border/80 bg-card shadow-xs">
         <CardHeader className="pb-3 border-b border-border/50">
           <div className="flex items-center gap-2 text-primary font-semibold text-xs uppercase tracking-wider">

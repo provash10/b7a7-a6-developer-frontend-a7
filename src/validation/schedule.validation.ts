@@ -1,7 +1,7 @@
 import z from "zod";
 
-//* startTime => 10:45
-//* endTime => 10:50
+// * starttime => :
+// * endtime => :
 
 const MINIMUM_SLOT_MINUTE = 20;
 

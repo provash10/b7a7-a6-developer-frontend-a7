@@ -76,7 +76,7 @@ export default function AdminManagePage() {
         </div>
       </div>
 
-      {/* admin manage view container wrapped in Suspense for searchParams */}
+      {/* admin manage view container wrapped in suspense for searchparams */}
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">

@@ -4,7 +4,7 @@ export interface ActiveSession {
   role: "ADMIN" | "RECRUITER" | "CANDIDATE";
 }
 
-// Create a client-side mock JWT for when backend is offline or for demo evaluations
+// create a client-side mock jwt for when backend is offline or for demo evaluations
 export function createMockJwt(
   email: string,
   role: string,
@@ -99,7 +99,7 @@ export function clearActiveSession() {
   document.cookie = `role=; ${expire}`;
   document.cookie = `userEmail=; ${expire}`;
 
-  // Clear any role_* cookies
+  // clear any role_* cookies
   try {
     const cookies = document.cookie.split(";");
     for (const c of cookies) {
@@ -123,7 +123,7 @@ export function getEffectiveRole(
 ): "ADMIN" | "RECRUITER" | "CANDIDATE" {
   if (typeof window === "undefined") return "CANDIDATE";
 
-  // 1. Highest priority: Live database profile role from backend API
+  // highest priority: live database profile role from backend api
   if (profileRole) {
     const r = profileRole.toUpperCase();
     if (r === "ADMIN" || r === "RECRUITER" || r === "CANDIDATE") {
@@ -134,7 +134,7 @@ export function getEffectiveRole(
   const email = (userEmail || getActiveUserEmail()).toLowerCase().trim();
   const cleanEmail = email ? email.replace(/[@.]/g, "_") : "";
 
-  // 2. Email-specific cookie set by Admin
+  // email-specific cookie set by admin
   if (cleanEmail) {
     try {
       const match = document.cookie.match(
@@ -146,7 +146,7 @@ export function getEffectiveRole(
     } catch {}
   }
 
-  // 3. Check custom users in localStorage
+  // check custom users in localstorage
   try {
     const stored = localStorage.getItem("devassess_custom_users");
     if (stored) {
@@ -163,7 +163,7 @@ export function getEffectiveRole(
     }
   } catch {}
 
-  // 4. Check general userRole cookie
+  // check general userrole cookie
   try {
     const match = document.cookie.match(/(?:^|; )userRole=([^;]*)/);
     if (match && match[1]) {

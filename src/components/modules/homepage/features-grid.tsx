@@ -69,7 +69,7 @@ export function FeaturesGrid() {
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Heading */}
+        {/* section heading */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
             <Zap className="size-3.5" />
@@ -83,7 +83,7 @@ export function FeaturesGrid() {
           </p>
         </div>
 
-        {/* Feature Cards Grid */}
+        {/* feature cards grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {features.map((feature, idx) => {
             const Icon = feature.icon;

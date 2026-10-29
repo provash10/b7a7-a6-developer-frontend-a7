@@ -33,10 +33,10 @@ export default function ServicesPage() {
       {/* live interactive sandbox / candidate test environment simulator */}
       <CodeAssessmentSandbox />
 
-      {/* 5-step recruiter to candidate assessment lifecycle */}
+      {/* -step recruiter to candidate assessment lifecycle */}
       <AssessmentWorkflow />
 
-      {/* overview of 3 platform pillars: code assessment, live interview, ai scoring */}
+      {/* overview of platform pillars: code assessment, live interview, ai scoring */}
       <ServicesOverview />
 
       {/* service faqs */}

@@ -55,7 +55,7 @@ export default function Header() {
     };
   }, [user]);
 
-  // Close mobile menu on route change
+  // close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
@@ -148,7 +148,7 @@ export default function Header() {
   return (
     <header className="w-full h-18 border-b border-border/80 bg-background/90 backdrop-blur-md sticky top-0 z-50 transition-all">
       <div className="flex justify-between items-center h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Brand Logo */}
+        {/* brand logo */}
         <Link
           href="/"
           className="flex items-center gap-2.5 font-heading font-extrabold text-xl text-foreground hover:opacity-90 transition-opacity"
@@ -161,7 +161,7 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Desktop Navigation (>= 768px) */}
+        {/* desktop navigation (>= px) */}
         <nav className="hidden md:flex items-center gap-1.5 p-1 rounded-xl bg-muted/40 border border-border/40">
           {routes.map((route) => {
             const isActive =
@@ -185,10 +185,10 @@ export default function Header() {
           })}
         </nav>
 
-        {/* Desktop Action Buttons (>= 768px) */}
+        {/* desktop action buttons (>= px) */}
         {isLoggedIn ? (
           <div className="hidden md:flex items-center gap-2.5">
-            {/* Dashboard Link */}
+            {/* dashboard link */}
             <Link href={dashboardHref}>
               <Button
                 variant="outline"
@@ -200,7 +200,7 @@ export default function Header() {
               </Button>
             </Link>
 
-            {/* User Mini Avatar & Name */}
+            {/* user mini avatar & name */}
             <Link
               href={dashboardHref}
               className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-muted/50 border border-border/60 hover:bg-muted/80 transition-colors"
@@ -219,7 +219,7 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* Logout Button */}
+            {/* logout button */}
             <Button
               variant="ghost"
               size="sm"
@@ -263,9 +263,9 @@ export default function Header() {
           </div>
         )}
 
-        {/* Mobile & Tablet Quick Bar + Menu Toggle (< 768px) */}
+        {/* mobile & tablet quick bar + menu toggle (< px) */}
         <div className="flex md:hidden items-center gap-2">
-          {/* Quick mobile portal button when logged in */}
+          {/* quick mobile portal button when logged in */}
           {isLoggedIn ? (
             <Link href={dashboardHref}>
               <Button
@@ -290,7 +290,7 @@ export default function Header() {
             </Link>
           )}
 
-          {/* Hamburger toggle button */}
+          {/* hamburger toggle button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -306,10 +306,10 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile & Tablet Drawer Menu (< 768px) */}
+      {/* mobile & tablet drawer menu (< px) */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b border-border bg-background/95 backdrop-blur-xl px-4 pt-3 pb-6 space-y-2 animate-in fade-in-50 slide-in-from-top-2 duration-200 shadow-xl">
-          {/* Navigation Links */}
+          {/* navigation links */}
           <div className="space-y-1">
             {routes.map((route) => {
               const isActive =
@@ -334,10 +334,10 @@ export default function Header() {
             })}
           </div>
 
-          {/* Auth Section */}
+          {/* auth section */}
           {isLoggedIn ? (
             <div className="pt-3 border-t border-border flex flex-col gap-2.5">
-              {/* User Profile Card */}
+              {/* user profile card */}
               <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/40 border border-border/60">
                 <div className="size-9 rounded-full bg-primary/20 text-primary font-bold text-xs flex items-center justify-center shrink-0">
                   {userInitials}
@@ -352,7 +352,7 @@ export default function Header() {
                 </div>
               </div>
 
-              {/* Go to Dashboard CTA */}
+              {/* go to dashboard cta */}
               <Link
                 href={dashboardHref}
                 onClick={() => setMobileMenuOpen(false)}
@@ -364,7 +364,7 @@ export default function Header() {
                 </Button>
               </Link>
 
-              {/* Logout Button */}
+              {/* logout button */}
               <Button
                 variant="outline"
                 onClick={() => {

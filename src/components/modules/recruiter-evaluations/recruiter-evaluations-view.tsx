@@ -36,33 +36,54 @@ export function RecruiterEvaluationsView() {
   const [isCreateAssessmentOpen, setIsCreateAssessmentOpen] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("devassess_candidate_submissions");
-      if (stored) {
-        const live: EvaluationTask[] = JSON.parse(stored);
-        if (live.length > 0) {
-          setTasks([...live, ...initialEvaluationTasks]);
+    const loadTasksFromStorage = () => {
+      try {
+        const stored = localStorage.getItem("devassess_candidate_submissions");
+        if (stored) {
+          const live: EvaluationTask[] = JSON.parse(stored);
+          if (Array.isArray(live)) {
+            const uniqueMap = new Map<string, EvaluationTask>();
+            live.forEach((item) => uniqueMap.set(item.id, item));
+            setTasks(Array.from(uniqueMap.values()));
+            return;
+          }
         }
+        // first initialization
+        localStorage.setItem("devassess_candidate_submissions", JSON.stringify(initialEvaluationTasks));
+        setTasks(initialEvaluationTasks);
+      } catch {
+        // ignore
       }
-    } catch (e) {
-      // ignore
-    }
+    };
+
+    loadTasksFromStorage();
 
     const handleStorageUpdate = () => {
       refetchProfile();
+      loadTasksFromStorage();
     };
 
     window.addEventListener("storage", handleStorageUpdate);
     window.addEventListener("devassess_invitations_update", handleStorageUpdate);
+    window.addEventListener("devassess_submission_update", handleStorageUpdate);
 
     return () => {
       window.removeEventListener("storage", handleStorageUpdate);
       window.removeEventListener("devassess_invitations_update", handleStorageUpdate);
+      window.removeEventListener("devassess_submission_update", handleStorageUpdate);
     };
   }, [refetchProfile]);
 
   const handleInvitationSent = (newTask: EvaluationTask) => {
-    setTasks((prev) => [newTask, ...prev]);
+    setTasks((prev) => {
+      const updated = [newTask, ...prev.filter((t) => t.id !== newTask.id)];
+      try {
+        localStorage.setItem("devassess_candidate_submissions", JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
     queryClient.invalidateQueries({ queryKey: ["user"] });
     refetchProfile();
   };
@@ -80,7 +101,7 @@ export function RecruiterEvaluationsView() {
 
   return (
     <div className="space-y-6">
-      {/* bKash credit recharge banner */}
+      {/* bkash credit recharge banner */}
       <div className="relative overflow-hidden rounded-2xl border border-pink-500/30 bg-gradient-to-r from-pink-500/15 via-pink-500/10 to-pink-500/5 hover:from-pink-500/20 hover:via-pink-500/15 hover:to-pink-500/10 hover:border-pink-500/50 hover:shadow-lg hover:shadow-pink-500/10 transition-all duration-300 p-5 sm:p-6 group/banner">
         {/* ambient background glows */}
         <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-pink-500/20 blur-3xl transition-opacity group-hover/banner:opacity-100 opacity-60" />
@@ -111,7 +132,7 @@ export function RecruiterEvaluationsView() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 self-stretch sm:self-auto">
-            {/* Question Bank Catalog Button for Recruiters */}
+            {/* question bank catalog button for recruiters */}
             <Button
               type="button"
               variant="outline"
@@ -200,7 +221,7 @@ export function RecruiterEvaluationsView() {
         onClose={() => setIsQuestionModalOpen(false)}
       />
 
-      {/* 🚀 3-Step Create Assessment Wizard */}
+      {/* 🚀 -step create assessment wizard */}
       <AssessmentEditModal
         isOpen={isCreateAssessmentOpen}
         onClose={() => setIsCreateAssessmentOpen(false)}

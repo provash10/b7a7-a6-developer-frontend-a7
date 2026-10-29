@@ -28,7 +28,7 @@ export function PaymentCancelCard() {
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
-      {/* 1. warning / cancellation banner */}
+      {/* warning / cancellation banner */}
       <div className="relative overflow-hidden rounded-3xl border border-destructive/30 bg-gradient-to-b from-destructive/10 via-destructive/5 to-transparent p-6 sm:p-10 text-center shadow-xl">
         <div className="absolute -top-16 -right-16 size-48 rounded-full bg-destructive/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 size-48 rounded-full bg-pink-500/10 blur-3xl pointer-events-none" />
@@ -69,7 +69,7 @@ export function PaymentCancelCard() {
         )}
       </div>
 
-      {/* 2. troubleshooting & next steps card */}
+      {/* troubleshooting & next steps card */}
       <div className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-lg space-y-5">
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
           <Sparkles className="size-4 text-primary" />

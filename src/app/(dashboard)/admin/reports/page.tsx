@@ -89,7 +89,7 @@ export default function AdminReportsPage() {
         </div>
       </div>
 
-      {/* admin reports view coordinator wrapped in Suspense */}
+      {/* admin reports view coordinator wrapped in suspense */}
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">

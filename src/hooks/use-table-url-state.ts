@@ -8,7 +8,7 @@ export function useTableUrlState() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Create query string with updated parameters
+  // create query string with updated parameters
   const createQueryString = useCallback(
     (paramsToUpdate: Record<string, string | number | null | undefined>) => {
       const current = new URLSearchParams(Array.from(searchParams.entries()));
@@ -27,7 +27,7 @@ export function useTableUrlState() {
     [searchParams],
   );
 
-  // Update URL in place without page jump or full reload
+  // update url in place without page jump or full reload
   const updateUrl = useCallback(
     (paramsToUpdate: Record<string, string | number | null | undefined>) => {
       const query = createQueryString(paramsToUpdate);

@@ -124,7 +124,7 @@ export default function ContactForm() {
             className="flex flex-col gap-4"
           >
             <FieldGroup className="gap-4">
-              {/* row 1: name and email */}
+              {/* row : name and email */}
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* full name */}
                 <form.Field name="name">
@@ -186,7 +186,7 @@ export default function ContactForm() {
                 </form.Field>
               </div>
 
-              {/* row 2: category and subject */}
+              {/* row : category and subject */}
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* inquiry category */}
                 <form.Field name="category">

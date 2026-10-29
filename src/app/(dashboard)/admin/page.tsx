@@ -81,10 +81,10 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* 1. kpi stats overview */}
+      {/* kpi stats overview */}
       <AdminStatsOverview />
 
-      {/* 2. visual charts: user growth + verdict donut */}
+      {/* visual charts: user growth + verdict donut */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2">
           <UserGrowthChart />
@@ -94,13 +94,13 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* 3. assessment domain & status volume chart */}
+      {/* assessment domain & status volume chart */}
       <AssessmentStatusChart />
 
-      {/* 4. live candidate submissions stream */}
+      {/* live candidate submissions stream */}
       <RecentSubmissionsTable />
 
-      {/* 5. infrastructure & judge engine telemetry */}
+      {/* infrastructure & judge engine telemetry */}
       <SystemHealthCard />
     </div>
   );

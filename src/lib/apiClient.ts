@@ -6,13 +6,13 @@ const BASE_URL = rawBaseUrl.trim().replace(/[\r\n\t]+/g, "").replace(/\/+$/, "")
 const apiClient = ofetch.create({
   baseURL: BASE_URL,
   credentials: "include",
-  timeout: 120000, // 2 minutes
+  timeout: 120000, // minutes
   retry: 0,
   onRequest({ options }: { options: any }) {
     if (typeof window !== "undefined") {
       let token = localStorage.getItem("devassess_token");
 
-      // Ignore mock tokens when talking to real backend
+      // ignore mock tokens when talking to real backend
       if (token && (token.includes(".mocksignature") || token.includes("mock.token"))) {
         token = null;
       }

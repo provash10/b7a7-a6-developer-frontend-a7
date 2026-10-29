@@ -93,7 +93,7 @@ export default function ServicesOverview() {
           </p>
         </div>
 
-        {/* services 3-column grid */}
+        {/* services -column grid */}
         <div className="mt-14 grid gap-8 lg:grid-cols-3">
           {allServices.map((service) => {
             const Icon = service.icon;

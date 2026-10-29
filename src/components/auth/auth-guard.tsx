@@ -16,12 +16,12 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
 
     if (activeEmail && user?.role) {
       const role = getEffectiveRole(activeEmail, user.role);
-      // Sync cookie without triggering page reload loops
+      // sync cookie without triggering page reload loops
       document.cookie = `userRole=${role}; path=/; max-age=31536000;`;
     }
   }, [user]);
 
-  // Route protection is securely handled by Next.js middleware.ts.
-  // Rendering children directly prevents infinite reload loops and eliminates UI freezing.
+  // route protection is securely handled by next.js middleware.ts.
+  // rendering children directly prevents infinite reload loops and eliminates ui freezing.
   return <>{children}</>;
 }

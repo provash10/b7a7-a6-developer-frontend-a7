@@ -23,9 +23,9 @@ export function AdminManageView() {
 
   return (
     <div className="space-y-6">
-      {/* Large, prominent tab switcher cards with rich background & hover effects */}
+      {/* large, prominent tab switcher cards with rich background & hover effects */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-6xl">
-        {/* Tab 1: Users & Permissions */}
+        {/* tab : users & permissions */}
         <button
           type="button"
           onClick={() => handleTabChange("users")}
@@ -84,7 +84,7 @@ export function AdminManageView() {
           </div>
         </button>
 
-        {/* Tab 2: Assessment Challenges */}
+        {/* tab : assessment challenges */}
         <button
           type="button"
           onClick={() => handleTabChange("assessments")}
@@ -143,7 +143,7 @@ export function AdminManageView() {
           </div>
         </button>
 
-        {/* Tab 3: Question Bank & Catalog */}
+        {/* tab : question bank & catalog */}
         <button
           type="button"
           onClick={() => handleTabChange("questions")}
@@ -203,7 +203,7 @@ export function AdminManageView() {
         </button>
       </div>
 
-      {/* Active Tab Content */}
+      {/* active tab content */}
       <div className="pt-2">
         {activeTab === "users" && <ManageUsersTable />}
         {activeTab === "assessments" && <ManageAssessmentsTable />}

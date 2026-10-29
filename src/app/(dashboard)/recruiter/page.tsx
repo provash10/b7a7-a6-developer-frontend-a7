@@ -103,7 +103,7 @@ export default function RecruiterEvaluationsPage() {
         </div>
       </div>
 
-      {/* recruiter evaluations coordinator wrapped in Suspense */}
+      {/* recruiter evaluations coordinator wrapped in suspense */}
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">

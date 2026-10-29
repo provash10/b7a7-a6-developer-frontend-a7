@@ -97,7 +97,7 @@ export default function RegisterForm() {
       const candidateName = value.name.trim();
       const candidateEmail = value.email.trim();
 
-      // Immediately cache new candidate so it is 100% available in dropdown instantly
+      // immediately cache new candidate so it is % available in dropdown instantly
       const saveCandidateLocally = () => {
         try {
           const storedSaved = JSON.parse(
@@ -150,7 +150,7 @@ export default function RegisterForm() {
         } catch {}
       };
 
-      // Save immediately
+      // save immediately
       saveCandidateLocally();
 
       const payload = {
@@ -171,7 +171,7 @@ export default function RegisterForm() {
           const serverName =
             res?.data?.user?.name || res?.data?.name || res?.name || candidateName;
 
-          // Automatically log the new candidate in and establish active session
+          // automatically log the new candidate in and establish active session
           setActiveSession(candidateEmail, serverRole, serverName, token);
 
           toast.add({
@@ -216,7 +216,7 @@ export default function RegisterForm() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Header matching login form aesthetics */}
+      {/* header matching login form aesthetics */}
       <div className="flex flex-col items-center gap-2 text-center">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/20 bg-primary/10 text-primary text-xs font-semibold">
           <Sparkles className="size-3.5 animate-pulse" />
@@ -230,7 +230,7 @@ export default function RegisterForm() {
         </p>
       </div>
 
-      {/* Main Registration Form with @tanstack/react-form */}
+      {/* main registration form with @tanstack/react-form */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -240,7 +240,7 @@ export default function RegisterForm() {
         className="flex flex-col gap-4"
       >
         <FieldGroup>
-          {/* Full Name Field */}
+          {/* full name field */}
           <form.Field name="name">
             {(field) => {
               const isInvalid =
@@ -269,7 +269,7 @@ export default function RegisterForm() {
             }}
           </form.Field>
 
-          {/* Email Field */}
+          {/* email field */}
           <form.Field name="email">
             {(field) => {
               const isInvalid =
@@ -298,7 +298,7 @@ export default function RegisterForm() {
             }}
           </form.Field>
 
-          {/* Phone Number Field */}
+          {/* phone number field */}
           <form.Field name="contactNumber">
             {(field) => {
               const isInvalid =
@@ -332,7 +332,7 @@ export default function RegisterForm() {
             }}
           </form.Field>
 
-          {/* Password Field */}
+          {/* password field */}
           <form.Field name="password">
             {(field) => {
               const isInvalid =
@@ -376,7 +376,7 @@ export default function RegisterForm() {
             }}
           </form.Field>
 
-          {/* Confirm Password Field */}
+          {/* confirm password field */}
           <form.Field name="confirmPassword">
             {(field) => {
               const isInvalid =
@@ -420,7 +420,7 @@ export default function RegisterForm() {
             }}
           </form.Field>
 
-          {/* Password Helper Guidelines */}
+          {/* password helper guidelines */}
           <div className="rounded-lg bg-muted/50 p-2.5 text-[11px] text-muted-foreground space-y-1 border border-border/50">
             <span className="font-semibold text-foreground block">
               Password Requirements:
@@ -431,7 +431,7 @@ export default function RegisterForm() {
             </ul>
           </div>
 
-          {/* Submit Button */}
+          {/* submit button */}
           <Button
             disabled={registerPending}
             type="submit"
@@ -452,14 +452,14 @@ export default function RegisterForm() {
         </FieldGroup>
       </form>
 
-      {/* Divider */}
+      {/* divider */}
       <div className="relative my-1 text-center text-xs uppercase after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
         <span className="relative z-10 bg-background px-3 font-semibold text-muted-foreground tracking-wider">
           ─── OR ───
         </span>
       </div>
 
-      {/* Quick Fill Demo Data Section */}
+      {/* quick fill demo data section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
@@ -473,7 +473,7 @@ export default function RegisterForm() {
           </Badge>
         </div>
 
-        {/* Demo Fill Cards */}
+        {/* demo fill cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {DEMO_ACCOUNTS.map((demo) => (
             <div
@@ -510,7 +510,7 @@ export default function RegisterForm() {
         </div>
       </div>
 
-      {/* Login Redirect */}
+      {/* login redirect */}
       <div className="pt-1 text-center text-xs text-muted-foreground border-t border-border/40 flex items-center justify-center gap-1">
         <span>Already have an account?</span>
         <Link
