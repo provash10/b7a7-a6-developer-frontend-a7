@@ -1,4 +1,4 @@
-import { ChevronRight, FileDown, Home, RefreshCw, Shield } from "lucide-react";
+import { ChevronRight, FileDown, FilePlus, Home, RefreshCw, Shield } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -64,6 +64,12 @@ export default function AdminOverviewPage() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link href="/admin/manage?tab=assessments">
+            <Button size="xs" className="gap-1.5 text-xs bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow-xs cursor-pointer">
+              <FilePlus className="size-3.5" />
+              <span>+ Create Assessment</span>
+            </Button>
+          </Link>
           <Button variant="outline" size="xs" className="gap-1.5 text-xs">
             <FileDown className="size-3.5 text-primary" />
             <span>export report</span>

@@ -1,15 +1,18 @@
 "use client";
 
-import { Code2, HelpCircle, Mail, Sparkles, X, Zap } from "lucide-react";
+import { Code2, FilePlus, HelpCircle, Mail, Sparkles, X, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetMyProfile } from "@/hooks";
 import {
+  AssessmentEditModal,
   ManageQuestionsTable,
   QuestionCreateModal,
+  type ManagedAssessment,
 } from "@/components/modules/admin-manage";
 import { BuyCreditsModal } from "@/components/modules/payment";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { EvaluationTasksTable } from "./evaluation-tasks-table";
 import { initialEvaluationTasks } from "./mock-data";
 import { RecruiterQuickStats } from "./recruiter-quick-stats";
@@ -30,6 +33,7 @@ export function RecruiterEvaluationsView() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
   const [isQuestionBankOpen, setIsQuestionBankOpen] = useState(false);
+  const [isCreateAssessmentOpen, setIsCreateAssessmentOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -120,6 +124,15 @@ export function RecruiterEvaluationsView() {
 
             <Button
               type="button"
+              onClick={() => setIsCreateAssessmentOpen(true)}
+              className="gap-2 h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md hover:shadow-lg hover:shadow-emerald-500/25 hover:scale-[1.02] active:scale-[0.98] rounded-xl transition-all duration-200 cursor-pointer"
+            >
+              <FilePlus className="size-4 shrink-0" />
+              <span>+ Create Assessment</span>
+            </Button>
+
+            <Button
+              type="button"
               variant="outline"
               onClick={() => setIsQuestionModalOpen(true)}
               className="gap-2 h-10 px-4 border-primary/40 text-primary hover:bg-primary/10 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer shadow-xs"
@@ -185,6 +198,21 @@ export function RecruiterEvaluationsView() {
       <QuestionCreateModal
         isOpen={isQuestionModalOpen}
         onClose={() => setIsQuestionModalOpen(false)}
+      />
+
+      {/* 🚀 3-Step Create Assessment Wizard */}
+      <AssessmentEditModal
+        isOpen={isCreateAssessmentOpen}
+        onClose={() => setIsCreateAssessmentOpen(false)}
+        assessment={null}
+        onSave={(newAsst: ManagedAssessment) => {
+          toast.add({
+            title: "Assessment Created Successfully! 🚀",
+            description: `"${newAsst.title}" has been published and is ready for candidates.`,
+            type: "success",
+          });
+          queryClient.invalidateQueries({ queryKey: ["assessments"] });
+        }}
       />
 
       {/* recruiter question bank & catalog modal */}
