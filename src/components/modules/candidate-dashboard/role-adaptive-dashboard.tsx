@@ -1041,35 +1041,49 @@ export function RoleAdaptiveDashboard() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
               {hasCompletedActiveExam ? (
-                <Button
-                  variant="outline"
-                  className={`w-full sm:w-auto font-bold gap-2 text-xs h-10 px-5 rounded-xl shadow-xs transition-all ${
-                    latestVerdictStatus === "ACCEPTED" || isAccepted
-                      ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 shadow-emerald-500/10"
-                      : latestVerdictStatus === "REJECTED"
-                        ? "border-rose-500/50 bg-rose-500/15 text-rose-700 dark:text-rose-300 hover:bg-rose-500/25 shadow-rose-500/10"
-                        : "border-blue-500/50 bg-blue-500/15 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25 shadow-blue-500/10 font-bold ring-1 ring-blue-500/30"
-                  }`}
-                >
-                  {latestVerdictStatus === "ACCEPTED" || isAccepted ? (
-                    <>
-                      <CheckCircle2 className="size-4 text-emerald-500" />
-                      <span>Candidate Accepted ✓</span>
-                    </>
-                  ) : latestVerdictStatus === "REJECTED" ? (
-                    <>
-                      <XCircle className="size-4 text-rose-500" />
-                      <span>Decision: Declined</span>
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="size-4 text-blue-500 animate-pulse" />
-                      <span>Under Recruiter Review ⏳</span>
-                    </>
+                <>
+                  <Button
+                    variant="outline"
+                    className={`w-full sm:w-auto font-bold gap-2 text-xs h-10 px-5 rounded-xl shadow-xs transition-all ${
+                      latestVerdictStatus === "ACCEPTED" || isAccepted
+                        ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25 shadow-emerald-500/10"
+                        : latestVerdictStatus === "REJECTED"
+                          ? "border-rose-500/50 bg-rose-500/15 text-rose-700 dark:text-rose-300 hover:bg-rose-500/25 shadow-rose-500/10"
+                          : "border-blue-500/50 bg-blue-500/15 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25 shadow-blue-500/10 font-bold ring-1 ring-blue-500/30"
+                    }`}
+                  >
+                    {latestVerdictStatus === "ACCEPTED" || isAccepted ? (
+                      <>
+                        <CheckCircle2 className="size-4 text-emerald-500" />
+                        <span>Candidate Accepted ✓</span>
+                      </>
+                    ) : latestVerdictStatus === "REJECTED" ? (
+                      <>
+                        <XCircle className="size-4 text-rose-500" />
+                        <span>Decision: Declined</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="size-4 text-blue-500 animate-pulse" />
+                        <span>Under Recruiter Review ⏳</span>
+                      </>
+                    )}
+                  </Button>
+
+                  {(latestVerdictStatus === "ACCEPTED" || isAccepted) && (
+                    <Link href="/dashboard/payments">
+                      <Button
+                        variant="default"
+                        className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold gap-2 text-xs h-10 px-4 rounded-xl shadow-md shadow-emerald-500/20 cursor-pointer"
+                      >
+                        <Award className="size-3.5" />
+                        <span>Download Badge & Report</span>
+                      </Button>
+                    </Link>
                   )}
-                </Button>
+                </>
               ) : (
                 <Link
                   href={
