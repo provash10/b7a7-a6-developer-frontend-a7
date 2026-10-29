@@ -5,6 +5,7 @@ import {
   Award,
   Calendar,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Clock,
   FileCode,
@@ -38,6 +39,7 @@ import { RecruiterEvaluationsView } from "@/components/modules/recruiter-evaluat
 import { AdminManageView } from "@/components/modules/admin-manage";
 import { getCandidateInvitations, getMyAttempts } from "@/api/assessment.api";
 import { getActiveUserEmail, getEffectiveRole } from "@/lib/session";
+import { cn } from "@/lib/utils";
 
 const CANDIDATE_STATS = [
   {
@@ -153,6 +155,15 @@ export function RoleAdaptiveDashboard() {
 
   const [myAssessments, setMyAssessments] = useState<CandidateAssessmentItem[]>(RECENT_ASSESSMENTS);
   const [activeInvitation, setActiveInvitation] = useState(ACTIVE_ASSESSMENT);
+  const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
+  const [expandedInviteIds, setExpandedInviteIds] = useState<Record<string, boolean>>({});
+
+  const toggleInviteExpand = (id: string) => {
+    setExpandedInviteIds((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
   const [activeInviteToken, setActiveInviteToken] = useState<string | null>(null);
   const [activeAssessmentId, setActiveAssessmentId] = useState<string>("asst-01");
   const [hasCompletedActiveExam, setHasCompletedActiveExam] = useState(false);
@@ -372,133 +383,143 @@ export function RoleAdaptiveDashboard() {
         all.length > 0 ? (totalScore / all.length).toFixed(1) : "91.3";
       setAvgScore(calculatedAvg);
 
-      // check active recruiter invitation for this candidate
-      let foundPendingInvitation = false;
+      // collect all active pending invitations
+      const allPendingInvites: any[] = [];
+      const seenInviteKeys = new Set<string>();
 
-      // try checking live invitations directly from postgresql backend api (/invitations/my) first
       try {
         const res = await getCandidateInvitations();
-        if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-          const pendingLive =
-            res.data.find((inv: any) => inv.status === "PENDING") ||
-            res.data[0];
-          if (pendingLive) {
-            const isPending = pendingLive.status === "PENDING";
-            const liveTitle = pendingLive.assessment?.title;
-            const finalTitle = liveTitle || "Junior React Nextjs Dev";
-            const finalDuration = `${pendingLive.assessment?.durationMinutes || 45} Minutes`;
-            const finalSkills =
-              Array.isArray(pendingLive.assessment?.skills) && pendingLive.assessment.skills.length > 0
-                ? pendingLive.assessment.skills
-                : ["Next.js", "React", "TypeScript", "Tailwind CSS"];
+        const liveList = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray((res as any)?.data?.data)
+            ? (res as any).data.data
+            : [];
 
-            setActiveInvitation({
-              title: finalTitle,
-              company:
-                pendingLive.assessment?.recruiter?.companyName ||
-                "Recruiter Assessment Console",
-              duration: finalDuration,
-              difficulty:
-                pendingLive.assessment?.difficulty || "Intermediate",
-              deadline: `Expires: ${new Date(pendingLive.expiresAt).toLocaleDateString()}`,
-              description:
-                pendingLive.assessment?.description ||
-                "Solve real-world frontend and full-stack challenges within the allotted time. Passing score required for certification.",
-              skills: finalSkills,
-            });
-            setActiveInviteToken(
-              pendingLive.inviteToken || pendingLive.token || null,
-            );
-            setActiveAssessmentId(pendingLive.assessmentId || pendingLive.assessment?.id || "asst-04");
-
-            if (isPending && !dbHasCompleted && !hasCompleted) {
-              foundPendingInvitation = true;
-              setActiveChallengesCount(1);
-              setHasCompletedActiveExam(false);
-              setIsAccepted(false);
-              return;
+        if (liveList.length > 0) {
+          liveList.forEach((inv: any) => {
+            if (inv.status === "PENDING") {
+              const liveTitle = inv.assessment?.title || "Next.js Assessment Challenge";
+              const key = `${liveTitle.toLowerCase().trim()}_${inv.assessmentId || inv.assessment?.id || ""}`;
+              if (!seenInviteKeys.has(key)) {
+                seenInviteKeys.add(key);
+                allPendingInvites.push({
+                  id: inv.id,
+                  title: liveTitle,
+                  company: inv.assessment?.recruiter?.companyName || "Recruiter Assessment Console",
+                  duration: `${inv.assessment?.durationMinutes || 45} Minutes`,
+                  difficulty: inv.assessment?.difficulty || "Intermediate",
+                  deadline: `Expires: ${new Date(inv.expiresAt).toLocaleDateString()}`,
+                  description:
+                    inv.assessment?.description ||
+                    "Solve real-world frontend and full-stack challenges within the allotted time. Passing score required for certification.",
+                  skills:
+                    Array.isArray(inv.assessment?.skills) && inv.assessment.skills.length > 0
+                      ? inv.assessment.skills
+                      : ["Next.js", "React", "TypeScript", "Tailwind CSS"],
+                  inviteToken: inv.inviteToken || inv.token || null,
+                  assessmentId: inv.assessmentId || inv.assessment?.id || "asst-04",
+                  createdAt: inv.createdAt || inv.created_at || new Date().toISOString(),
+                });
+              }
             }
-          }
+          });
         }
-      } catch (liveErr) {
-        console.warn("Live candidate invitations fetch failed, checking localStorage fallback:", liveErr);
+      } catch {
+        // ignore live fetch failure
       }
 
-      // fallback: check local storage invitations if backend was unreachable
-      let localStoragePending: any = null;
+      // check local storage invitations as fallback or addition
       try {
         const storedInvites = localStorage.getItem("devassess_invitations");
         if (storedInvites) {
           const list = JSON.parse(storedInvites);
-          localStoragePending = list
-            .filter((inv: any) => inv.status === "PENDING")
-            .sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-            .find((inv: any) => {
-              if (!inv.candidateEmail) return false;
-              const invEmail = inv.candidateEmail.toLowerCase().trim();
-              if (invEmail === currentEmail) return true;
-              if (
-                currentEmail.includes("provash") &&
-                (invEmail.includes("provash") || invEmail.includes("10dev"))
-              ) {
-                return true;
-              }
-              if (
-                (currentEmail.includes("scstanley") || currentEmail.includes("amy")) &&
-                (invEmail.includes("scstanley") || invEmail.includes("amy"))
-              ) {
-                return true;
-              }
-              return false;
-            });
+          if (Array.isArray(list)) {
+            list
+              .filter((inv: any) => {
+                if (inv.status !== "PENDING") return false;
+                if (!inv.candidateEmail) return false;
+                const invEmail = inv.candidateEmail.toLowerCase().trim();
+                if (invEmail === currentEmail) return true;
+                if (
+                  currentEmail.includes("provash") &&
+                  (invEmail.includes("provash") || invEmail.includes("10dev"))
+                ) {
+                  return true;
+                }
+                if (
+                  (currentEmail.includes("scstanley") || currentEmail.includes("amy")) &&
+                  (invEmail.includes("scstanley") || invEmail.includes("amy"))
+                ) {
+                  return true;
+                }
+                if (
+                  currentEmail.includes("ava") &&
+                  invEmail.includes("ava")
+                ) {
+                  return true;
+                }
+                return false;
+              })
+              .forEach((localInv: any) => {
+                const title = localInv.assessmentTitle || localInv.title || "Junior React Nextjs Dev";
+                const key = `${title.toLowerCase().trim()}_${localInv.assessmentId || ""}`;
+                if (!seenInviteKeys.has(key)) {
+                  seenInviteKeys.add(key);
+                  allPendingInvites.push({
+                    id: localInv.id || `inv-${Date.now()}`,
+                    title,
+                    company: "Recruiter Assessment Console",
+                    duration:
+                      localInv.duration ||
+                      (localInv.durationMinutes ? `${localInv.durationMinutes} Minutes` : "75 Minutes"),
+                    difficulty: localInv.difficulty || "Intermediate",
+                    deadline: `Expires in 3 days (${new Date(localInv.expiresAt || Date.now() + 259200000).toLocaleDateString()})`,
+                    description:
+                      localInv.description ||
+                      "You have received a new proctored developer assessment invitation from your recruiter. Complete the algorithmic and coding questions within the time limit.",
+                    skills:
+                      Array.isArray(localInv.skills) && localInv.skills.length > 0
+                        ? localInv.skills
+                        : [localInv.language || "SQL / PostgreSQL", "Database", "Performance"],
+                    inviteToken: localInv.inviteToken || localInv.token || null,
+                    assessmentId: localInv.assessmentId || "asst-04",
+                    createdAt: localInv.createdAt || localInv.created_at || new Date().toISOString(),
+                  });
+                }
+              });
+          }
         }
       } catch {
-        // ignore
+        // ignore storage fetch failure
       }
 
-      if (localStoragePending && !dbHasCompleted && !hasCompleted) {
-        foundPendingInvitation = true;
-        const challengeDuration =
-          localStoragePending.duration ||
-          (localStoragePending.durationMinutes ? `${localStoragePending.durationMinutes} Minutes` : "75 Minutes");
-        const challengeSkills =
-          Array.isArray(localStoragePending.skills) && localStoragePending.skills.length > 0
-            ? localStoragePending.skills
-            : [localStoragePending.language || "SQL / PostgreSQL", "Database", "Performance"];
+      // sort newest invitations first
+      allPendingInvites.sort((a, b) => {
+        const timeA = new Date(a.createdAt || 0).getTime();
+        const timeB = new Date(b.createdAt || 0).getTime();
+        return timeB - timeA;
+      });
 
-        setActiveInvitation({
-          title: localStoragePending.assessmentTitle || "Junior React Nextjs Dev",
-          company: "Recruiter Assessment Console",
-          duration: challengeDuration,
-          difficulty: localStoragePending.difficulty || "Intermediate",
-          deadline: `Expires in 3 days (${new Date(localStoragePending.expiresAt || Date.now() + 259200000).toLocaleDateString()})`,
-          description:
-            localStoragePending.description ||
-            "You have received a new proctored developer assessment invitation from your recruiter. Complete the algorithmic and coding questions within the time limit.",
-          skills: challengeSkills,
-        });
-        setActiveInviteToken(localStoragePending.inviteToken || localStoragePending.token || null);
-        setActiveAssessmentId(localStoragePending.assessmentId || "asst-04");
-        setActiveChallengesCount(1);
+      setPendingInvitations(allPendingInvites);
+
+      // update active states and invitations
+      if (allPendingInvites.length > 0) {
+        setActiveChallengesCount(allPendingInvites.length);
+        setActiveInvitation(allPendingInvites[0]);
+        setActiveInviteToken(allPendingInvites[0].inviteToken);
+        setActiveAssessmentId(allPendingInvites[0].assessmentId);
         setHasCompletedActiveExam(false);
         setIsAccepted(false);
-        return;
-      }
-
-      // reflect completed state
-      if (!foundPendingInvitation || dbAttemptAccepted || dbHasCompleted) {
-        setHasCompletedActiveExam(hasCompleted);
+      } else {
+        setActiveChallengesCount(0);
+        setHasCompletedActiveExam(hasCompleted || dbHasCompleted);
         setIsAccepted(anyAccepted);
-        if (dbAttemptAccepted) {
-          setActiveChallengesCount(0);
+        if (dbAttemptTitle) {
+          setActiveInvitation((prev) => ({
+            ...prev,
+            title: dbAttemptTitle,
+          }));
         }
-      }
-
-      if (dbAttemptTitle) {
-        setActiveInvitation((prev) => ({
-          ...prev,
-          title: dbAttemptTitle,
-        }));
       }
     } catch {
       // ignore
@@ -676,7 +697,7 @@ export function RoleAdaptiveDashboard() {
               <>
                 You have{" "}
                 <span className="font-bold text-foreground">
-                  {activeChallengesCount} active challenge
+                  {activeChallengesCount} active challenge{activeChallengesCount > 1 ? "s" : ""}
                 </span>{" "}
                 waiting for submission and{" "}
                 <span className="font-bold text-foreground">
@@ -748,15 +769,21 @@ export function RoleAdaptiveDashboard() {
       </div>
 
       {/* active assessment feature card */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2.5">
             <div className="size-2.5 rounded-full bg-primary animate-pulse" />
             <h2 className="font-heading text-lg font-bold text-foreground tracking-tight">
-              Active Assessment Invitation
+              {pendingInvitations.length > 1
+                ? `Active Assessment Invitations (${pendingInvitations.length})`
+                : "Active Assessment Invitation"}
             </h2>
           </div>
-          {hasCompletedActiveExam ? (
+          {pendingInvitations.length > 0 ? (
+            <Badge variant="amber" className="text-xs font-medium py-1 px-3">
+              Action Required: Pending Take
+            </Badge>
+          ) : hasCompletedActiveExam ? (
             latestVerdictStatus === "ACCEPTED" || isAccepted ? (
               <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-xs font-semibold gap-1.5 py-1 px-3 shadow-xs">
                 <CheckCircle2 className="size-3.5 text-emerald-500" />
@@ -780,8 +807,201 @@ export function RoleAdaptiveDashboard() {
           )}
         </div>
 
-        {/* hero card container */}
-        <div
+        {pendingInvitations.length > 0 ? (
+          <div className="space-y-3">
+            {pendingInvitations.map((inv, idx) => {
+              const isExpanded = !!expandedInviteIds[inv.id];
+
+              return (
+                <div
+                  key={inv.id || idx}
+                  className={cn(
+                    "overflow-hidden rounded-2xl border-2 transition-all duration-300 shadow-xs",
+                    isExpanded
+                      ? "border-amber-500/50 bg-card shadow-amber-500/10 shadow-md"
+                      : "border-border/80 bg-card hover:border-amber-500/40 hover:bg-muted/20"
+                  )}
+                >
+                  {/* invitation title row header */}
+                  <div
+                    onClick={() => toggleInviteExpand(inv.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleInviteExpand(inv.id);
+                      }
+                    }}
+                    className="p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer select-none group"
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <span
+                        className={cn(
+                          "size-8 sm:size-9 rounded-xl flex items-center justify-center text-sm font-black border shrink-0 transition-all",
+                          isExpanded
+                            ? "bg-amber-500 text-white border-amber-600 shadow-xs"
+                            : "bg-muted text-foreground border-border/80 group-hover:border-amber-500/50 group-hover:text-amber-600 dark:group-hover:text-amber-400"
+                        )}
+                      >
+                        {idx + 1}
+                      </span>
+
+                      <h3 className="font-heading text-base sm:text-lg font-bold text-foreground tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                        {inv.title}
+                      </h3>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div
+                        className={cn(
+                          "size-8 sm:size-9 rounded-xl flex items-center justify-center border transition-all duration-300 shadow-2xs",
+                          isExpanded
+                            ? "bg-amber-500 text-white border-amber-600 rotate-180"
+                            : "bg-muted/80 text-muted-foreground border-border/80 group-hover:text-foreground group-hover:border-amber-500/40"
+                        )}
+                      >
+                        <ChevronDown className="size-4.5 transition-transform duration-300" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* expandable details section */}
+                  {isExpanded && (
+                    <div className="border-t border-border/70 p-5 sm:p-6 space-y-5 bg-muted/20 animate-in fade-in-50 duration-200">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            <Building2 className="size-3" />
+                            <span>Invited by: {inv.company}</span>
+                          </div>
+                          {inv.inviteToken && (
+                            <Badge
+                              variant="outline"
+                              className="font-mono text-[10px] bg-primary/10 text-primary border-primary/30 px-2 py-0.5 gap-1"
+                            >
+                              <Sparkles className="size-2.5" /> Tokenized Invitation
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-card border border-border/80 text-xs font-semibold text-foreground shadow-2xs">
+                            <Clock className="size-3 text-muted-foreground" />
+                            <span>{inv.duration}</span>
+                          </div>
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20 text-xs font-semibold text-primary shadow-2xs">
+                            <Zap className="size-3" />
+                            <span>{inv.difficulty}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground leading-relaxed max-w-4xl">
+                        {inv.description}
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <span className="text-xs font-semibold text-muted-foreground mr-1">
+                          Tech Stack:
+                        </span>
+                        {inv.skills.map((skill: string) => (
+                          <span
+                            key={skill}
+                            className="px-3 py-1 rounded-lg text-xs font-mono font-medium bg-muted/80 text-foreground border border-border/80 shadow-2xs"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="rounded-xl p-4 sm:p-5 border transition-all bg-amber-500/10 border-amber-500/30 text-amber-950 dark:text-amber-100">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-start gap-3">
+                            <div className="size-11 rounded-xl flex items-center justify-center shrink-0 border shadow-xs bg-amber-500/20 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                              <Clock className="size-5" />
+                            </div>
+
+                            <div className="space-y-1">
+                              <p className="font-heading text-base font-bold tracking-tight">
+                                Status: Pending Candidate Action
+                              </p>
+                              <p className="text-xs text-muted-foreground leading-normal max-w-2xl">
+                                Assessment window is active. Must be submitted before: {inv.deadline}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground self-end sm:self-center font-medium">
+                            <Calendar className="size-3.5" />
+                            <span>{inv.deadline}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 pb-1 border-t border-border/40 mt-4">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-semibold mb-2">
+                          <span>Evaluation Pipeline Stage:</span>
+                          <span className="text-primary font-bold">
+                            Stage 1 of 3: Ready to Take Exam
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <div className="p-2 rounded-lg border text-center text-[11px] font-semibold flex items-center justify-center gap-1.5 bg-primary/10 border-primary/30 text-primary ring-1 ring-primary/20">
+                            <CheckCircle2 className="size-3" />
+                            <span>1. Exam Completed</span>
+                          </div>
+                          <div className="p-2 rounded-lg border text-center text-[11px] font-semibold flex items-center justify-center gap-1.5 bg-muted/40 border-border/50 text-muted-foreground opacity-60">
+                            <Clock className="size-3" />
+                            <span>2. Recruiter Code Review</span>
+                          </div>
+                          <div className="p-2 rounded-lg border text-center text-[11px] font-semibold flex items-center justify-center gap-1.5 bg-muted/40 border-border/50 text-muted-foreground opacity-60">
+                            <Award className="size-3" />
+                            <span>3. Final Verdict</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl bg-card border border-border/80 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 shadow-2xs">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                          </span>
+                          <Shield className="size-3.5 text-emerald-500" />
+                          <span className="font-medium">
+                            Proctored Environment • Anti-Cheat Telemetry Verified
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                          <Link
+                            href={
+                              inv.inviteToken
+                                ? `/assessment/attempt?id=${encodeURIComponent(inv.assessmentId)}&token=${encodeURIComponent(inv.inviteToken)}&title=${encodeURIComponent(inv.title)}&duration=${encodeURIComponent(inv.duration)}`
+                                : `/assessment/attempt?id=${encodeURIComponent(inv.assessmentId)}&title=${encodeURIComponent(inv.title)}&duration=${encodeURIComponent(inv.duration)}`
+                            }
+                            className="w-full sm:w-auto"
+                          >
+                            <Button
+                              variant="default"
+                              className="w-full sm:w-auto bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold gap-2 text-xs h-10 px-5 rounded-xl shadow-md shadow-amber-500/20 cursor-pointer"
+                            >
+                              <Play className="size-3.5 fill-current" />
+                              Launch Assessment Exam Room
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* hero card container */
+          <div
           className={`relative overflow-hidden rounded-2xl border-2 transition-all duration-300 shadow-md ${
             hasCompletedActiveExam
               ? latestVerdictStatus === "ACCEPTED" || isAccepted
@@ -1105,6 +1325,7 @@ export function RoleAdaptiveDashboard() {
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* completed assessments history */}

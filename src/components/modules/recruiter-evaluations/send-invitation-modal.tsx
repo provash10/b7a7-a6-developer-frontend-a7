@@ -563,9 +563,13 @@ export function SendInvitationModal({
         let invitesList = storedInvites ? JSON.parse(storedInvites) : [];
         if (!Array.isArray(invitesList)) invitesList = [];
 
-        // supersede older pending invite for this candidate
+        // keep all active invitations for candidate
         invitesList = invitesList.map((inv: any) => {
-          if (inv.candidateEmail?.toLowerCase() === target.email && inv.status === "PENDING") {
+          if (
+            inv.candidateEmail?.toLowerCase() === target.email &&
+            inv.assessmentId === selectedChallenge.id &&
+            inv.status === "PENDING"
+          ) {
             return { ...inv, status: "SUPERSEDED" };
           }
           return inv;
