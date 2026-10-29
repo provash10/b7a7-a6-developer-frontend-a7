@@ -51,38 +51,7 @@ export interface DispatchedInvite {
   examLink: string;
 }
 
-const INITIAL_SAVED_CANDIDATES: SavedCandidate[] = [
-  {
-    id: "cand-arthur",
-    name: "Arthur Askey",
-    email: "arthuraskey120788@gmail.com",
-    role: "Registered Candidate",
-  },
-  {
-    id: "cand-ava",
-    name: "Ava Flora",
-    email: "avaflora31@gmail.com",
-    role: "Registered Candidate",
-  },
-  {
-    id: "cand-1",
-    name: "Provash Barman",
-    email: "provash10dev@gmail.com",
-    role: "Candidate (Active)",
-  },
-  {
-    id: "cand-2",
-    name: "Amy Bruckner",
-    email: "scstanley17111991@gmail.com",
-    role: "Candidate (Invited)",
-  },
-  {
-    id: "cand-3",
-    name: "John Developer",
-    email: "candidate@100.com",
-    role: "Candidate (Demo)",
-  },
-];
+const INITIAL_SAVED_CANDIDATES: SavedCandidate[] = [];
 
 interface SendInvitationModalProps {
   isOpen: boolean;
@@ -211,79 +180,6 @@ export function SendInvitationModal({
       try {
         const candidateMap = new Map<string, SavedCandidate>();
 
-        // newly registered candidates from devassess_saved_candidates (top priority)
-        const storedSaved = localStorage.getItem("devassess_saved_candidates");
-        if (storedSaved) {
-          const parsed = JSON.parse(storedSaved);
-          if (Array.isArray(parsed)) {
-            parsed.forEach((c: any) => {
-              if (c.email) {
-                const emailKey = c.email.toLowerCase().trim();
-                if (!candidateMap.has(emailKey)) {
-                  candidateMap.set(emailKey, {
-                    id: c.id || `cand-${emailKey}`,
-                    name: c.name || emailKey.split("@")[0],
-                    email: c.email.trim(),
-                    role: c.role || "Registered Candidate",
-                  });
-                }
-              }
-            });
-          }
-        }
-
-        // also merge registered candidates from devassess_custom_users (from registration / admin)
-        const storedUsers = localStorage.getItem("devassess_custom_users");
-        if (storedUsers) {
-          const parsedUsers = JSON.parse(storedUsers);
-          if (Array.isArray(parsedUsers)) {
-            parsedUsers.forEach((u: any) => {
-              if (u.email && (!u.role || u.role.toUpperCase() === "CANDIDATE")) {
-                const emailKey = u.email.toLowerCase().trim();
-                if (!candidateMap.has(emailKey)) {
-                  candidateMap.set(emailKey, {
-                    id: u.id || `cand-${emailKey}`,
-                    name: u.name || emailKey.split("@")[0],
-                    email: u.email.trim(),
-                    role: "Registered Candidate",
-                  });
-                }
-              }
-            });
-          }
-        }
-
-        // past dispatched invitations
-        const storedInvites = localStorage.getItem("devassess_invitations");
-        if (storedInvites) {
-          const parsedInv = JSON.parse(storedInvites);
-          if (Array.isArray(parsedInv)) {
-            parsedInv.forEach((inv: any) => {
-              if (inv.candidateEmail) {
-                const emailKey = inv.candidateEmail.toLowerCase().trim();
-                if (!candidateMap.has(emailKey)) {
-                  candidateMap.set(emailKey, {
-                    id: `cand-${emailKey}`,
-                    name: inv.candidateName || emailKey.split("@")[0],
-                    email: inv.candidateEmail.trim(),
-                    role: "Invited Candidate",
-                  });
-                }
-              }
-            });
-          }
-        }
-
-        // default / seed candidates
-        INITIAL_SAVED_CANDIDATES.forEach((c) => {
-          const emailKey = c.email.toLowerCase().trim();
-          if (!candidateMap.has(emailKey)) {
-            candidateMap.set(emailKey, c);
-          }
-        });
-
-        setSavedCandidates(Array.from(candidateMap.values()));
-
         // live db fetch: fetch registered candidates directly from backend database api
         try {
           let res: any;
@@ -319,21 +215,20 @@ export function SendInvitationModal({
             apiUsers.forEach((u: any) => {
               if (u.email && (!u.role || u.role.toUpperCase() === "CANDIDATE")) {
                 const emailKey = u.email.toLowerCase().trim();
-                if (!candidateMap.has(emailKey)) {
-                  candidateMap.set(emailKey, {
-                    id: u.id || `cand-${emailKey}`,
-                    name: u.name || emailKey.split("@")[0],
-                    email: u.email.trim(),
-                    role: "Registered Candidate",
-                  });
-                }
+                candidateMap.set(emailKey, {
+                  id: u.id || `cand-${emailKey}`,
+                  name: u.name || emailKey.split("@")[0],
+                  email: u.email.trim(),
+                  role: "Registered Candidate",
+                });
               }
             });
-            setSavedCandidates(Array.from(candidateMap.values()));
           }
         } catch {
           // backend offline or recruiter auth restricted - fallback gracefully
         }
+
+        setSavedCandidates(Array.from(candidateMap.values()));
       } catch {
         // ignore
       }
