@@ -319,7 +319,7 @@ export function ManageAssessmentsTable() {
               className="group gap-2 h-9 px-4 rounded-lg font-semibold text-xs sm:text-sm shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md hover:ring-2 hover:ring-primary/25 active:scale-[0.98] transition-all duration-200 cursor-pointer"
             >
               <FilePlus className="size-4 shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6" />
-              <span>Create Challenge</span>
+              <span>+ Create Assessment</span>
             </Button>
           </div>
         </div>

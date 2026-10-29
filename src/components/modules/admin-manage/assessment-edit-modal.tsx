@@ -23,6 +23,7 @@ import { createAssessment, createQuestion } from "@/api/assessment.api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
 import type { Question } from "@/types";
 
@@ -120,9 +121,10 @@ export function AssessmentEditModal({
 
   // Form Fields
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [company, setCompany] = useState("");
-  const [durationMinutes, setDurationMinutes] = useState(90);
-  const [passMarks, setPassMarks] = useState(70);
+  const [durationMinutes, setDurationMinutes] = useState(75);
+  const [passMarks, setPassMarks] = useState(60);
   const [totalMarks, setTotalMarks] = useState(100);
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT" | "ARCHIVED">("PUBLISHED");
   const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
@@ -169,6 +171,7 @@ export function AssessmentEditModal({
   useEffect(() => {
     if (assessment) {
       setTitle(assessment.title);
+      setDescription(assessment.description || "");
       setCompany(assessment.company);
       setDurationMinutes(assessment.durationMinutes);
       setPassMarks(assessment.passMarks);
@@ -181,13 +184,14 @@ export function AssessmentEditModal({
       }
     } else {
       setTitle("");
+      setDescription("Candidates are required to solve algorithmic and backend coding problems within the allotted time. Passing score required for certification.");
       setCompany("");
-      setDurationMinutes(90);
-      setPassMarks(70);
+      setDurationMinutes(75);
+      setPassMarks(60);
       setTotalMarks(100);
       setStatus("PUBLISHED");
       setDifficulty("MEDIUM");
-      setSkillsText("Next.js, TypeScript, PostgreSQL, Tailwind CSS");
+      setSkillsText("Go, SQL, PostgreSQL, Docker");
       setSelectedQuestionIds(["p1", "p2"]);
     }
     setCurrentStep(1);
@@ -268,7 +272,7 @@ export function AssessmentEditModal({
     if (!title.trim()) {
       toast.add({
         title: "Title Required",
-        description: "Please specify an assessment challenge title.",
+        description: "Please specify an assessment challenge title (e.g. Senior Backend Go & SQL Challenge).",
         type: "error",
       });
       return false;
@@ -277,6 +281,22 @@ export function AssessmentEditModal({
       toast.add({
         title: "Organization Required",
         description: "Please specify the hiring organization or company.",
+        type: "error",
+      });
+      return false;
+    }
+    if (!durationMinutes || durationMinutes <= 0) {
+      toast.add({
+        title: "Duration Required",
+        description: "Please enter a valid duration in minutes (e.g. 75).",
+        type: "error",
+      });
+      return false;
+    }
+    if (passMarks === undefined || passMarks === null || passMarks < 0) {
+      toast.add({
+        title: "Passing Marks Required",
+        description: "Please specify passing marks (e.g. 60).",
         type: "error",
       });
       return false;
@@ -331,9 +351,11 @@ export function AssessmentEditModal({
     const updatedData: ManagedAssessment = {
       id: asstId,
       title: title.trim(),
-      description: assessment
-        ? assessment.description
-        : "Interactive developer coding challenge evaluated against automated test cases and anti-cheat telemetry.",
+      description:
+        description.trim() ||
+        (assessment
+          ? assessment.description
+          : "Interactive developer coding challenge evaluated against automated test cases and anti-cheat telemetry."),
       company: company.trim(),
       durationMinutes: Number(durationMinutes),
       passMarks: Math.min(Number(passMarks), effectiveTotal),
@@ -455,7 +477,7 @@ export function AssessmentEditModal({
               </div>
               <div className="min-w-0 hidden sm:block">
                 <div className="text-[11px] uppercase tracking-wider font-semibold opacity-75">Step 1</div>
-                <div className="text-xs truncate">Basic Info</div>
+                <div className="text-xs truncate">Basic Details</div>
               </div>
             </button>
 
@@ -486,7 +508,7 @@ export function AssessmentEditModal({
               </div>
               <div className="min-w-0 hidden sm:block">
                 <div className="text-[11px] uppercase tracking-wider font-semibold opacity-75">Step 2</div>
-                <div className="text-xs truncate">Coding Questions</div>
+                <div className="text-xs truncate">Select Questions</div>
               </div>
             </button>
 
@@ -513,7 +535,7 @@ export function AssessmentEditModal({
               </div>
               <div className="min-w-0 hidden sm:block">
                 <div className="text-[11px] uppercase tracking-wider font-semibold opacity-75">Step 3</div>
-                <div className="text-xs truncate">Criteria &amp; Publish</div>
+                <div className="text-xs truncate">Review &amp; Publish</div>
               </div>
             </button>
           </div>
@@ -521,21 +543,21 @@ export function AssessmentEditModal({
 
         {/* Wizard Form Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 text-xs flex flex-col justify-between">
-          {/* ================= STEP 1: BASIC INFO ================= */}
+          {/* ================= STEP 1: BASIC DETAILS ================= */}
           {currentStep === 1 && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-right-3 duration-200">
-              <div className="border-b border-border/50 pb-3">
+            <div className="space-y-4 animate-in fade-in slide-in-from-right-3 duration-200">
+              <div className="border-b border-border/50 pb-2.5">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <FileCode className="size-4 text-primary" />
-                  <span>Challenge Details &amp; Organization</span>
+                  <span>Step 1: Basic Details (প্রাথমিক তথ্য)</span>
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Set the name, hiring company, and test duration for this assessment.
+                  পরীক্ষার শিরোনাম, সময়সীমা, পাস মার্কস এবং নির্দেশিকা উল্লেখ করুন।
                 </p>
               </div>
 
               {/* Title & Company */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
                   <label htmlFor="assessment-title" className="font-semibold text-foreground flex items-center gap-1.5">
                     <span>Challenge Title *</span>
@@ -544,7 +566,7 @@ export function AssessmentEditModal({
                     id="assessment-title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Full Stack Next.js & TypeScript Challenge"
+                    placeholder="যেমন: Senior Backend Go & SQL Challenge"
                     required
                     className="text-xs sm:text-sm bg-background/80 border-border/80 focus:border-primary/50 transition-colors"
                   />
@@ -552,67 +574,102 @@ export function AssessmentEditModal({
 
                 <div className="space-y-1.5">
                   <label htmlFor="assessment-company" className="font-semibold text-foreground flex items-center gap-1.5">
-                    <span>Hiring Organization / Company *</span>
+                    <span>Hiring Company / Organization *</span>
                   </label>
                   <Input
                     id="assessment-company"
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
-                    placeholder="e.g. TechCorp Labs / DevPulse Inc."
+                    placeholder="যেমন: TechCorp Labs / Algorithmix"
                     required
                     className="text-xs sm:text-sm bg-background/80 border-border/80 focus:border-primary/50 transition-colors"
                   />
                 </div>
               </div>
 
-              {/* Duration and Presets */}
-              <div className="space-y-2">
-                <label className="font-semibold text-foreground flex items-center gap-1.5">
-                  <Clock className="size-3.5 text-primary" />
-                  <span>Exam Duration (Minutes) *</span>
-                </label>
-                <div className="flex items-center gap-3">
+              {/* Duration and Passing Marks */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-foreground flex items-center gap-1.5">
+                    <Clock className="size-3.5 text-primary" />
+                    <span>Duration (Minutes) *</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min={15}
+                      max={300}
+                      value={durationMinutes}
+                      onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                      required
+                      placeholder="যেমন: 75"
+                      className="w-28 text-xs sm:text-sm font-mono"
+                    />
+                    <div className="flex flex-wrap gap-1">
+                      {[45, 60, 75, 90, 120].map((mins) => (
+                        <button
+                          key={mins}
+                          type="button"
+                          onClick={() => setDurationMinutes(mins)}
+                          className={`px-2 py-1 rounded-md border text-[11px] font-mono transition-colors cursor-pointer ${
+                            durationMinutes === mins
+                              ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
+                              : "bg-muted/40 border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {mins}m
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-foreground flex items-center gap-1.5">
+                    <Award className="size-3.5 text-emerald-500" />
+                    <span>Passing Marks *</span>
+                  </label>
                   <Input
                     type="number"
-                    min={15}
-                    max={300}
-                    value={durationMinutes}
-                    onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                    min={0}
+                    max={200}
+                    value={passMarks}
+                    onChange={(e) => setPassMarks(Number(e.target.value))}
                     required
-                    className="w-36 text-xs sm:text-sm font-mono"
+                    placeholder="যেমন: 60"
+                    className="text-xs sm:text-sm font-mono font-bold text-emerald-500 bg-background/80"
                   />
-                  <div className="flex flex-wrap gap-1.5">
-                    {[45, 60, 90, 120].map((mins) => (
-                      <button
-                        key={mins}
-                        type="button"
-                        onClick={() => setDurationMinutes(mins)}
-                        className={`px-2.5 py-1 rounded-lg border text-xs font-mono transition-colors cursor-pointer ${
-                          durationMinutes === mins
-                            ? "bg-primary text-primary-foreground border-primary font-bold shadow-2xs"
-                            : "bg-muted/40 border-border/70 text-muted-foreground hover:text-foreground hover:bg-muted"
-                        }`}
-                      >
-                        {mins}m
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </div>
 
+              {/* Description / Candidate Guidelines */}
+              <div className="space-y-1.5">
+                <label className="font-semibold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="size-3.5 text-primary" />
+                  <span>Description (ক্যান্ডিডেটদের নির্দেশিকা) *</span>
+                </label>
+                <Textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="যেমন: ক্যান্ডিডেটদের নির্দেশিকা — সকল প্রশ্নের উত্তর নির্ধারিত সময়ের মধ্যে শেষ করতে হবে। কোডের কার্যকারিতা, টাইম কমপ্লেক্সিটি এবং টেস্ট কেসগুলো গুরুত্বের সাথে বিবেচনা করা হবে।"
+                  rows={3}
+                  className="text-xs sm:text-sm bg-background/80 resize-none min-h-[72px]"
+                />
+              </div>
+
               {/* Evaluated Skills */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label className="font-semibold text-foreground flex items-center gap-1.5">
                   <Code2 className="size-3.5 text-primary" />
-                  <span>Target Tech Stack / Evaluated Skills (comma-separated)</span>
+                  <span>Skills / Target Tech Stack (comma-separated)</span>
                 </label>
                 <Input
                   value={skillsText}
                   onChange={(e) => setSkillsText(e.target.value)}
-                  placeholder="e.g. Next.js 15, TypeScript, API Route Handlers, Tailwind CSS, PostgreSQL"
+                  placeholder="যেমন: Go, SQL, Docker, PostgreSQL, Concurrency"
                   className="text-xs sm:text-sm bg-background/80"
                 />
-                <div className="flex flex-wrap gap-1 pt-1">
+                <div className="flex flex-wrap gap-1 pt-0.5">
                   {skillsText
                     .split(",")
                     .map((s) => s.trim())
@@ -1004,7 +1061,7 @@ export function AssessmentEditModal({
                   className="gap-1.5 font-bold text-xs bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
                 >
                   <span>
-                    {currentStep === 1 ? "Next: Select Questions" : "Next: Review & Criteria"}
+                    {currentStep === 1 ? "Next: Configure Questions →" : "Next: Review & Publish →"}
                   </span>
                   <ArrowRight className="size-3.5" />
                 </Button>
