@@ -978,8 +978,8 @@ export function RoleAdaptiveDashboard() {
                           <Link
                             href={
                               inv.inviteToken
-                                ? `/assessment/attempt?id=${encodeURIComponent(inv.assessmentId)}&token=${encodeURIComponent(inv.inviteToken)}&title=${encodeURIComponent(inv.title)}&duration=${encodeURIComponent(inv.duration)}`
-                                : `/assessment/attempt?id=${encodeURIComponent(inv.assessmentId)}&title=${encodeURIComponent(inv.title)}&duration=${encodeURIComponent(inv.duration)}`
+                                ? `/assessment/attempt?id=${encodeURIComponent(inv.assessmentId)}&token=${encodeURIComponent(inv.inviteToken)}&title=${encodeURIComponent(inv.title)}&duration=${encodeURIComponent(inv.duration)}&invitationId=${encodeURIComponent(inv.id)}`
+                                : `/assessment/attempt?id=${encodeURIComponent(inv.assessmentId)}&title=${encodeURIComponent(inv.title)}&duration=${encodeURIComponent(inv.duration)}&invitationId=${encodeURIComponent(inv.id)}`
                             }
                             className="w-full sm:w-auto"
                           >
@@ -1308,8 +1308,8 @@ export function RoleAdaptiveDashboard() {
                 <Link
                   href={
                     activeInviteToken
-                      ? `/assessment/attempt?id=${encodeURIComponent(activeAssessmentId)}&token=${encodeURIComponent(activeInviteToken)}&title=${encodeURIComponent(activeInvitation.title)}&duration=${encodeURIComponent(activeInvitation.duration)}`
-                      : `/assessment/attempt?id=${encodeURIComponent(activeAssessmentId)}&title=${encodeURIComponent(activeInvitation.title)}&duration=${encodeURIComponent(activeInvitation.duration)}`
+                      ? `/assessment/attempt?id=${encodeURIComponent(activeAssessmentId)}&token=${encodeURIComponent(activeInviteToken)}&title=${encodeURIComponent(activeInvitation.title)}&duration=${encodeURIComponent(activeInvitation.duration)}${activeInvitation.id ? `&invitationId=${encodeURIComponent(activeInvitation.id)}` : ""}`
+                      : `/assessment/attempt?id=${encodeURIComponent(activeAssessmentId)}&title=${encodeURIComponent(activeInvitation.title)}&duration=${encodeURIComponent(activeInvitation.duration)}${activeInvitation.id ? `&invitationId=${encodeURIComponent(activeInvitation.id)}` : ""}`
                   }
                   className="w-full sm:w-auto"
                 >

@@ -227,6 +227,7 @@ function CandidateAssessmentExamContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const assessmentId = searchParams.get("id") || "asst-live-01";
+  const invitationId = searchParams.get("invitationId");
   const urlTitle = searchParams.get("title");
   const urlDuration = searchParams.get("duration");
 
@@ -367,26 +368,39 @@ function CandidateAssessmentExamContent() {
     }
   }, [currentQ, selectedLanguage, candidateCodes]);
 
-  // connect attempt on backend (accept invitation & start attempt)
+  // connect attempt on backend
   useEffect(() => {
     async function initializeAttempt() {
       try {
         const myInvitesRes = await getCandidateInvitations();
-        const pendingInvite = myInvitesRes?.data?.find(
+        const invitesList = Array.isArray(myInvitesRes?.data)
+          ? myInvitesRes.data
+          : Array.isArray((myInvitesRes as any)?.data?.data)
+            ? (myInvitesRes as any).data.data
+            : [];
+
+        const pendingInvite = invitesList.find(
           (inv: any) =>
-            inv.status === "PENDING" &&
-            (inv.assessmentId === assessmentId ||
-              (token && (inv.token === token || inv.inviteToken === token))),
+            (invitationId && inv.id === invitationId) ||
+            ((inv.status === "PENDING" || inv.status === "ACCEPTED") &&
+              (inv.assessmentId === assessmentId ||
+                (urlTitle && inv.assessment?.title === decodeURIComponent(urlTitle)) ||
+                (token && (inv.token === token || inv.inviteToken === token)))),
         );
 
+        const targetInvitationId = invitationId || pendingInvite?.id;
         let activeAttId = attemptId;
 
-        // accept pending invitation if present
-        if (pendingInvite?.id) {
+        // accept pending invitation
+        if (targetInvitationId) {
           try {
-            const acceptRes = await acceptAssessmentInvitation(pendingInvite.id);
-            if (acceptRes?.data?.attempt?.id) {
-              activeAttId = acceptRes.data.attempt.id;
+            const acceptRes = await acceptAssessmentInvitation(targetInvitationId);
+            const acceptedId =
+              acceptRes?.data?.attempt?.id ||
+              (acceptRes as any)?.data?.data?.attempt?.id ||
+              (acceptRes as any)?.data?.id;
+            if (acceptedId) {
+              activeAttId = acceptedId;
               setAttemptId(activeAttId);
             }
           } catch {
@@ -394,13 +408,21 @@ function CandidateAssessmentExamContent() {
           }
         }
 
-        // if no attempt id yet, find active attempt from candidate attempts
+        // search candidate attempts
         if (!activeAttId || activeAttId.startsWith("att-")) {
           try {
             const myAttemptsRes = await getMyAttempts();
-            const existingAttempt = myAttemptsRes?.data?.find(
+            const attemptsList = Array.isArray(myAttemptsRes?.data)
+              ? myAttemptsRes.data
+              : Array.isArray((myAttemptsRes as any)?.data?.data)
+                ? (myAttemptsRes as any).data.data
+                : [];
+
+            const existingAttempt = attemptsList.find(
               (a: any) =>
-                a.assessmentId === assessmentId && a.status !== "SUBMITTED",
+                (a.assessmentId === assessmentId ||
+                  (urlTitle && a.assessment?.title === decodeURIComponent(urlTitle))) &&
+                a.status !== "SUBMITTED",
             );
             if (existingAttempt?.id) {
               activeAttId = existingAttempt.id;
@@ -411,29 +433,45 @@ function CandidateAssessmentExamContent() {
           }
         }
 
-        // start attempt if not started yet
+        // start attempt on server
         let connectedAttemptId = activeAttId;
-        try {
-          const startRes = await startAttempt(activeAttId);
-          if (startRes?.data?.id) {
-            connectedAttemptId = startRes.data.id;
-            setAttemptId(connectedAttemptId);
+        if (activeAttId && !activeAttId.startsWith("att-")) {
+          try {
+            const startRes = await startAttempt(activeAttId);
+            const returnedAttemptId =
+              startRes?.data?.attemptId ||
+              startRes?.data?.id ||
+              (startRes as any)?.data?.data?.attemptId ||
+              (startRes as any)?.data?.data?.id;
+
+            if (returnedAttemptId) {
+              connectedAttemptId = returnedAttemptId;
+              setAttemptId(connectedAttemptId);
+            }
+
             toast.add({
               title: "PostgreSQL Attempt Connected! 🚀",
               description: `Attempt recorded in 'candidate_attempts' table. ID: ${connectedAttemptId}`,
               type: "success",
             });
+          } catch {
+            // already in progress or started
           }
-        } catch {
-          // already in progress or fallback
         }
 
-        // fetch actual questions for this assessment attempt from postgresql database
+        // fetch questions from database
         if (connectedAttemptId && !connectedAttemptId.startsWith("att-")) {
           try {
             const qRes = await getAttemptQuestions(connectedAttemptId);
             const rawData: any = qRes?.data;
-            const backendQuestions = Array.isArray(rawData) ? rawData : rawData?.questions;
+            const backendQuestions = Array.isArray(rawData)
+              ? rawData
+              : Array.isArray(rawData?.questions)
+                ? rawData.questions
+                : Array.isArray((qRes as any)?.data?.data?.questions)
+                  ? (qRes as any).data.data.questions
+                  : [];
+
             if (Array.isArray(backendQuestions) && backendQuestions.length > 0) {
               const mappedDbQuestions: ExamQuestion[] = backendQuestions.map(
                 (q: any, idx: number) => ({
