@@ -127,13 +127,13 @@ export function AssessmentEditModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [company, setCompany] = useState("");
-  const [durationMinutes, setDurationMinutes] = useState(75);
-  const [passMarks, setPassMarks] = useState(60);
+  const [durationMinutes, setDurationMinutes] = useState(60);
+  const [passMarks, setPassMarks] = useState(20);
   const [totalMarks, setTotalMarks] = useState(100);
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT" | "ARCHIVED">("PUBLISHED");
   const [difficulty, setDifficulty] = useState<"EASY" | "MEDIUM" | "HARD">("MEDIUM");
   const [skillsText, setSkillsText] = useState("");
-  const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>(["p1", "p2"]);
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
   const [availableQuestions, setAvailableQuestions] = useState<QuestionBankItem[]>(
     DEFAULT_AVAILABLE_QUESTIONS,
   );
@@ -216,13 +216,13 @@ export function AssessmentEditModal({
       setTitle("");
       setDescription("Candidates are required to solve algorithmic and backend coding problems within the allotted time. Passing score required for certification.");
       setCompany("");
-      setDurationMinutes(75);
-      setPassMarks(60);
-      setTotalMarks(100);
+      setDurationMinutes(60);
+      setPassMarks(20);
+      setTotalMarks(40);
       setStatus("PUBLISHED");
       setDifficulty("MEDIUM");
       setSkillsText("Go, SQL, PostgreSQL, Docker");
-      setSelectedQuestionIds(["p1", "p2"]);
+      setSelectedQuestionIds([]);
     }
     setCurrentStep(1);
   }, [assessment, isOpen]);
@@ -353,6 +353,9 @@ export function AssessmentEditModal({
       setCurrentStep(2);
     } else if (currentStep === 2) {
       if (!validateStep2()) return;
+      if (totalCalculatedMarks > 0 && passMarks > totalCalculatedMarks) {
+        setPassMarks(Math.round(totalCalculatedMarks * 0.6) || totalCalculatedMarks);
+      }
       setCurrentStep(3);
     }
   };
